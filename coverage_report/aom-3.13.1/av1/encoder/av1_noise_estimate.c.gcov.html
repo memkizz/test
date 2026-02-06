@@ -1,0 +1,388 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/encoder/av1_noise_estimate.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/encoder</a> - av1_noise_estimate.c<span style="font-size: 80%;"> (source / <a href="av1_noise_estimate.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">165</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2020, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #include &lt;assert.h&gt;</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #include &lt;limits.h&gt;</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #include &lt;math.h&gt;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : </span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;config/aom_dsp_rtcd.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;aom_dsp/aom_dsp_common.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &quot;aom_scale/yv12config.h&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &quot;aom/aom_integer.h&quot;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #include &quot;av1/encoder/context_tree.h&quot;</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #include &quot;av1/encoder/av1_noise_estimate.h&quot;</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #include &quot;av1/encoder/encoder.h&quot;</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : #if CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : #include &quot;av1/encoder/av1_temporal_denoiser.h&quot;</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : #endif</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : </span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : #if CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : // For SVC: only do noise estimation on top spatial layer.</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : static inline int noise_est_svc(const struct AV1_COMP *const cpi) {</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :   return (!cpi-&gt;ppi-&gt;use_svc ||</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :           (cpi-&gt;ppi-&gt;use_svc &amp;&amp;</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :            cpi-&gt;svc.spatial_layer_id == cpi-&gt;svc.number_spatial_layers - 1));</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : }</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : #endif</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : </span>
+<span id="L36"><span class="lineNum">      36</span>                 :<span class="tlaUNC tlaBgUNC">           0 : void av1_noise_estimate_init(NOISE_ESTIMATE *const ne, int width, int height) {</span></span>
+<span id="L37"><span class="lineNum">      37</span>                 :<span class="tlaUNC">           0 :   const int64_t area = (int64_t)width * height;</span></span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 :   ne-&gt;enabled = 0;</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :<span class="tlaUNC">           0 :   ne-&gt;level = (area &lt; 1280 * 720) ? kLowLow : kLow;</span></span>
+<span id="L40"><span class="lineNum">      40</span>                 :<span class="tlaUNC">           0 :   ne-&gt;value = 0;</span></span>
+<span id="L41"><span class="lineNum">      41</span>                 :<span class="tlaUNC">           0 :   ne-&gt;count = 0;</span></span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 :   ne-&gt;thresh = 90;</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :<span class="tlaUNC">           0 :   ne-&gt;last_w = 0;</span></span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 :   ne-&gt;last_h = 0;</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :<span class="tlaUNC">           0 :   if (area &gt;= 1920 * 1080) {</span></span>
+<span id="L46"><span class="lineNum">      46</span>                 :<span class="tlaUNC">           0 :     ne-&gt;thresh = 200;</span></span>
+<span id="L47"><span class="lineNum">      47</span>                 :<span class="tlaUNC">           0 :   } else if (area &gt;= 1280 * 720) {</span></span>
+<span id="L48"><span class="lineNum">      48</span>                 :<span class="tlaUNC">           0 :     ne-&gt;thresh = 140;</span></span>
+<span id="L49"><span class="lineNum">      49</span>                 :<span class="tlaUNC">           0 :   } else if (area &gt;= 640 * 360) {</span></span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 :     ne-&gt;thresh = 115;</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L52"><span class="lineNum">      52</span>                 :<span class="tlaUNC">           0 :   ne-&gt;num_frames_estimate = 15;</span></span>
+<span id="L53"><span class="lineNum">      53</span>                 :<span class="tlaUNC">           0 :   ne-&gt;adapt_thresh = (3 * ne-&gt;thresh) &gt;&gt; 1;</span></span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : </span>
+<span id="L56"><span class="lineNum">      56</span>                 :<span class="tlaUNC">           0 : static int enable_noise_estimation(AV1_COMP *const cpi) {</span></span>
+<span id="L57"><span class="lineNum">      57</span>                 :<span class="tlaUNC">           0 :   const int resize_pending = is_frame_resize_pending(cpi);</span></span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : </span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : #if CONFIG_AV1_HIGHBITDEPTH</span>
+<span id="L60"><span class="lineNum">      60</span>                 :<span class="tlaUNC">           0 :   if (cpi-&gt;common.seq_params-&gt;use_highbitdepth) return 0;</span></span>
+<span id="L61"><span class="lineNum">      61</span>                 :             : #endif</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             : // Enable noise estimation if denoising is on.</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             : #if CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   if (cpi-&gt;oxcf.noise_sensitivity &gt; 0 &amp;&amp; noise_est_svc(cpi) &amp;&amp;</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :       cpi-&gt;common.width &gt;= 320 &amp;&amp; cpi-&gt;common.height &gt;= 180)</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :     return 1;</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : #endif</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :   // Only allow noise estimate under certain encoding mode.</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :   // Enabled for 1 pass CBR, speed &gt;=5, and if resolution is same as original.</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :   // Not enabled for SVC mode and screen_content_mode.</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   // Not enabled for low resolutions.</span>
+<span id="L72"><span class="lineNum">      72</span>                 :<span class="tlaUNC">           0 :   if (cpi-&gt;oxcf.pass == AOM_RC_ONE_PASS &amp;&amp; cpi-&gt;oxcf.rc_cfg.mode == AOM_CBR &amp;&amp;</span></span>
+<span id="L73"><span class="lineNum">      73</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;oxcf.q_cfg.aq_mode == CYCLIC_REFRESH_AQ &amp;&amp; cpi-&gt;oxcf.speed &gt;= 5 &amp;&amp;</span></span>
+<span id="L74"><span class="lineNum">      74</span>                 :<span class="tlaUNC">           0 :       resize_pending == 0 &amp;&amp; !cpi-&gt;ppi-&gt;use_svc &amp;&amp;</span></span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;oxcf.tune_cfg.content != AOM_CONTENT_SCREEN &amp;&amp;</span></span>
+<span id="L76"><span class="lineNum">      76</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;common.width * cpi-&gt;common.height &gt;= 640 * 360)</span></span>
+<span id="L77"><span class="lineNum">      77</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   else</span>
+<span id="L79"><span class="lineNum">      79</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :             : </span>
+<span id="L82"><span class="lineNum">      82</span>                 :             : #if CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             : static void copy_frame(YV12_BUFFER_CONFIG *const dest,</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :                        const YV12_BUFFER_CONFIG *const src) {</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :   const uint8_t *srcbuf = src-&gt;y_buffer;</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :   uint8_t *destbuf = dest-&gt;y_buffer;</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : </span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :   assert(dest-&gt;y_width == src-&gt;y_width);</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :   assert(dest-&gt;y_height == src-&gt;y_height);</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : </span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :   for (int r = 0; r &lt; dest-&gt;y_height; ++r) {</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :     memcpy(destbuf, srcbuf, dest-&gt;y_width);</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :     destbuf += dest-&gt;y_stride;</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :     srcbuf += src-&gt;y_stride;</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :   }</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : }</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : #endif  // CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             : </span>
+<span id="L99"><span class="lineNum">      99</span>                 :<span class="tlaUNC">           0 : NOISE_LEVEL av1_noise_estimate_extract_level(NOISE_ESTIMATE *const ne) {</span></span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC">           0 :   int noise_level = kLowLow;</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 :   if (ne-&gt;value &gt; (ne-&gt;thresh &lt;&lt; 1)) {</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 :     noise_level = kHigh;</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :<span class="tlaUNC">           0 :     if (ne-&gt;value &gt; ne-&gt;thresh)</span></span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :       noise_level = kMedium;</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :<span class="tlaUNC">           0 :     else if (ne-&gt;value &gt; (ne-&gt;thresh &gt;&gt; 1))</span></span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :       noise_level = kLow;</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :     else</span>
+<span id="L109"><span class="lineNum">     109</span>                 :<span class="tlaUNC">           0 :       noise_level = kLowLow;</span></span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   }</span>
+<span id="L111"><span class="lineNum">     111</span>                 :<span class="tlaUNC">           0 :   return noise_level;</span></span>
+<span id="L112"><span class="lineNum">     112</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L113"><span class="lineNum">     113</span>                 :             : </span>
+<span id="L114"><span class="lineNum">     114</span>                 :<span class="tlaUNC">           0 : void av1_update_noise_estimate(AV1_COMP *const cpi) {</span></span>
+<span id="L115"><span class="lineNum">     115</span>                 :<span class="tlaUNC">           0 :   const AV1_COMMON *const cm = &amp;cpi-&gt;common;</span></span>
+<span id="L116"><span class="lineNum">     116</span>                 :<span class="tlaUNC">           0 :   const CommonModeInfoParams *const mi_params = &amp;cm-&gt;mi_params;</span></span>
+<span id="L117"><span class="lineNum">     117</span>                 :             : </span>
+<span id="L118"><span class="lineNum">     118</span>                 :<span class="tlaUNC">           0 :   NOISE_ESTIMATE *const ne = &amp;cpi-&gt;noise_estimate;</span></span>
+<span id="L119"><span class="lineNum">     119</span>                 :<span class="tlaUNC">           0 :   const int low_res = (cm-&gt;width &lt;= 352 &amp;&amp; cm-&gt;height &lt;= 288);</span></span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :   // Estimate of noise level every frame_period frames.</span>
+<span id="L121"><span class="lineNum">     121</span>                 :<span class="tlaUNC">           0 :   int frame_period = 8;</span></span>
+<span id="L122"><span class="lineNum">     122</span>                 :<span class="tlaUNC">           0 :   int thresh_consec_zeromv = 2;</span></span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaUNC">           0 :   int frame_counter = cm-&gt;current_frame.frame_number;</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :   // Estimate is between current source and last source.</span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaUNC">           0 :   YV12_BUFFER_CONFIG *last_source = cpi-&gt;last_source;</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :             : #if CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :   if (cpi-&gt;oxcf.noise_sensitivity &gt; 0 &amp;&amp; noise_est_svc(cpi)) {</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :     last_source = &amp;cpi-&gt;denoiser.last_source;</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :     // Tune these thresholds for different resolutions when denoising is</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :     // enabled.</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :     if (cm-&gt;width &gt; 640 &amp;&amp; cm-&gt;width &lt;= 1920) {</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :       thresh_consec_zeromv = 2;</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :     }</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :   }</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             : #endif</span>
+<span id="L136"><span class="lineNum">     136</span>                 :<span class="tlaUNC">           0 :   ne-&gt;enabled = enable_noise_estimation(cpi);</span></span>
+<span id="L137"><span class="lineNum">     137</span>                 :<span class="tlaUNC">           0 :   if (cpi-&gt;svc.number_spatial_layers &gt; 1)</span></span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 :     frame_counter = cpi-&gt;svc.current_superframe;</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :   if (!ne-&gt;enabled || frame_counter % frame_period != 0 ||</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :<span class="tlaUNC">           0 :       last_source == NULL ||</span></span>
+<span id="L141"><span class="lineNum">     141</span>                 :<span class="tlaUNC">           0 :       (cpi-&gt;svc.number_spatial_layers == 1 &amp;&amp;</span></span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :        (ne-&gt;last_w != cm-&gt;width || ne-&gt;last_h != cm-&gt;height))) {</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :             : #if CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :     if (cpi-&gt;oxcf.noise_sensitivity &gt; 0 &amp;&amp; noise_est_svc(cpi))</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :       copy_frame(&amp;cpi-&gt;denoiser.last_source, cpi-&gt;source);</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : #endif</span>
+<span id="L147"><span class="lineNum">     147</span>                 :<span class="tlaUNC">           0 :     if (last_source != NULL) {</span></span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :       ne-&gt;last_w = cm-&gt;width;</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :       ne-&gt;last_h = cm-&gt;height;</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L151"><span class="lineNum">     151</span>                 :<span class="tlaUNC">           0 :     return;</span></span>
+<span id="L152"><span class="lineNum">     152</span>                 :<span class="tlaUNC">           0 :   } else if (frame_counter &gt; 60 &amp;&amp; cpi-&gt;svc.num_encoded_top_layer &gt; 1 &amp;&amp;</span></span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 :              cpi-&gt;rc.frames_since_key &gt; cpi-&gt;svc.number_spatial_layers &amp;&amp;</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 :              cpi-&gt;svc.spatial_layer_id == cpi-&gt;svc.number_spatial_layers - 1 &amp;&amp;</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :<span class="tlaUNC">           0 :              cpi-&gt;rc.avg_frame_low_motion &lt; (low_res ? 60 : 40)) {</span></span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :     // Force noise estimation to 0 and denoiser off if content has high motion.</span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :     ne-&gt;level = kLowLow;</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 :     ne-&gt;count = 0;</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :<span class="tlaUNC">           0 :     ne-&gt;num_frames_estimate = 10;</span></span>
+<span id="L160"><span class="lineNum">     160</span>                 :             : #if CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :     if (cpi-&gt;oxcf.noise_sensitivity &gt; 0 &amp;&amp; noise_est_svc(cpi) &amp;&amp;</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :         cpi-&gt;svc.current_superframe &gt; 1) {</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :       av1_denoiser_set_noise_level(cpi, ne-&gt;level);</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :       copy_frame(&amp;cpi-&gt;denoiser.last_source, cpi-&gt;source);</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :     }</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             : #endif</span>
+<span id="L167"><span class="lineNum">     167</span>                 :<span class="tlaUNC">           0 :     return;</span></span>
+<span id="L168"><span class="lineNum">     168</span>                 :             :   } else {</span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 :     unsigned int bin_size = 100;</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :<span class="tlaUNC">           0 :     unsigned int hist[MAX_VAR_HIST_BINS] = { 0 };</span></span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :     unsigned int hist_avg[MAX_VAR_HIST_BINS];</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :<span class="tlaUNC">           0 :     unsigned int max_bin = 0;</span></span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :     unsigned int max_bin_count = 0;</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :     unsigned int bin_cnt;</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 :     BLOCK_SIZE bsize = BLOCK_16X16;</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :             :     // Loop over sub-sample of 16x16 blocks of frame, and for blocks that have</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             :     // been encoded as zero/small mv at least x consecutive frames, compute</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :     // the variance to update estimate of noise in the source.</span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :     const uint8_t *src_y = cpi-&gt;source-&gt;y_buffer;</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :     const int src_ystride = cpi-&gt;source-&gt;y_stride;</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :<span class="tlaUNC">           0 :     const uint8_t *last_src_y = last_source-&gt;y_buffer;</span></span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 :     const int last_src_ystride = last_source-&gt;y_stride;</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :<span class="tlaUNC">           0 :     int mi_row, mi_col;</span></span>
+<span id="L184"><span class="lineNum">     184</span>                 :<span class="tlaUNC">           0 :     int num_low_motion = 0;</span></span>
+<span id="L185"><span class="lineNum">     185</span>                 :<span class="tlaUNC">           0 :     int frame_low_motion = 1;</span></span>
+<span id="L186"><span class="lineNum">     186</span>                 :<span class="tlaUNC">           0 :     for (mi_row = 0; mi_row &lt; mi_params-&gt;mi_rows; mi_row += 2) {</span></span>
+<span id="L187"><span class="lineNum">     187</span>                 :<span class="tlaUNC">           0 :       for (mi_col = 0; mi_col &lt; mi_params-&gt;mi_cols; mi_col += 2) {</span></span>
+<span id="L188"><span class="lineNum">     188</span>                 :<span class="tlaUNC">           0 :         int bl_index =</span></span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :             (mi_row &gt;&gt; 1) * (mi_params-&gt;mi_cols &gt;&gt; 1) + (mi_col &gt;&gt; 1);</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 :         if (cpi-&gt;consec_zero_mv[bl_index] &gt; thresh_consec_zeromv)</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :<span class="tlaUNC">           0 :           num_low_motion++;</span></span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 :     if (num_low_motion &lt;</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :         (((3 * (mi_params-&gt;mi_rows * mi_params-&gt;mi_cols) &gt;&gt; 2)) &gt;&gt; 3))</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :<span class="tlaUNC">           0 :       frame_low_motion = 0;</span></span>
+<span id="L197"><span class="lineNum">     197</span>                 :<span class="tlaUNC">           0 :     for (mi_row = 0; mi_row &lt; mi_params-&gt;mi_rows; mi_row++) {</span></span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 :       for (mi_col = 0; mi_col &lt; mi_params-&gt;mi_cols; mi_col++) {</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :         // 16x16 blocks, 1/4 sample of frame.</span>
+<span id="L200"><span class="lineNum">     200</span>                 :<span class="tlaUNC">           0 :         if (mi_row % 8 == 0 &amp;&amp; mi_col % 8 == 0 &amp;&amp;</span></span>
+<span id="L201"><span class="lineNum">     201</span>                 :<span class="tlaUNC">           0 :             mi_row &lt; mi_params-&gt;mi_rows - 3 &amp;&amp;</span></span>
+<span id="L202"><span class="lineNum">     202</span>                 :<span class="tlaUNC">           0 :             mi_col &lt; mi_params-&gt;mi_cols - 3) {</span></span>
+<span id="L203"><span class="lineNum">     203</span>                 :<span class="tlaUNC">           0 :           int bl_index =</span></span>
+<span id="L204"><span class="lineNum">     204</span>                 :<span class="tlaUNC">           0 :               (mi_row &gt;&gt; 1) * (mi_params-&gt;mi_cols &gt;&gt; 1) + (mi_col &gt;&gt; 1);</span></span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :           int bl_index1 = bl_index + 1;</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :<span class="tlaUNC">           0 :           int bl_index2 = bl_index + (mi_params-&gt;mi_cols &gt;&gt; 1);</span></span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 :           int bl_index3 = bl_index2 + 1;</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 :           int consec_zeromv =</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :               AOMMIN(cpi-&gt;consec_zero_mv[bl_index],</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :                      AOMMIN(cpi-&gt;consec_zero_mv[bl_index1],</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             :                             AOMMIN(cpi-&gt;consec_zero_mv[bl_index2],</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             :                                    cpi-&gt;consec_zero_mv[bl_index3])));</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :           // Only consider blocks that are likely steady background. i.e, have</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             :           // been encoded as zero/low motion x (= thresh_consec_zeromv) frames</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             :           // in a row. consec_zero_mv[] defined for 8x8 blocks, so consider all</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :           // 4 sub-blocks for 16x16 block. And exclude this frame if</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             :           // high_source_sad is true (i.e., scene/content change).</span>
+<span id="L218"><span class="lineNum">     218</span>                 :<span class="tlaUNC">           0 :           if (frame_low_motion &amp;&amp; consec_zeromv &gt; thresh_consec_zeromv &amp;&amp;</span></span>
+<span id="L219"><span class="lineNum">     219</span>                 :<span class="tlaUNC">           0 :               !cpi-&gt;rc.high_source_sad) {</span></span>
+<span id="L220"><span class="lineNum">     220</span>                 :<span class="tlaUNC">           0 :             unsigned int sse;</span></span>
+<span id="L221"><span class="lineNum">     221</span>                 :             :             // Compute variance between co-located blocks from current and</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             :             // last input frames.</span>
+<span id="L223"><span class="lineNum">     223</span>                 :<span class="tlaUNC">           0 :             unsigned int variance = cpi-&gt;ppi-&gt;fn_ptr[bsize].vf(</span></span>
+<span id="L224"><span class="lineNum">     224</span>                 :<span class="tlaUNC">           0 :                 src_y, src_ystride, last_src_y, last_src_ystride, &amp;sse);</span></span>
+<span id="L225"><span class="lineNum">     225</span>                 :<span class="tlaUNC">           0 :             unsigned int hist_index = variance / bin_size;</span></span>
+<span id="L226"><span class="lineNum">     226</span>                 :<span class="tlaUNC">           0 :             if (hist_index &lt; MAX_VAR_HIST_BINS)</span></span>
+<span id="L227"><span class="lineNum">     227</span>                 :<span class="tlaUNC">           0 :               hist[hist_index]++;</span></span>
+<span id="L228"><span class="lineNum">     228</span>                 :<span class="tlaUNC">           0 :             else if (hist_index &lt; 3 * (MAX_VAR_HIST_BINS &gt;&gt; 1))</span></span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :               hist[MAX_VAR_HIST_BINS - 1]++;  // Account for the tail</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 :           }</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 :         src_y += 4;</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 :         last_src_y += 4;</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L235"><span class="lineNum">     235</span>                 :<span class="tlaUNC">           0 :       src_y += (src_ystride &lt;&lt; 2) - (mi_params-&gt;mi_cols &lt;&lt; 2);</span></span>
+<span id="L236"><span class="lineNum">     236</span>                 :<span class="tlaUNC">           0 :       last_src_y += (last_src_ystride &lt;&lt; 2) - (mi_params-&gt;mi_cols &lt;&lt; 2);</span></span>
+<span id="L237"><span class="lineNum">     237</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L238"><span class="lineNum">     238</span>                 :<span class="tlaUNC">           0 :     ne-&gt;last_w = cm-&gt;width;</span></span>
+<span id="L239"><span class="lineNum">     239</span>                 :<span class="tlaUNC">           0 :     ne-&gt;last_h = cm-&gt;height;</span></span>
+<span id="L240"><span class="lineNum">     240</span>                 :             :     // Adjust histogram to account for effect that histogram flattens</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :     // and shifts to zero as scene darkens.</span>
+<span id="L242"><span class="lineNum">     242</span>                 :<span class="tlaUNC">           0 :     if (hist[0] &gt; 10 &amp;&amp; (hist[MAX_VAR_HIST_BINS - 1] &gt; hist[0] &gt;&gt; 2)) {</span></span>
+<span id="L243"><span class="lineNum">     243</span>                 :<span class="tlaUNC">           0 :       hist[0] = 0;</span></span>
+<span id="L244"><span class="lineNum">     244</span>                 :<span class="tlaUNC">           0 :       hist[1] &gt;&gt;= 2;</span></span>
+<span id="L245"><span class="lineNum">     245</span>                 :<span class="tlaUNC">           0 :       hist[2] &gt;&gt;= 2;</span></span>
+<span id="L246"><span class="lineNum">     246</span>                 :<span class="tlaUNC">           0 :       hist[3] &gt;&gt;= 2;</span></span>
+<span id="L247"><span class="lineNum">     247</span>                 :<span class="tlaUNC">           0 :       hist[4] &gt;&gt;= 1;</span></span>
+<span id="L248"><span class="lineNum">     248</span>                 :<span class="tlaUNC">           0 :       hist[5] &gt;&gt;= 1;</span></span>
+<span id="L249"><span class="lineNum">     249</span>                 :<span class="tlaUNC">           0 :       hist[6] = 3 * hist[6] &gt;&gt; 1;</span></span>
+<span id="L250"><span class="lineNum">     250</span>                 :<span class="tlaUNC">           0 :       hist[MAX_VAR_HIST_BINS - 1] &gt;&gt;= 1;</span></span>
+<span id="L251"><span class="lineNum">     251</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L252"><span class="lineNum">     252</span>                 :             : </span>
+<span id="L253"><span class="lineNum">     253</span>                 :             :     // Average hist[] and find largest bin</span>
+<span id="L254"><span class="lineNum">     254</span>                 :<span class="tlaUNC">           0 :     for (bin_cnt = 0; bin_cnt &lt; MAX_VAR_HIST_BINS; bin_cnt++) {</span></span>
+<span id="L255"><span class="lineNum">     255</span>                 :<span class="tlaUNC">           0 :       if (bin_cnt == 0)</span></span>
+<span id="L256"><span class="lineNum">     256</span>                 :<span class="tlaUNC">           0 :         hist_avg[bin_cnt] = (hist[0] + hist[1] + hist[2]) / 3;</span></span>
+<span id="L257"><span class="lineNum">     257</span>                 :<span class="tlaUNC">           0 :       else if (bin_cnt == MAX_VAR_HIST_BINS - 1)</span></span>
+<span id="L258"><span class="lineNum">     258</span>                 :<span class="tlaUNC">           0 :         hist_avg[bin_cnt] = hist[MAX_VAR_HIST_BINS - 1] &gt;&gt; 2;</span></span>
+<span id="L259"><span class="lineNum">     259</span>                 :<span class="tlaUNC">           0 :       else if (bin_cnt == MAX_VAR_HIST_BINS - 2)</span></span>
+<span id="L260"><span class="lineNum">     260</span>                 :<span class="tlaUNC">           0 :         hist_avg[bin_cnt] = (hist[bin_cnt - 1] + 2 * hist[bin_cnt] +</span></span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 :                              (hist[bin_cnt + 1] &gt;&gt; 1) + 2) &gt;&gt;</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :             :                             2;</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :       else</span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 :         hist_avg[bin_cnt] =</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :<span class="tlaUNC">           0 :             (hist[bin_cnt - 1] + 2 * hist[bin_cnt] + hist[bin_cnt + 1] + 2) &gt;&gt;</span></span>
+<span id="L266"><span class="lineNum">     266</span>                 :             :             2;</span>
+<span id="L267"><span class="lineNum">     267</span>                 :             : </span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 :       if (hist_avg[bin_cnt] &gt; max_bin_count) {</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :<span class="tlaUNC">           0 :         max_bin_count = hist_avg[bin_cnt];</span></span>
+<span id="L270"><span class="lineNum">     270</span>                 :<span class="tlaUNC">           0 :         max_bin = bin_cnt;</span></span>
+<span id="L271"><span class="lineNum">     271</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L272"><span class="lineNum">     272</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L273"><span class="lineNum">     273</span>                 :             :     // Scale by 40 to work with existing thresholds</span>
+<span id="L274"><span class="lineNum">     274</span>                 :<span class="tlaUNC">           0 :     ne-&gt;value = (int)((3 * ne-&gt;value + max_bin * 40) &gt;&gt; 2);</span></span>
+<span id="L275"><span class="lineNum">     275</span>                 :             :     // Quickly increase VNR strength when the noise level increases suddenly.</span>
+<span id="L276"><span class="lineNum">     276</span>                 :<span class="tlaUNC">           0 :     if (ne-&gt;level &lt; kMedium &amp;&amp; ne-&gt;value &gt; ne-&gt;adapt_thresh) {</span></span>
+<span id="L277"><span class="lineNum">     277</span>                 :<span class="tlaUNC">           0 :       ne-&gt;count = ne-&gt;num_frames_estimate;</span></span>
+<span id="L278"><span class="lineNum">     278</span>                 :<span class="tlaUNC">           0 :     } else {</span></span>
+<span id="L279"><span class="lineNum">     279</span>                 :<span class="tlaUNC">           0 :       ne-&gt;count++;</span></span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :     }</span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 :     if (ne-&gt;count == ne-&gt;num_frames_estimate) {</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :             :       // Reset counter and check noise level condition.</span>
+<span id="L283"><span class="lineNum">     283</span>                 :<span class="tlaUNC">           0 :       ne-&gt;num_frames_estimate = 30;</span></span>
+<span id="L284"><span class="lineNum">     284</span>                 :<span class="tlaUNC">           0 :       ne-&gt;count = 0;</span></span>
+<span id="L285"><span class="lineNum">     285</span>                 :<span class="tlaUNC">           0 :       ne-&gt;level = av1_noise_estimate_extract_level(ne);</span></span>
+<span id="L286"><span class="lineNum">     286</span>                 :             : #if CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             :       if (cpi-&gt;oxcf.noise_sensitivity &gt; 0 &amp;&amp; noise_est_svc(cpi))</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :         av1_denoiser_set_noise_level(cpi, ne-&gt;level);</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             : #endif</span>
+<span id="L290"><span class="lineNum">     290</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L291"><span class="lineNum">     291</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L292"><span class="lineNum">     292</span>                 :             : #if CONFIG_AV1_TEMPORAL_DENOISING</span>
+<span id="L293"><span class="lineNum">     293</span>                 :             :   if (cpi-&gt;oxcf.noise_sensitivity &gt; 0 &amp;&amp; noise_est_svc(cpi))</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :     copy_frame(&amp;cpi-&gt;denoiser.last_source, cpi-&gt;source);</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             : #endif</span>
+<span id="L296"><span class="lineNum">     296</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

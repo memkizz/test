@@ -1,0 +1,1186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/common/entropymode.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/common</a> - entropymode.c<span style="font-size: 80%;"> (source / <a href="entropymode.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">151</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2016, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #include &quot;aom_mem/aom_mem.h&quot;</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #include &quot;av1/common/av1_common_int.h&quot;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;av1/common/reconinter.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;av1/common/scan.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;av1/common/seg_common.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &quot;av1/common/txb_common.h&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : </span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : static const aom_cdf_prob</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             :     default_kf_y_mode_cdf[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS][CDF_SIZE(</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             :         INTRA_MODES)] = {</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             :       { { AOM_CDF13(15588, 17027, 19338, 20218, 20682, 21110, 21825, 23244,</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             :                     24189, 28165, 29093, 30466) },</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             :         { AOM_CDF13(12016, 18066, 19516, 20303, 20719, 21444, 21888, 23032,</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             :                     24434, 28658, 30172, 31409) },</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             :         { AOM_CDF13(10052, 10771, 22296, 22788, 23055, 23239, 24133, 25620,</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :                     26160, 29336, 29929, 31567) },</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :         { AOM_CDF13(14091, 15406, 16442, 18808, 19136, 19546, 19998, 22096,</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :                     24746, 29585, 30958, 32462) },</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :         { AOM_CDF13(12122, 13265, 15603, 16501, 18609, 20033, 22391, 25583,</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :                     26437, 30261, 31073, 32475) } },</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :       { { AOM_CDF13(10023, 19585, 20848, 21440, 21832, 22760, 23089, 24023,</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :                     25381, 29014, 30482, 31436) },</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :         { AOM_CDF13(5983, 24099, 24560, 24886, 25066, 25795, 25913, 26423,</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             :                     27610, 29905, 31276, 31794) },</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :         { AOM_CDF13(7444, 12781, 20177, 20728, 21077, 21607, 22170, 23405,</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :                     24469, 27915, 29090, 30492) },</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :         { AOM_CDF13(8537, 14689, 15432, 17087, 17408, 18172, 18408, 19825,</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :                     24649, 29153, 31096, 32210) },</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :         { AOM_CDF13(7543, 14231, 15496, 16195, 17905, 20717, 21984, 24516,</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :                     26001, 29675, 30981, 31994) } },</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :       { { AOM_CDF13(12613, 13591, 21383, 22004, 22312, 22577, 23401, 25055,</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :                     25729, 29538, 30305, 32077) },</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :         { AOM_CDF13(9687, 13470, 18506, 19230, 19604, 20147, 20695, 22062,</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :                     23219, 27743, 29211, 30907) },</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :         { AOM_CDF13(6183, 6505, 26024, 26252, 26366, 26434, 27082, 28354, 28555,</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :                     30467, 30794, 32086) },</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :         { AOM_CDF13(10718, 11734, 14954, 17224, 17565, 17924, 18561, 21523,</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :                     23878, 28975, 30287, 32252) },</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :         { AOM_CDF13(9194, 9858, 16501, 17263, 18424, 19171, 21563, 25961, 26561,</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :                     30072, 30737, 32463) } },</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :       { { AOM_CDF13(12602, 14399, 15488, 18381, 18778, 19315, 19724, 21419,</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :                     25060, 29696, 30917, 32409) },</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :         { AOM_CDF13(8203, 13821, 14524, 17105, 17439, 18131, 18404, 19468,</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :                     25225, 29485, 31158, 32342) },</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :         { AOM_CDF13(8451, 9731, 15004, 17643, 18012, 18425, 19070, 21538, 24605,</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :                     29118, 30078, 32018) },</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :         { AOM_CDF13(7714, 9048, 9516, 16667, 16817, 16994, 17153, 18767, 26743,</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :                     30389, 31536, 32528) },</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :         { AOM_CDF13(8843, 10280, 11496, 15317, 16652, 17943, 19108, 22718,</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :                     25769, 29953, 30983, 32485) } },</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :       { { AOM_CDF13(12578, 13671, 15979, 16834, 19075, 20913, 22989, 25449,</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :                     26219, 30214, 31150, 32477) },</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :         { AOM_CDF13(9563, 13626, 15080, 15892, 17756, 20863, 22207, 24236,</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :                     25380, 29653, 31143, 32277) },</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :         { AOM_CDF13(8356, 8901, 17616, 18256, 19350, 20106, 22598, 25947, 26466,</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :                     29900, 30523, 32261) },</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :         { AOM_CDF13(10835, 11815, 13124, 16042, 17018, 18039, 18947, 22753,</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :                     24615, 29489, 30883, 32482) },</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :         { AOM_CDF13(7618, 8288, 9859, 10509, 15386, 18657, 22903, 28776, 29180,</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :                     31355, 31802, 32593) } }</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :     };</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             : </span>
+<span id="L75"><span class="lineNum">      75</span>                 :             : static const aom_cdf_prob default_angle_delta_cdf[DIRECTIONAL_MODES][CDF_SIZE(</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :     2 * MAX_ANGLE_DELTA + 1)] = {</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :   { AOM_CDF7(2180, 5032, 7567, 22776, 26989, 30217) },</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   { AOM_CDF7(2301, 5608, 8801, 23487, 26974, 30330) },</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :   { AOM_CDF7(3780, 11018, 13699, 19354, 23083, 31286) },</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :   { AOM_CDF7(4581, 11226, 15147, 17138, 21834, 28397) },</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :   { AOM_CDF7(1737, 10927, 14509, 19588, 22745, 28823) },</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   { AOM_CDF7(2664, 10176, 12485, 17650, 21600, 30495) },</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   { AOM_CDF7(2240, 11096, 15453, 20341, 22561, 28917) },</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :   { AOM_CDF7(3605, 10428, 12459, 17676, 21244, 30655) }</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : };</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             : </span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : static const aom_cdf_prob default_if_y_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :     INTRA_MODES)] = { { AOM_CDF13(22801, 23489, 24293, 24756, 25601, 26123,</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :                                   26606, 27418, 27945, 29228, 29685, 30349) },</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :                       { AOM_CDF13(18673, 19845, 22631, 23318, 23950, 24649,</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :                                   25527, 27364, 28152, 29701, 29984, 30852) },</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :                       { AOM_CDF13(19770, 20979, 23396, 23939, 24241, 24654,</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :                                   25136, 27073, 27830, 29360, 29730, 30659) },</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :                       { AOM_CDF13(20155, 21301, 22838, 23178, 23261, 23533,</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :                                   23703, 24804, 25352, 26575, 27016, 28049) } };</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : </span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : static const aom_cdf_prob</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :     default_uv_mode_cdf[CFL_ALLOWED_TYPES][INTRA_MODES][CDF_SIZE(</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :         UV_INTRA_MODES)] = {</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :       { { AOM_CDF13(22631, 24152, 25378, 25661, 25986, 26520, 27055, 27923,</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :                     28244, 30059, 30941, 31961) },</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :         { AOM_CDF13(9513, 26881, 26973, 27046, 27118, 27664, 27739, 27824,</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :                     28359, 29505, 29800, 31796) },</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :         { AOM_CDF13(9845, 9915, 28663, 28704, 28757, 28780, 29198, 29822, 29854,</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :                     30764, 31777, 32029) },</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :         { AOM_CDF13(13639, 13897, 14171, 25331, 25606, 25727, 25953, 27148,</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :                     28577, 30612, 31355, 32493) },</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :         { AOM_CDF13(9764, 9835, 9930, 9954, 25386, 27053, 27958, 28148, 28243,</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :                     31101, 31744, 32363) },</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :         { AOM_CDF13(11825, 13589, 13677, 13720, 15048, 29213, 29301, 29458,</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :                     29711, 31161, 31441, 32550) },</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :         { AOM_CDF13(14175, 14399, 16608, 16821, 17718, 17775, 28551, 30200,</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :                     30245, 31837, 32342, 32667) },</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :         { AOM_CDF13(12885, 13038, 14978, 15590, 15673, 15748, 16176, 29128,</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :                     29267, 30643, 31961, 32461) },</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :         { AOM_CDF13(12026, 13661, 13874, 15305, 15490, 15726, 15995, 16273,</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :                     28443, 30388, 30767, 32416) },</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :         { AOM_CDF13(19052, 19840, 20579, 20916, 21150, 21467, 21885, 22719,</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :                     23174, 28861, 30379, 32175) },</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :         { AOM_CDF13(18627, 19649, 20974, 21219, 21492, 21816, 22199, 23119,</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :                     23527, 27053, 31397, 32148) },</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :         { AOM_CDF13(17026, 19004, 19997, 20339, 20586, 21103, 21349, 21907,</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :                     22482, 25896, 26541, 31819) },</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :         { AOM_CDF13(12124, 13759, 14959, 14992, 15007, 15051, 15078, 15166,</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :                     15255, 15753, 16039, 16606) } },</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :       { { AOM_CDF14(10407, 11208, 12900, 13181, 13823, 14175, 14899, 15656,</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :                     15986, 20086, 20995, 22455, 24212) },</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :         { AOM_CDF14(4532, 19780, 20057, 20215, 20428, 21071, 21199, 21451,</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :                     22099, 24228, 24693, 27032, 29472) },</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :         { AOM_CDF14(5273, 5379, 20177, 20270, 20385, 20439, 20949, 21695, 21774,</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :                     23138, 24256, 24703, 26679) },</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :         { AOM_CDF14(6740, 7167, 7662, 14152, 14536, 14785, 15034, 16741, 18371,</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :                     21520, 22206, 23389, 24182) },</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :         { AOM_CDF14(4987, 5368, 5928, 6068, 19114, 20315, 21857, 22253, 22411,</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :                     24911, 25380, 26027, 26376) },</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :         { AOM_CDF14(5370, 6889, 7247, 7393, 9498, 21114, 21402, 21753, 21981,</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :                     24780, 25386, 26517, 27176) },</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :         { AOM_CDF14(4816, 4961, 7204, 7326, 8765, 8930, 20169, 20682, 20803,</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :                     23188, 23763, 24455, 24940) },</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :         { AOM_CDF14(6608, 6740, 8529, 9049, 9257, 9356, 9735, 18827, 19059,</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :                     22336, 23204, 23964, 24793) },</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :         { AOM_CDF14(5998, 7419, 7781, 8933, 9255, 9549, 9753, 10417, 18898,</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :                     22494, 23139, 24764, 25989) },</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :         { AOM_CDF14(10660, 11298, 12550, 12957, 13322, 13624, 14040, 15004,</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :                     15534, 20714, 21789, 23443, 24861) },</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             :         { AOM_CDF14(10522, 11530, 12552, 12963, 13378, 13779, 14245, 15235,</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :                     15902, 20102, 22696, 23774, 25838) },</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :         { AOM_CDF14(10099, 10691, 12639, 13049, 13386, 13665, 14125, 15163,</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :                     15636, 19676, 20474, 23519, 25208) },</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :         { AOM_CDF14(3144, 5087, 7382, 7504, 7593, 7690, 7801, 8064, 8232, 9248,</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :                     9875, 10521, 29048) } }</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :     };</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             : </span>
+<span id="L154"><span class="lineNum">     154</span>                 :             : static const aom_cdf_prob default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :     EXT_PARTITION_TYPES)] = {</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :   { AOM_CDF4(19132, 25510, 30392) },</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :   { AOM_CDF4(13928, 19855, 28540) },</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :   { AOM_CDF4(12522, 23679, 28629) },</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             :   { AOM_CDF4(9896, 18783, 25853) },</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :   { AOM_CDF10(15597, 20929, 24571, 26706, 27664, 28821, 29601, 30571, 31902) },</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :   { AOM_CDF10(7925, 11043, 16785, 22470, 23971, 25043, 26651, 28701, 29834) },</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :   { AOM_CDF10(5414, 13269, 15111, 20488, 22360, 24500, 25537, 26336, 32117) },</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :   { AOM_CDF10(2662, 6362, 8614, 20860, 23053, 24778, 26436, 27829, 31171) },</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :   { AOM_CDF10(18462, 20920, 23124, 27647, 28227, 29049, 29519, 30178, 31544) },</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :   { AOM_CDF10(7689, 9060, 12056, 24992, 25660, 26182, 26951, 28041, 29052) },</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :   { AOM_CDF10(6015, 9009, 10062, 24544, 25409, 26545, 27071, 27526, 32047) },</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             :   { AOM_CDF10(1394, 2208, 2796, 28614, 29061, 29466, 29840, 30185, 31899) },</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             :   { AOM_CDF10(20137, 21547, 23078, 29566, 29837, 30261, 30524, 30892, 31724) },</span>
+<span id="L169"><span class="lineNum">     169</span>                 :             :   { AOM_CDF10(6732, 7490, 9497, 27944, 28250, 28515, 28969, 29630, 30104) },</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :   { AOM_CDF10(5945, 7663, 8348, 28683, 29117, 29749, 30064, 30298, 32238) },</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             :   { AOM_CDF10(870, 1212, 1487, 31198, 31394, 31574, 31743, 31881, 32332) },</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             :   { AOM_CDF8(27899, 28219, 28529, 32484, 32539, 32619, 32639) },</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             :   { AOM_CDF8(6607, 6990, 8268, 32060, 32219, 32338, 32371) },</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :   { AOM_CDF8(5429, 6676, 7122, 32027, 32227, 32531, 32582) },</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             :   { AOM_CDF8(711, 966, 1172, 32448, 32538, 32617, 32664) },</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : };</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             : </span>
+<span id="L178"><span class="lineNum">     178</span>                 :             : static const aom_cdf_prob default_intra_ext_tx_cdf</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             :     [EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES][CDF_SIZE(TX_TYPES)] = {</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             :       {</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :           {</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             :               { 0 },</span>
+<span id="L183"><span class="lineNum">     183</span>                 :             :               { 0 },</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             :               { 0 },</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             :               { 0 },</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :               { 0 },</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :               { 0 },</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             :               { 0 },</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             :               { 0 },</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :               { 0 },</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :               { 0 },</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             :               { 0 },</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             :               { 0 },</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             :               { 0 },</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :           },</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :           {</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :               { 0 },</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :               { 0 },</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :               { 0 },</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :               { 0 },</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :               { 0 },</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             :               { 0 },</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :               { 0 },</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :               { 0 },</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :               { 0 },</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :               { 0 },</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             :               { 0 },</span>
+<span id="L208"><span class="lineNum">     208</span>                 :             :               { 0 },</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             :               { 0 },</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :           },</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             :           {</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             :               { 0 },</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :               { 0 },</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             :               { 0 },</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             :               { 0 },</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :               { 0 },</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             :               { 0 },</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :               { 0 },</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :               { 0 },</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :               { 0 },</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             :               { 0 },</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             :               { 0 },</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             :               { 0 },</span>
+<span id="L224"><span class="lineNum">     224</span>                 :             :               { 0 },</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :           },</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :           {</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             :               { 0 },</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :               { 0 },</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             :               { 0 },</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             :               { 0 },</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             :               { 0 },</span>
+<span id="L232"><span class="lineNum">     232</span>                 :             :               { 0 },</span>
+<span id="L233"><span class="lineNum">     233</span>                 :             :               { 0 },</span>
+<span id="L234"><span class="lineNum">     234</span>                 :             :               { 0 },</span>
+<span id="L235"><span class="lineNum">     235</span>                 :             :               { 0 },</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             :               { 0 },</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             :               { 0 },</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :               { 0 },</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :               { 0 },</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             :           },</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :       },</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :       {</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             :           {</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :               { AOM_CDF7(1535, 8035, 9461, 12751, 23467, 27825) },</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :               { AOM_CDF7(564, 3335, 9709, 10870, 18143, 28094) },</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             :               { AOM_CDF7(672, 3247, 3676, 11982, 19415, 23127) },</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             :               { AOM_CDF7(5279, 13885, 15487, 18044, 23527, 30252) },</span>
+<span id="L248"><span class="lineNum">     248</span>                 :             :               { AOM_CDF7(4423, 6074, 7985, 10416, 25693, 29298) },</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             :               { AOM_CDF7(1486, 4241, 9460, 10662, 16456, 27694) },</span>
+<span id="L250"><span class="lineNum">     250</span>                 :             :               { AOM_CDF7(439, 2838, 3522, 6737, 18058, 23754) },</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :               { AOM_CDF7(1190, 4233, 4855, 11670, 20281, 24377) },</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             :               { AOM_CDF7(1045, 4312, 8647, 10159, 18644, 29335) },</span>
+<span id="L253"><span class="lineNum">     253</span>                 :             :               { AOM_CDF7(202, 3734, 4747, 7298, 17127, 24016) },</span>
+<span id="L254"><span class="lineNum">     254</span>                 :             :               { AOM_CDF7(447, 4312, 6819, 8884, 16010, 23858) },</span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :               { AOM_CDF7(277, 4369, 5255, 8905, 16465, 22271) },</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :               { AOM_CDF7(3409, 5436, 10599, 15599, 19687, 24040) },</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             :           },</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             :           {</span>
+<span id="L259"><span class="lineNum">     259</span>                 :             :               { AOM_CDF7(1870, 13742, 14530, 16498, 23770, 27698) },</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :               { AOM_CDF7(326, 8796, 14632, 15079, 19272, 27486) },</span>
+<span id="L261"><span class="lineNum">     261</span>                 :             :               { AOM_CDF7(484, 7576, 7712, 14443, 19159, 22591) },</span>
+<span id="L262"><span class="lineNum">     262</span>                 :             :               { AOM_CDF7(1126, 15340, 15895, 17023, 20896, 30279) },</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :               { AOM_CDF7(655, 4854, 5249, 5913, 22099, 27138) },</span>
+<span id="L264"><span class="lineNum">     264</span>                 :             :               { AOM_CDF7(1299, 6458, 8885, 9290, 14851, 25497) },</span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :               { AOM_CDF7(311, 5295, 5552, 6885, 16107, 22672) },</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             :               { AOM_CDF7(883, 8059, 8270, 11258, 17289, 21549) },</span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :               { AOM_CDF7(741, 7580, 9318, 10345, 16688, 29046) },</span>
+<span id="L268"><span class="lineNum">     268</span>                 :             :               { AOM_CDF7(110, 7406, 7915, 9195, 16041, 23329) },</span>
+<span id="L269"><span class="lineNum">     269</span>                 :             :               { AOM_CDF7(363, 7974, 9357, 10673, 15629, 24474) },</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             :               { AOM_CDF7(153, 7647, 8112, 9936, 15307, 19996) },</span>
+<span id="L271"><span class="lineNum">     271</span>                 :             :               { AOM_CDF7(3511, 6332, 11165, 15335, 19323, 23594) },</span>
+<span id="L272"><span class="lineNum">     272</span>                 :             :           },</span>
+<span id="L273"><span class="lineNum">     273</span>                 :             :           {</span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L281"><span class="lineNum">     281</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L282"><span class="lineNum">     282</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L285"><span class="lineNum">     285</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             :           },</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :           {</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L292"><span class="lineNum">     292</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L293"><span class="lineNum">     293</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L296"><span class="lineNum">     296</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L298"><span class="lineNum">     298</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L299"><span class="lineNum">     299</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L300"><span class="lineNum">     300</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L301"><span class="lineNum">     301</span>                 :             :               { AOM_CDF7(4681, 9362, 14043, 18725, 23406, 28087) },</span>
+<span id="L302"><span class="lineNum">     302</span>                 :             :           },</span>
+<span id="L303"><span class="lineNum">     303</span>                 :             :       },</span>
+<span id="L304"><span class="lineNum">     304</span>                 :             :       {</span>
+<span id="L305"><span class="lineNum">     305</span>                 :             :           {</span>
+<span id="L306"><span class="lineNum">     306</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L307"><span class="lineNum">     307</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L308"><span class="lineNum">     308</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L309"><span class="lineNum">     309</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L310"><span class="lineNum">     310</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L311"><span class="lineNum">     311</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L312"><span class="lineNum">     312</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L313"><span class="lineNum">     313</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L314"><span class="lineNum">     314</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L315"><span class="lineNum">     315</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L316"><span class="lineNum">     316</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L317"><span class="lineNum">     317</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L318"><span class="lineNum">     318</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L319"><span class="lineNum">     319</span>                 :             :           },</span>
+<span id="L320"><span class="lineNum">     320</span>                 :             :           {</span>
+<span id="L321"><span class="lineNum">     321</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L322"><span class="lineNum">     322</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L323"><span class="lineNum">     323</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L324"><span class="lineNum">     324</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L325"><span class="lineNum">     325</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L326"><span class="lineNum">     326</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L327"><span class="lineNum">     327</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L328"><span class="lineNum">     328</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L329"><span class="lineNum">     329</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L330"><span class="lineNum">     330</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L331"><span class="lineNum">     331</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L332"><span class="lineNum">     332</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L333"><span class="lineNum">     333</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L334"><span class="lineNum">     334</span>                 :             :           },</span>
+<span id="L335"><span class="lineNum">     335</span>                 :             :           {</span>
+<span id="L336"><span class="lineNum">     336</span>                 :             :               { AOM_CDF5(1127, 12814, 22772, 27483) },</span>
+<span id="L337"><span class="lineNum">     337</span>                 :             :               { AOM_CDF5(145, 6761, 11980, 26667) },</span>
+<span id="L338"><span class="lineNum">     338</span>                 :             :               { AOM_CDF5(362, 5887, 11678, 16725) },</span>
+<span id="L339"><span class="lineNum">     339</span>                 :             :               { AOM_CDF5(385, 15213, 18587, 30693) },</span>
+<span id="L340"><span class="lineNum">     340</span>                 :             :               { AOM_CDF5(25, 2914, 23134, 27903) },</span>
+<span id="L341"><span class="lineNum">     341</span>                 :             :               { AOM_CDF5(60, 4470, 11749, 23991) },</span>
+<span id="L342"><span class="lineNum">     342</span>                 :             :               { AOM_CDF5(37, 3332, 14511, 21448) },</span>
+<span id="L343"><span class="lineNum">     343</span>                 :             :               { AOM_CDF5(157, 6320, 13036, 17439) },</span>
+<span id="L344"><span class="lineNum">     344</span>                 :             :               { AOM_CDF5(119, 6719, 12906, 29396) },</span>
+<span id="L345"><span class="lineNum">     345</span>                 :             :               { AOM_CDF5(47, 5537, 12576, 21499) },</span>
+<span id="L346"><span class="lineNum">     346</span>                 :             :               { AOM_CDF5(269, 6076, 11258, 23115) },</span>
+<span id="L347"><span class="lineNum">     347</span>                 :             :               { AOM_CDF5(83, 5615, 12001, 17228) },</span>
+<span id="L348"><span class="lineNum">     348</span>                 :             :               { AOM_CDF5(1968, 5556, 12023, 18547) },</span>
+<span id="L349"><span class="lineNum">     349</span>                 :             :           },</span>
+<span id="L350"><span class="lineNum">     350</span>                 :             :           {</span>
+<span id="L351"><span class="lineNum">     351</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L352"><span class="lineNum">     352</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L353"><span class="lineNum">     353</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L354"><span class="lineNum">     354</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L355"><span class="lineNum">     355</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L356"><span class="lineNum">     356</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L357"><span class="lineNum">     357</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L358"><span class="lineNum">     358</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L359"><span class="lineNum">     359</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L360"><span class="lineNum">     360</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L361"><span class="lineNum">     361</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L362"><span class="lineNum">     362</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L363"><span class="lineNum">     363</span>                 :             :               { AOM_CDF5(6554, 13107, 19661, 26214) },</span>
+<span id="L364"><span class="lineNum">     364</span>                 :             :           },</span>
+<span id="L365"><span class="lineNum">     365</span>                 :             :       },</span>
+<span id="L366"><span class="lineNum">     366</span>                 :             :     };</span>
+<span id="L367"><span class="lineNum">     367</span>                 :             : </span>
+<span id="L368"><span class="lineNum">     368</span>                 :             : static const aom_cdf_prob</span>
+<span id="L369"><span class="lineNum">     369</span>                 :             :     default_inter_ext_tx_cdf[EXT_TX_SETS_INTER][EXT_TX_SIZES][CDF_SIZE(</span>
+<span id="L370"><span class="lineNum">     370</span>                 :             :         TX_TYPES)] = {</span>
+<span id="L371"><span class="lineNum">     371</span>                 :             :       {</span>
+<span id="L372"><span class="lineNum">     372</span>                 :             :           { 0 },</span>
+<span id="L373"><span class="lineNum">     373</span>                 :             :           { 0 },</span>
+<span id="L374"><span class="lineNum">     374</span>                 :             :           { 0 },</span>
+<span id="L375"><span class="lineNum">     375</span>                 :             :           { 0 },</span>
+<span id="L376"><span class="lineNum">     376</span>                 :             :       },</span>
+<span id="L377"><span class="lineNum">     377</span>                 :             :       {</span>
+<span id="L378"><span class="lineNum">     378</span>                 :             :           { AOM_CDF16(4458, 5560, 7695, 9709, 13330, 14789, 17537, 20266, 21504,</span>
+<span id="L379"><span class="lineNum">     379</span>                 :             :                       22848, 23934, 25474, 27727, 28915, 30631) },</span>
+<span id="L380"><span class="lineNum">     380</span>                 :             :           { AOM_CDF16(1645, 2573, 4778, 5711, 7807, 8622, 10522, 15357, 17674,</span>
+<span id="L381"><span class="lineNum">     381</span>                 :             :                       20408, 22517, 25010, 27116, 28856, 30749) },</span>
+<span id="L382"><span class="lineNum">     382</span>                 :             :           { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,</span>
+<span id="L383"><span class="lineNum">     383</span>                 :             :                       20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L384"><span class="lineNum">     384</span>                 :             :           { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,</span>
+<span id="L385"><span class="lineNum">     385</span>                 :             :                       20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L386"><span class="lineNum">     386</span>                 :             :       },</span>
+<span id="L387"><span class="lineNum">     387</span>                 :             :       {</span>
+<span id="L388"><span class="lineNum">     388</span>                 :             :           { AOM_CDF12(2731, 5461, 8192, 10923, 13653, 16384, 19115, 21845,</span>
+<span id="L389"><span class="lineNum">     389</span>                 :             :                       24576, 27307, 30037) },</span>
+<span id="L390"><span class="lineNum">     390</span>                 :             :           { AOM_CDF12(2731, 5461, 8192, 10923, 13653, 16384, 19115, 21845,</span>
+<span id="L391"><span class="lineNum">     391</span>                 :             :                       24576, 27307, 30037) },</span>
+<span id="L392"><span class="lineNum">     392</span>                 :             :           { AOM_CDF12(770, 2421, 5225, 12907, 15819, 18927, 21561, 24089, 26595,</span>
+<span id="L393"><span class="lineNum">     393</span>                 :             :                       28526, 30529) },</span>
+<span id="L394"><span class="lineNum">     394</span>                 :             :           { AOM_CDF12(2731, 5461, 8192, 10923, 13653, 16384, 19115, 21845,</span>
+<span id="L395"><span class="lineNum">     395</span>                 :             :                       24576, 27307, 30037) },</span>
+<span id="L396"><span class="lineNum">     396</span>                 :             :       },</span>
+<span id="L397"><span class="lineNum">     397</span>                 :             :       {</span>
+<span id="L398"><span class="lineNum">     398</span>                 :             :           { AOM_CDF2(16384) },</span>
+<span id="L399"><span class="lineNum">     399</span>                 :             :           { AOM_CDF2(4167) },</span>
+<span id="L400"><span class="lineNum">     400</span>                 :             :           { AOM_CDF2(1998) },</span>
+<span id="L401"><span class="lineNum">     401</span>                 :             :           { AOM_CDF2(748) },</span>
+<span id="L402"><span class="lineNum">     402</span>                 :             :       },</span>
+<span id="L403"><span class="lineNum">     403</span>                 :             :     };</span>
+<span id="L404"><span class="lineNum">     404</span>                 :             : </span>
+<span id="L405"><span class="lineNum">     405</span>                 :             : static const aom_cdf_prob default_cfl_sign_cdf[CDF_SIZE(CFL_JOINT_SIGNS)] = {</span>
+<span id="L406"><span class="lineNum">     406</span>                 :             :   AOM_CDF8(1418, 2123, 13340, 18405, 26972, 28343, 32294)</span>
+<span id="L407"><span class="lineNum">     407</span>                 :             : };</span>
+<span id="L408"><span class="lineNum">     408</span>                 :             : </span>
+<span id="L409"><span class="lineNum">     409</span>                 :             : static const aom_cdf_prob</span>
+<span id="L410"><span class="lineNum">     410</span>                 :             :     default_cfl_alpha_cdf[CFL_ALPHA_CONTEXTS][CDF_SIZE(CFL_ALPHABET_SIZE)] = {</span>
+<span id="L411"><span class="lineNum">     411</span>                 :             :       { AOM_CDF16(7637, 20719, 31401, 32481, 32657, 32688, 32692, 32696, 32700,</span>
+<span id="L412"><span class="lineNum">     412</span>                 :             :                   32704, 32708, 32712, 32716, 32720, 32724) },</span>
+<span id="L413"><span class="lineNum">     413</span>                 :             :       { AOM_CDF16(14365, 23603, 28135, 31168, 32167, 32395, 32487, 32573, 32620,</span>
+<span id="L414"><span class="lineNum">     414</span>                 :             :                   32647, 32668, 32672, 32676, 32680, 32684) },</span>
+<span id="L415"><span class="lineNum">     415</span>                 :             :       { AOM_CDF16(11532, 22380, 28445, 31360, 32349, 32523, 32584, 32649, 32673,</span>
+<span id="L416"><span class="lineNum">     416</span>                 :             :                   32677, 32681, 32685, 32689, 32693, 32697) },</span>
+<span id="L417"><span class="lineNum">     417</span>                 :             :       { AOM_CDF16(26990, 31402, 32282, 32571, 32692, 32696, 32700, 32704, 32708,</span>
+<span id="L418"><span class="lineNum">     418</span>                 :             :                   32712, 32716, 32720, 32724, 32728, 32732) },</span>
+<span id="L419"><span class="lineNum">     419</span>                 :             :       { AOM_CDF16(17248, 26058, 28904, 30608, 31305, 31877, 32126, 32321, 32394,</span>
+<span id="L420"><span class="lineNum">     420</span>                 :             :                   32464, 32516, 32560, 32576, 32593, 32622) },</span>
+<span id="L421"><span class="lineNum">     421</span>                 :             :       { AOM_CDF16(14738, 21678, 25779, 27901, 29024, 30302, 30980, 31843, 32144,</span>
+<span id="L422"><span class="lineNum">     422</span>                 :             :                   32413, 32520, 32594, 32622, 32656, 32660) }</span>
+<span id="L423"><span class="lineNum">     423</span>                 :             :     };</span>
+<span id="L424"><span class="lineNum">     424</span>                 :             : </span>
+<span id="L425"><span class="lineNum">     425</span>                 :             : static const aom_cdf_prob</span>
+<span id="L426"><span class="lineNum">     426</span>                 :             :     default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS][CDF_SIZE(</span>
+<span id="L427"><span class="lineNum">     427</span>                 :             :         SWITCHABLE_FILTERS)] = {</span>
+<span id="L428"><span class="lineNum">     428</span>                 :             :       { AOM_CDF3(31935, 32720) }, { AOM_CDF3(5568, 32719) },</span>
+<span id="L429"><span class="lineNum">     429</span>                 :             :       { AOM_CDF3(422, 2938) },    { AOM_CDF3(28244, 32608) },</span>
+<span id="L430"><span class="lineNum">     430</span>                 :             :       { AOM_CDF3(31206, 31953) }, { AOM_CDF3(4862, 32121) },</span>
+<span id="L431"><span class="lineNum">     431</span>                 :             :       { AOM_CDF3(770, 1152) },    { AOM_CDF3(20889, 25637) },</span>
+<span id="L432"><span class="lineNum">     432</span>                 :             :       { AOM_CDF3(31910, 32724) }, { AOM_CDF3(4120, 32712) },</span>
+<span id="L433"><span class="lineNum">     433</span>                 :             :       { AOM_CDF3(305, 2247) },    { AOM_CDF3(27403, 32636) },</span>
+<span id="L434"><span class="lineNum">     434</span>                 :             :       { AOM_CDF3(31022, 32009) }, { AOM_CDF3(2963, 32093) },</span>
+<span id="L435"><span class="lineNum">     435</span>                 :             :       { AOM_CDF3(601, 943) },     { AOM_CDF3(14969, 21398) }</span>
+<span id="L436"><span class="lineNum">     436</span>                 :             :     };</span>
+<span id="L437"><span class="lineNum">     437</span>                 :             : </span>
+<span id="L438"><span class="lineNum">     438</span>                 :             : static const aom_cdf_prob default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(</span>
+<span id="L439"><span class="lineNum">     439</span>                 :             :     2)] = { { AOM_CDF2(24035) }, { AOM_CDF2(16630) }, { AOM_CDF2(15339) },</span>
+<span id="L440"><span class="lineNum">     440</span>                 :             :             { AOM_CDF2(8386) },  { AOM_CDF2(12222) }, { AOM_CDF2(4676) } };</span>
+<span id="L441"><span class="lineNum">     441</span>                 :             : </span>
+<span id="L442"><span class="lineNum">     442</span>                 :             : static const aom_cdf_prob default_zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(</span>
+<span id="L443"><span class="lineNum">     443</span>                 :             :     2)] = { { AOM_CDF2(2175) }, { AOM_CDF2(1054) } };</span>
+<span id="L444"><span class="lineNum">     444</span>                 :             : </span>
+<span id="L445"><span class="lineNum">     445</span>                 :             : static const aom_cdf_prob default_refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(</span>
+<span id="L446"><span class="lineNum">     446</span>                 :             :     2)] = { { AOM_CDF2(23974) }, { AOM_CDF2(24188) }, { AOM_CDF2(17848) },</span>
+<span id="L447"><span class="lineNum">     447</span>                 :             :             { AOM_CDF2(28622) }, { AOM_CDF2(24312) }, { AOM_CDF2(19923) } };</span>
+<span id="L448"><span class="lineNum">     448</span>                 :             : </span>
+<span id="L449"><span class="lineNum">     449</span>                 :             : static const aom_cdf_prob default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)] = {</span>
+<span id="L450"><span class="lineNum">     450</span>                 :             :   { AOM_CDF2(13104) }, { AOM_CDF2(24560) }, { AOM_CDF2(18945) }</span>
+<span id="L451"><span class="lineNum">     451</span>                 :             : };</span>
+<span id="L452"><span class="lineNum">     452</span>                 :             : </span>
+<span id="L453"><span class="lineNum">     453</span>                 :             : static const aom_cdf_prob</span>
+<span id="L454"><span class="lineNum">     454</span>                 :             :     default_inter_compound_mode_cdf[INTER_MODE_CONTEXTS][CDF_SIZE(</span>
+<span id="L455"><span class="lineNum">     455</span>                 :             :         INTER_COMPOUND_MODES)] = {</span>
+<span id="L456"><span class="lineNum">     456</span>                 :             :       { AOM_CDF8(7760, 13823, 15808, 17641, 19156, 20666, 26891) },</span>
+<span id="L457"><span class="lineNum">     457</span>                 :             :       { AOM_CDF8(10730, 19452, 21145, 22749, 24039, 25131, 28724) },</span>
+<span id="L458"><span class="lineNum">     458</span>                 :             :       { AOM_CDF8(10664, 20221, 21588, 22906, 24295, 25387, 28436) },</span>
+<span id="L459"><span class="lineNum">     459</span>                 :             :       { AOM_CDF8(13298, 16984, 20471, 24182, 25067, 25736, 26422) },</span>
+<span id="L460"><span class="lineNum">     460</span>                 :             :       { AOM_CDF8(18904, 23325, 25242, 27432, 27898, 28258, 30758) },</span>
+<span id="L461"><span class="lineNum">     461</span>                 :             :       { AOM_CDF8(10725, 17454, 20124, 22820, 24195, 25168, 26046) },</span>
+<span id="L462"><span class="lineNum">     462</span>                 :             :       { AOM_CDF8(17125, 24273, 25814, 27492, 28214, 28704, 30592) },</span>
+<span id="L463"><span class="lineNum">     463</span>                 :             :       { AOM_CDF8(13046, 23214, 24505, 25942, 27435, 28442, 29330) }</span>
+<span id="L464"><span class="lineNum">     464</span>                 :             :     };</span>
+<span id="L465"><span class="lineNum">     465</span>                 :             : </span>
+<span id="L466"><span class="lineNum">     466</span>                 :             : static const aom_cdf_prob default_interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(</span>
+<span id="L467"><span class="lineNum">     467</span>                 :             :     2)] = { { AOM_CDF2(16384) },</span>
+<span id="L468"><span class="lineNum">     468</span>                 :             :             { AOM_CDF2(26887) },</span>
+<span id="L469"><span class="lineNum">     469</span>                 :             :             { AOM_CDF2(27597) },</span>
+<span id="L470"><span class="lineNum">     470</span>                 :             :             { AOM_CDF2(30237) } };</span>
+<span id="L471"><span class="lineNum">     471</span>                 :             : </span>
+<span id="L472"><span class="lineNum">     472</span>                 :             : static const aom_cdf_prob</span>
+<span id="L473"><span class="lineNum">     473</span>                 :             :     default_interintra_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(</span>
+<span id="L474"><span class="lineNum">     474</span>                 :             :         INTERINTRA_MODES)] = { { AOM_CDF4(8192, 16384, 24576) },</span>
+<span id="L475"><span class="lineNum">     475</span>                 :             :                                { AOM_CDF4(1875, 11082, 27332) },</span>
+<span id="L476"><span class="lineNum">     476</span>                 :             :                                { AOM_CDF4(2473, 9996, 26388) },</span>
+<span id="L477"><span class="lineNum">     477</span>                 :             :                                { AOM_CDF4(4238, 11537, 25926) } };</span>
+<span id="L478"><span class="lineNum">     478</span>                 :             : </span>
+<span id="L479"><span class="lineNum">     479</span>                 :             : static const aom_cdf_prob</span>
+<span id="L480"><span class="lineNum">     480</span>                 :             :     default_wedge_interintra_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {</span>
+<span id="L481"><span class="lineNum">     481</span>                 :             :       { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L482"><span class="lineNum">     482</span>                 :             :       { AOM_CDF2(20036) }, { AOM_CDF2(24957) }, { AOM_CDF2(26704) },</span>
+<span id="L483"><span class="lineNum">     483</span>                 :             :       { AOM_CDF2(27530) }, { AOM_CDF2(29564) }, { AOM_CDF2(29444) },</span>
+<span id="L484"><span class="lineNum">     484</span>                 :             :       { AOM_CDF2(26872) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L485"><span class="lineNum">     485</span>                 :             :       { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L486"><span class="lineNum">     486</span>                 :             :       { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L487"><span class="lineNum">     487</span>                 :             :       { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L488"><span class="lineNum">     488</span>                 :             :       { AOM_CDF2(16384) }</span>
+<span id="L489"><span class="lineNum">     489</span>                 :             :     };</span>
+<span id="L490"><span class="lineNum">     490</span>                 :             : </span>
+<span id="L491"><span class="lineNum">     491</span>                 :             : static const aom_cdf_prob default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(</span>
+<span id="L492"><span class="lineNum">     492</span>                 :             :     MASKED_COMPOUND_TYPES)] = {</span>
+<span id="L493"><span class="lineNum">     493</span>                 :             :   { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L494"><span class="lineNum">     494</span>                 :             :   { AOM_CDF2(23431) }, { AOM_CDF2(13171) }, { AOM_CDF2(11470) },</span>
+<span id="L495"><span class="lineNum">     495</span>                 :             :   { AOM_CDF2(9770) },  { AOM_CDF2(9100) },  { AOM_CDF2(8233) },</span>
+<span id="L496"><span class="lineNum">     496</span>                 :             :   { AOM_CDF2(6172) },  { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L497"><span class="lineNum">     497</span>                 :             :   { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L498"><span class="lineNum">     498</span>                 :             :   { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L499"><span class="lineNum">     499</span>                 :             :   { AOM_CDF2(11820) }, { AOM_CDF2(7701) },  { AOM_CDF2(16384) },</span>
+<span id="L500"><span class="lineNum">     500</span>                 :             :   { AOM_CDF2(16384) }</span>
+<span id="L501"><span class="lineNum">     501</span>                 :             : };</span>
+<span id="L502"><span class="lineNum">     502</span>                 :             : </span>
+<span id="L503"><span class="lineNum">     503</span>                 :             : static const aom_cdf_prob default_wedge_idx_cdf[BLOCK_SIZES_ALL][CDF_SIZE(</span>
+<span id="L504"><span class="lineNum">     504</span>                 :             :     16)] = { { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L505"><span class="lineNum">     505</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L506"><span class="lineNum">     506</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L507"><span class="lineNum">     507</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L508"><span class="lineNum">     508</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L509"><span class="lineNum">     509</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L510"><span class="lineNum">     510</span>                 :             :              { AOM_CDF16(2438, 4440, 6599, 8663, 11005, 12874, 15751, 18094,</span>
+<span id="L511"><span class="lineNum">     511</span>                 :             :                          20359, 22362, 24127, 25702, 27752, 29450, 31171) },</span>
+<span id="L512"><span class="lineNum">     512</span>                 :             :              { AOM_CDF16(806, 3266, 6005, 6738, 7218, 7367, 7771, 14588, 16323,</span>
+<span id="L513"><span class="lineNum">     513</span>                 :             :                          17367, 18452, 19422, 22839, 26127, 29629) },</span>
+<span id="L514"><span class="lineNum">     514</span>                 :             :              { AOM_CDF16(2779, 3738, 4683, 7213, 7775, 8017, 8655, 14357, 17939,</span>
+<span id="L515"><span class="lineNum">     515</span>                 :             :                          21332, 24520, 27470, 29456, 30529, 31656) },</span>
+<span id="L516"><span class="lineNum">     516</span>                 :             :              { AOM_CDF16(1684, 3625, 5675, 7108, 9302, 11274, 14429, 17144,</span>
+<span id="L517"><span class="lineNum">     517</span>                 :             :                          19163, 20961, 22884, 24471, 26719, 28714, 30877) },</span>
+<span id="L518"><span class="lineNum">     518</span>                 :             :              { AOM_CDF16(1142, 3491, 6277, 7314, 8089, 8355, 9023, 13624, 15369,</span>
+<span id="L519"><span class="lineNum">     519</span>                 :             :                          16730, 18114, 19313, 22521, 26012, 29550) },</span>
+<span id="L520"><span class="lineNum">     520</span>                 :             :              { AOM_CDF16(2742, 4195, 5727, 8035, 8980, 9336, 10146, 14124,</span>
+<span id="L521"><span class="lineNum">     521</span>                 :             :                          17270, 20533, 23434, 25972, 27944, 29570, 31416) },</span>
+<span id="L522"><span class="lineNum">     522</span>                 :             :              { AOM_CDF16(1727, 3948, 6101, 7796, 9841, 12344, 15766, 18944,</span>
+<span id="L523"><span class="lineNum">     523</span>                 :             :                          20638, 22038, 23963, 25311, 26988, 28766, 31012) },</span>
+<span id="L524"><span class="lineNum">     524</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L525"><span class="lineNum">     525</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L526"><span class="lineNum">     526</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L527"><span class="lineNum">     527</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L528"><span class="lineNum">     528</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L529"><span class="lineNum">     529</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L530"><span class="lineNum">     530</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L531"><span class="lineNum">     531</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L532"><span class="lineNum">     532</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L533"><span class="lineNum">     533</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L534"><span class="lineNum">     534</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L535"><span class="lineNum">     535</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L536"><span class="lineNum">     536</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L537"><span class="lineNum">     537</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L538"><span class="lineNum">     538</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L539"><span class="lineNum">     539</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L540"><span class="lineNum">     540</span>                 :             :              { AOM_CDF16(154, 987, 1925, 2051, 2088, 2111, 2151, 23033, 23703,</span>
+<span id="L541"><span class="lineNum">     541</span>                 :             :                          24284, 24985, 25684, 27259, 28883, 30911) },</span>
+<span id="L542"><span class="lineNum">     542</span>                 :             :              { AOM_CDF16(1135, 1322, 1493, 2635, 2696, 2737, 2770, 21016, 22935,</span>
+<span id="L543"><span class="lineNum">     543</span>                 :             :                          25057, 27251, 29173, 30089, 30960, 31933) },</span>
+<span id="L544"><span class="lineNum">     544</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L545"><span class="lineNum">     545</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) },</span>
+<span id="L546"><span class="lineNum">     546</span>                 :             :              { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384,</span>
+<span id="L547"><span class="lineNum">     547</span>                 :             :                          18432, 20480, 22528, 24576, 26624, 28672, 30720) } };</span>
+<span id="L548"><span class="lineNum">     548</span>                 :             : </span>
+<span id="L549"><span class="lineNum">     549</span>                 :             : static const aom_cdf_prob default_motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(</span>
+<span id="L550"><span class="lineNum">     550</span>                 :             :     MOTION_MODES)] = { { AOM_CDF3(10923, 21845) }, { AOM_CDF3(10923, 21845) },</span>
+<span id="L551"><span class="lineNum">     551</span>                 :             :                        { AOM_CDF3(10923, 21845) }, { AOM_CDF3(7651, 24760) },</span>
+<span id="L552"><span class="lineNum">     552</span>                 :             :                        { AOM_CDF3(4738, 24765) },  { AOM_CDF3(5391, 25528) },</span>
+<span id="L553"><span class="lineNum">     553</span>                 :             :                        { AOM_CDF3(19419, 26810) }, { AOM_CDF3(5123, 23606) },</span>
+<span id="L554"><span class="lineNum">     554</span>                 :             :                        { AOM_CDF3(11606, 24308) }, { AOM_CDF3(26260, 29116) },</span>
+<span id="L555"><span class="lineNum">     555</span>                 :             :                        { AOM_CDF3(20360, 28062) }, { AOM_CDF3(21679, 26830) },</span>
+<span id="L556"><span class="lineNum">     556</span>                 :             :                        { AOM_CDF3(29516, 30701) }, { AOM_CDF3(28898, 30397) },</span>
+<span id="L557"><span class="lineNum">     557</span>                 :             :                        { AOM_CDF3(30878, 31335) }, { AOM_CDF3(32507, 32558) },</span>
+<span id="L558"><span class="lineNum">     558</span>                 :             :                        { AOM_CDF3(10923, 21845) }, { AOM_CDF3(10923, 21845) },</span>
+<span id="L559"><span class="lineNum">     559</span>                 :             :                        { AOM_CDF3(28799, 31390) }, { AOM_CDF3(26431, 30774) },</span>
+<span id="L560"><span class="lineNum">     560</span>                 :             :                        { AOM_CDF3(28973, 31594) }, { AOM_CDF3(29742, 31203) } };</span>
+<span id="L561"><span class="lineNum">     561</span>                 :             : </span>
+<span id="L562"><span class="lineNum">     562</span>                 :             : static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {</span>
+<span id="L563"><span class="lineNum">     563</span>                 :             :   { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L564"><span class="lineNum">     564</span>                 :             :   { AOM_CDF2(10437) }, { AOM_CDF2(9371) },  { AOM_CDF2(9301) },</span>
+<span id="L565"><span class="lineNum">     565</span>                 :             :   { AOM_CDF2(17432) }, { AOM_CDF2(14423) }, { AOM_CDF2(15142) },</span>
+<span id="L566"><span class="lineNum">     566</span>                 :             :   { AOM_CDF2(25817) }, { AOM_CDF2(22823) }, { AOM_CDF2(22083) },</span>
+<span id="L567"><span class="lineNum">     567</span>                 :             :   { AOM_CDF2(30128) }, { AOM_CDF2(31014) }, { AOM_CDF2(31560) },</span>
+<span id="L568"><span class="lineNum">     568</span>                 :             :   { AOM_CDF2(32638) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L569"><span class="lineNum">     569</span>                 :             :   { AOM_CDF2(23664) }, { AOM_CDF2(20901) }, { AOM_CDF2(24008) },</span>
+<span id="L570"><span class="lineNum">     570</span>                 :             :   { AOM_CDF2(26879) }</span>
+<span id="L571"><span class="lineNum">     571</span>                 :             : };</span>
+<span id="L572"><span class="lineNum">     572</span>                 :             : </span>
+<span id="L573"><span class="lineNum">     573</span>                 :             : static const aom_cdf_prob default_intra_inter_cdf[INTRA_INTER_CONTEXTS]</span>
+<span id="L574"><span class="lineNum">     574</span>                 :             :                                                  [CDF_SIZE(2)] = {</span>
+<span id="L575"><span class="lineNum">     575</span>                 :             :                                                    { AOM_CDF2(806) },</span>
+<span id="L576"><span class="lineNum">     576</span>                 :             :                                                    { AOM_CDF2(16662) },</span>
+<span id="L577"><span class="lineNum">     577</span>                 :             :                                                    { AOM_CDF2(20186) },</span>
+<span id="L578"><span class="lineNum">     578</span>                 :             :                                                    { AOM_CDF2(26538) }</span>
+<span id="L579"><span class="lineNum">     579</span>                 :             :                                                  };</span>
+<span id="L580"><span class="lineNum">     580</span>                 :             : </span>
+<span id="L581"><span class="lineNum">     581</span>                 :             : static const aom_cdf_prob default_comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(</span>
+<span id="L582"><span class="lineNum">     582</span>                 :             :     2)] = { { AOM_CDF2(26828) },</span>
+<span id="L583"><span class="lineNum">     583</span>                 :             :             { AOM_CDF2(24035) },</span>
+<span id="L584"><span class="lineNum">     584</span>                 :             :             { AOM_CDF2(12031) },</span>
+<span id="L585"><span class="lineNum">     585</span>                 :             :             { AOM_CDF2(10640) },</span>
+<span id="L586"><span class="lineNum">     586</span>                 :             :             { AOM_CDF2(2901) } };</span>
+<span id="L587"><span class="lineNum">     587</span>                 :             : </span>
+<span id="L588"><span class="lineNum">     588</span>                 :             : static const aom_cdf_prob default_comp_ref_type_cdf[COMP_REF_TYPE_CONTEXTS]</span>
+<span id="L589"><span class="lineNum">     589</span>                 :             :                                                    [CDF_SIZE(2)] = {</span>
+<span id="L590"><span class="lineNum">     590</span>                 :             :                                                      { AOM_CDF2(1198) },</span>
+<span id="L591"><span class="lineNum">     591</span>                 :             :                                                      { AOM_CDF2(2070) },</span>
+<span id="L592"><span class="lineNum">     592</span>                 :             :                                                      { AOM_CDF2(9166) },</span>
+<span id="L593"><span class="lineNum">     593</span>                 :             :                                                      { AOM_CDF2(7499) },</span>
+<span id="L594"><span class="lineNum">     594</span>                 :             :                                                      { AOM_CDF2(22475) }</span>
+<span id="L595"><span class="lineNum">     595</span>                 :             :                                                    };</span>
+<span id="L596"><span class="lineNum">     596</span>                 :             : </span>
+<span id="L597"><span class="lineNum">     597</span>                 :             : static const aom_cdf_prob</span>
+<span id="L598"><span class="lineNum">     598</span>                 :             :     default_uni_comp_ref_cdf[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS -</span>
+<span id="L599"><span class="lineNum">     599</span>                 :             :                                                     1][CDF_SIZE(2)] = {</span>
+<span id="L600"><span class="lineNum">     600</span>                 :             :       { { AOM_CDF2(5284) }, { AOM_CDF2(3865) }, { AOM_CDF2(3128) } },</span>
+<span id="L601"><span class="lineNum">     601</span>                 :             :       { { AOM_CDF2(23152) }, { AOM_CDF2(14173) }, { AOM_CDF2(15270) } },</span>
+<span id="L602"><span class="lineNum">     602</span>                 :             :       { { AOM_CDF2(31774) }, { AOM_CDF2(25120) }, { AOM_CDF2(26710) } }</span>
+<span id="L603"><span class="lineNum">     603</span>                 :             :     };</span>
+<span id="L604"><span class="lineNum">     604</span>                 :             : </span>
+<span id="L605"><span class="lineNum">     605</span>                 :             : static const aom_cdf_prob default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1]</span>
+<span id="L606"><span class="lineNum">     606</span>                 :             :                                                 [CDF_SIZE(2)] = {</span>
+<span id="L607"><span class="lineNum">     607</span>                 :             :                                                   { { AOM_CDF2(4897) },</span>
+<span id="L608"><span class="lineNum">     608</span>                 :             :                                                     { AOM_CDF2(1555) },</span>
+<span id="L609"><span class="lineNum">     609</span>                 :             :                                                     { AOM_CDF2(4236) },</span>
+<span id="L610"><span class="lineNum">     610</span>                 :             :                                                     { AOM_CDF2(8650) },</span>
+<span id="L611"><span class="lineNum">     611</span>                 :             :                                                     { AOM_CDF2(904) },</span>
+<span id="L612"><span class="lineNum">     612</span>                 :             :                                                     { AOM_CDF2(1444) } },</span>
+<span id="L613"><span class="lineNum">     613</span>                 :             :                                                   { { AOM_CDF2(16973) },</span>
+<span id="L614"><span class="lineNum">     614</span>                 :             :                                                     { AOM_CDF2(16751) },</span>
+<span id="L615"><span class="lineNum">     615</span>                 :             :                                                     { AOM_CDF2(19647) },</span>
+<span id="L616"><span class="lineNum">     616</span>                 :             :                                                     { AOM_CDF2(24773) },</span>
+<span id="L617"><span class="lineNum">     617</span>                 :             :                                                     { AOM_CDF2(11014) },</span>
+<span id="L618"><span class="lineNum">     618</span>                 :             :                                                     { AOM_CDF2(15087) } },</span>
+<span id="L619"><span class="lineNum">     619</span>                 :             :                                                   { { AOM_CDF2(29744) },</span>
+<span id="L620"><span class="lineNum">     620</span>                 :             :                                                     { AOM_CDF2(30279) },</span>
+<span id="L621"><span class="lineNum">     621</span>                 :             :                                                     { AOM_CDF2(31194) },</span>
+<span id="L622"><span class="lineNum">     622</span>                 :             :                                                     { AOM_CDF2(31895) },</span>
+<span id="L623"><span class="lineNum">     623</span>                 :             :                                                     { AOM_CDF2(26875) },</span>
+<span id="L624"><span class="lineNum">     624</span>                 :             :                                                     { AOM_CDF2(30304) } }</span>
+<span id="L625"><span class="lineNum">     625</span>                 :             :                                                 };</span>
+<span id="L626"><span class="lineNum">     626</span>                 :             : </span>
+<span id="L627"><span class="lineNum">     627</span>                 :             : static const aom_cdf_prob</span>
+<span id="L628"><span class="lineNum">     628</span>                 :             :     default_comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)] = {</span>
+<span id="L629"><span class="lineNum">     629</span>                 :             :       { { AOM_CDF2(4946) }, { AOM_CDF2(9468) }, { AOM_CDF2(1503) } },</span>
+<span id="L630"><span class="lineNum">     630</span>                 :             :       { { AOM_CDF2(19891) }, { AOM_CDF2(22441) }, { AOM_CDF2(15160) } },</span>
+<span id="L631"><span class="lineNum">     631</span>                 :             :       { { AOM_CDF2(30731) }, { AOM_CDF2(31059) }, { AOM_CDF2(27544) } }</span>
+<span id="L632"><span class="lineNum">     632</span>                 :             :     };</span>
+<span id="L633"><span class="lineNum">     633</span>                 :             : </span>
+<span id="L634"><span class="lineNum">     634</span>                 :             : static const aom_cdf_prob</span>
+<span id="L635"><span class="lineNum">     635</span>                 :             :     default_comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)] = {</span>
+<span id="L636"><span class="lineNum">     636</span>                 :             :       { { AOM_CDF2(2235) }, { AOM_CDF2(1423) } },</span>
+<span id="L637"><span class="lineNum">     637</span>                 :             :       { { AOM_CDF2(17182) }, { AOM_CDF2(15175) } },</span>
+<span id="L638"><span class="lineNum">     638</span>                 :             :       { { AOM_CDF2(30606) }, { AOM_CDF2(30489) } }</span>
+<span id="L639"><span class="lineNum">     639</span>                 :             :     };</span>
+<span id="L640"><span class="lineNum">     640</span>                 :             : </span>
+<span id="L641"><span class="lineNum">     641</span>                 :             : static const aom_cdf_prob</span>
+<span id="L642"><span class="lineNum">     642</span>                 :             :     default_palette_y_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {</span>
+<span id="L643"><span class="lineNum">     643</span>                 :             :       { AOM_CDF7(7952, 13000, 18149, 21478, 25527, 29241) },</span>
+<span id="L644"><span class="lineNum">     644</span>                 :             :       { AOM_CDF7(7139, 11421, 16195, 19544, 23666, 28073) },</span>
+<span id="L645"><span class="lineNum">     645</span>                 :             :       { AOM_CDF7(7788, 12741, 17325, 20500, 24315, 28530) },</span>
+<span id="L646"><span class="lineNum">     646</span>                 :             :       { AOM_CDF7(8271, 14064, 18246, 21564, 25071, 28533) },</span>
+<span id="L647"><span class="lineNum">     647</span>                 :             :       { AOM_CDF7(12725, 19180, 21863, 24839, 27535, 30120) },</span>
+<span id="L648"><span class="lineNum">     648</span>                 :             :       { AOM_CDF7(9711, 14888, 16923, 21052, 25661, 27875) },</span>
+<span id="L649"><span class="lineNum">     649</span>                 :             :       { AOM_CDF7(14940, 20797, 21678, 24186, 27033, 28999) }</span>
+<span id="L650"><span class="lineNum">     650</span>                 :             :     };</span>
+<span id="L651"><span class="lineNum">     651</span>                 :             : </span>
+<span id="L652"><span class="lineNum">     652</span>                 :             : static const aom_cdf_prob</span>
+<span id="L653"><span class="lineNum">     653</span>                 :             :     default_palette_uv_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {</span>
+<span id="L654"><span class="lineNum">     654</span>                 :             :       { AOM_CDF7(8713, 19979, 27128, 29609, 31331, 32272) },</span>
+<span id="L655"><span class="lineNum">     655</span>                 :             :       { AOM_CDF7(5839, 15573, 23581, 26947, 29848, 31700) },</span>
+<span id="L656"><span class="lineNum">     656</span>                 :             :       { AOM_CDF7(4426, 11260, 17999, 21483, 25863, 29430) },</span>
+<span id="L657"><span class="lineNum">     657</span>                 :             :       { AOM_CDF7(3228, 9464, 14993, 18089, 22523, 27420) },</span>
+<span id="L658"><span class="lineNum">     658</span>                 :             :       { AOM_CDF7(3768, 8886, 13091, 17852, 22495, 27207) },</span>
+<span id="L659"><span class="lineNum">     659</span>                 :             :       { AOM_CDF7(2464, 8451, 12861, 21632, 25525, 28555) },</span>
+<span id="L660"><span class="lineNum">     660</span>                 :             :       { AOM_CDF7(1269, 5435, 10433, 18963, 21700, 25865) }</span>
+<span id="L661"><span class="lineNum">     661</span>                 :             :     };</span>
+<span id="L662"><span class="lineNum">     662</span>                 :             : </span>
+<span id="L663"><span class="lineNum">     663</span>                 :             : static const aom_cdf_prob default_palette_y_mode_cdf</span>
+<span id="L664"><span class="lineNum">     664</span>                 :             :     [PALATTE_BSIZE_CTXS][PALETTE_Y_MODE_CONTEXTS][CDF_SIZE(2)] = {</span>
+<span id="L665"><span class="lineNum">     665</span>                 :             :       { { AOM_CDF2(31676) }, { AOM_CDF2(3419) }, { AOM_CDF2(1261) } },</span>
+<span id="L666"><span class="lineNum">     666</span>                 :             :       { { AOM_CDF2(31912) }, { AOM_CDF2(2859) }, { AOM_CDF2(980) } },</span>
+<span id="L667"><span class="lineNum">     667</span>                 :             :       { { AOM_CDF2(31823) }, { AOM_CDF2(3400) }, { AOM_CDF2(781) } },</span>
+<span id="L668"><span class="lineNum">     668</span>                 :             :       { { AOM_CDF2(32030) }, { AOM_CDF2(3561) }, { AOM_CDF2(904) } },</span>
+<span id="L669"><span class="lineNum">     669</span>                 :             :       { { AOM_CDF2(32309) }, { AOM_CDF2(7337) }, { AOM_CDF2(1462) } },</span>
+<span id="L670"><span class="lineNum">     670</span>                 :             :       { { AOM_CDF2(32265) }, { AOM_CDF2(4015) }, { AOM_CDF2(1521) } },</span>
+<span id="L671"><span class="lineNum">     671</span>                 :             :       { { AOM_CDF2(32450) }, { AOM_CDF2(7946) }, { AOM_CDF2(129) } }</span>
+<span id="L672"><span class="lineNum">     672</span>                 :             :     };</span>
+<span id="L673"><span class="lineNum">     673</span>                 :             : </span>
+<span id="L674"><span class="lineNum">     674</span>                 :             : static const aom_cdf_prob</span>
+<span id="L675"><span class="lineNum">     675</span>                 :             :     default_palette_uv_mode_cdf[PALETTE_UV_MODE_CONTEXTS][CDF_SIZE(2)] = {</span>
+<span id="L676"><span class="lineNum">     676</span>                 :             :       { AOM_CDF2(32461) }, { AOM_CDF2(21488) }</span>
+<span id="L677"><span class="lineNum">     677</span>                 :             :     };</span>
+<span id="L678"><span class="lineNum">     678</span>                 :             : </span>
+<span id="L679"><span class="lineNum">     679</span>                 :             : static const aom_cdf_prob default_palette_y_color_index_cdf</span>
+<span id="L680"><span class="lineNum">     680</span>                 :             :     [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] = {</span>
+<span id="L681"><span class="lineNum">     681</span>                 :             :       {</span>
+<span id="L682"><span class="lineNum">     682</span>                 :             :           { AOM_CDF2(28710) },</span>
+<span id="L683"><span class="lineNum">     683</span>                 :             :           { AOM_CDF2(16384) },</span>
+<span id="L684"><span class="lineNum">     684</span>                 :             :           { AOM_CDF2(10553) },</span>
+<span id="L685"><span class="lineNum">     685</span>                 :             :           { AOM_CDF2(27036) },</span>
+<span id="L686"><span class="lineNum">     686</span>                 :             :           { AOM_CDF2(31603) },</span>
+<span id="L687"><span class="lineNum">     687</span>                 :             :       },</span>
+<span id="L688"><span class="lineNum">     688</span>                 :             :       {</span>
+<span id="L689"><span class="lineNum">     689</span>                 :             :           { AOM_CDF3(27877, 30490) },</span>
+<span id="L690"><span class="lineNum">     690</span>                 :             :           { AOM_CDF3(11532, 25697) },</span>
+<span id="L691"><span class="lineNum">     691</span>                 :             :           { AOM_CDF3(6544, 30234) },</span>
+<span id="L692"><span class="lineNum">     692</span>                 :             :           { AOM_CDF3(23018, 28072) },</span>
+<span id="L693"><span class="lineNum">     693</span>                 :             :           { AOM_CDF3(31915, 32385) },</span>
+<span id="L694"><span class="lineNum">     694</span>                 :             :       },</span>
+<span id="L695"><span class="lineNum">     695</span>                 :             :       {</span>
+<span id="L696"><span class="lineNum">     696</span>                 :             :           { AOM_CDF4(25572, 28046, 30045) },</span>
+<span id="L697"><span class="lineNum">     697</span>                 :             :           { AOM_CDF4(9478, 21590, 27256) },</span>
+<span id="L698"><span class="lineNum">     698</span>                 :             :           { AOM_CDF4(7248, 26837, 29824) },</span>
+<span id="L699"><span class="lineNum">     699</span>                 :             :           { AOM_CDF4(19167, 24486, 28349) },</span>
+<span id="L700"><span class="lineNum">     700</span>                 :             :           { AOM_CDF4(31400, 31825, 32250) },</span>
+<span id="L701"><span class="lineNum">     701</span>                 :             :       },</span>
+<span id="L702"><span class="lineNum">     702</span>                 :             :       {</span>
+<span id="L703"><span class="lineNum">     703</span>                 :             :           { AOM_CDF5(24779, 26955, 28576, 30282) },</span>
+<span id="L704"><span class="lineNum">     704</span>                 :             :           { AOM_CDF5(8669, 20364, 24073, 28093) },</span>
+<span id="L705"><span class="lineNum">     705</span>                 :             :           { AOM_CDF5(4255, 27565, 29377, 31067) },</span>
+<span id="L706"><span class="lineNum">     706</span>                 :             :           { AOM_CDF5(19864, 23674, 26716, 29530) },</span>
+<span id="L707"><span class="lineNum">     707</span>                 :             :           { AOM_CDF5(31646, 31893, 32147, 32426) },</span>
+<span id="L708"><span class="lineNum">     708</span>                 :             :       },</span>
+<span id="L709"><span class="lineNum">     709</span>                 :             :       {</span>
+<span id="L710"><span class="lineNum">     710</span>                 :             :           { AOM_CDF6(23132, 25407, 26970, 28435, 30073) },</span>
+<span id="L711"><span class="lineNum">     711</span>                 :             :           { AOM_CDF6(7443, 17242, 20717, 24762, 27982) },</span>
+<span id="L712"><span class="lineNum">     712</span>                 :             :           { AOM_CDF6(6300, 24862, 26944, 28784, 30671) },</span>
+<span id="L713"><span class="lineNum">     713</span>                 :             :           { AOM_CDF6(18916, 22895, 25267, 27435, 29652) },</span>
+<span id="L714"><span class="lineNum">     714</span>                 :             :           { AOM_CDF6(31270, 31550, 31808, 32059, 32353) },</span>
+<span id="L715"><span class="lineNum">     715</span>                 :             :       },</span>
+<span id="L716"><span class="lineNum">     716</span>                 :             :       {</span>
+<span id="L717"><span class="lineNum">     717</span>                 :             :           { AOM_CDF7(23105, 25199, 26464, 27684, 28931, 30318) },</span>
+<span id="L718"><span class="lineNum">     718</span>                 :             :           { AOM_CDF7(6950, 15447, 18952, 22681, 25567, 28563) },</span>
+<span id="L719"><span class="lineNum">     719</span>                 :             :           { AOM_CDF7(7560, 23474, 25490, 27203, 28921, 30708) },</span>
+<span id="L720"><span class="lineNum">     720</span>                 :             :           { AOM_CDF7(18544, 22373, 24457, 26195, 28119, 30045) },</span>
+<span id="L721"><span class="lineNum">     721</span>                 :             :           { AOM_CDF7(31198, 31451, 31670, 31882, 32123, 32391) },</span>
+<span id="L722"><span class="lineNum">     722</span>                 :             :       },</span>
+<span id="L723"><span class="lineNum">     723</span>                 :             :       {</span>
+<span id="L724"><span class="lineNum">     724</span>                 :             :           { AOM_CDF8(21689, 23883, 25163, 26352, 27506, 28827, 30195) },</span>
+<span id="L725"><span class="lineNum">     725</span>                 :             :           { AOM_CDF8(6892, 15385, 17840, 21606, 24287, 26753, 29204) },</span>
+<span id="L726"><span class="lineNum">     726</span>                 :             :           { AOM_CDF8(5651, 23182, 25042, 26518, 27982, 29392, 30900) },</span>
+<span id="L727"><span class="lineNum">     727</span>                 :             :           { AOM_CDF8(19349, 22578, 24418, 25994, 27524, 29031, 30448) },</span>
+<span id="L728"><span class="lineNum">     728</span>                 :             :           { AOM_CDF8(31028, 31270, 31504, 31705, 31927, 32153, 32392) },</span>
+<span id="L729"><span class="lineNum">     729</span>                 :             :       },</span>
+<span id="L730"><span class="lineNum">     730</span>                 :             :     };</span>
+<span id="L731"><span class="lineNum">     731</span>                 :             : </span>
+<span id="L732"><span class="lineNum">     732</span>                 :             : static const aom_cdf_prob default_palette_uv_color_index_cdf</span>
+<span id="L733"><span class="lineNum">     733</span>                 :             :     [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] = {</span>
+<span id="L734"><span class="lineNum">     734</span>                 :             :       {</span>
+<span id="L735"><span class="lineNum">     735</span>                 :             :           { AOM_CDF2(29089) },</span>
+<span id="L736"><span class="lineNum">     736</span>                 :             :           { AOM_CDF2(16384) },</span>
+<span id="L737"><span class="lineNum">     737</span>                 :             :           { AOM_CDF2(8713) },</span>
+<span id="L738"><span class="lineNum">     738</span>                 :             :           { AOM_CDF2(29257) },</span>
+<span id="L739"><span class="lineNum">     739</span>                 :             :           { AOM_CDF2(31610) },</span>
+<span id="L740"><span class="lineNum">     740</span>                 :             :       },</span>
+<span id="L741"><span class="lineNum">     741</span>                 :             :       {</span>
+<span id="L742"><span class="lineNum">     742</span>                 :             :           { AOM_CDF3(25257, 29145) },</span>
+<span id="L743"><span class="lineNum">     743</span>                 :             :           { AOM_CDF3(12287, 27293) },</span>
+<span id="L744"><span class="lineNum">     744</span>                 :             :           { AOM_CDF3(7033, 27960) },</span>
+<span id="L745"><span class="lineNum">     745</span>                 :             :           { AOM_CDF3(20145, 25405) },</span>
+<span id="L746"><span class="lineNum">     746</span>                 :             :           { AOM_CDF3(30608, 31639) },</span>
+<span id="L747"><span class="lineNum">     747</span>                 :             :       },</span>
+<span id="L748"><span class="lineNum">     748</span>                 :             :       {</span>
+<span id="L749"><span class="lineNum">     749</span>                 :             :           { AOM_CDF4(24210, 27175, 29903) },</span>
+<span id="L750"><span class="lineNum">     750</span>                 :             :           { AOM_CDF4(9888, 22386, 27214) },</span>
+<span id="L751"><span class="lineNum">     751</span>                 :             :           { AOM_CDF4(5901, 26053, 29293) },</span>
+<span id="L752"><span class="lineNum">     752</span>                 :             :           { AOM_CDF4(18318, 22152, 28333) },</span>
+<span id="L753"><span class="lineNum">     753</span>                 :             :           { AOM_CDF4(30459, 31136, 31926) },</span>
+<span id="L754"><span class="lineNum">     754</span>                 :             :       },</span>
+<span id="L755"><span class="lineNum">     755</span>                 :             :       {</span>
+<span id="L756"><span class="lineNum">     756</span>                 :             :           { AOM_CDF5(22980, 25479, 27781, 29986) },</span>
+<span id="L757"><span class="lineNum">     757</span>                 :             :           { AOM_CDF5(8413, 21408, 24859, 28874) },</span>
+<span id="L758"><span class="lineNum">     758</span>                 :             :           { AOM_CDF5(2257, 29449, 30594, 31598) },</span>
+<span id="L759"><span class="lineNum">     759</span>                 :             :           { AOM_CDF5(19189, 21202, 25915, 28620) },</span>
+<span id="L760"><span class="lineNum">     760</span>                 :             :           { AOM_CDF5(31844, 32044, 32281, 32518) },</span>
+<span id="L761"><span class="lineNum">     761</span>                 :             :       },</span>
+<span id="L762"><span class="lineNum">     762</span>                 :             :       {</span>
+<span id="L763"><span class="lineNum">     763</span>                 :             :           { AOM_CDF6(22217, 24567, 26637, 28683, 30548) },</span>
+<span id="L764"><span class="lineNum">     764</span>                 :             :           { AOM_CDF6(7307, 16406, 19636, 24632, 28424) },</span>
+<span id="L765"><span class="lineNum">     765</span>                 :             :           { AOM_CDF6(4441, 25064, 26879, 28942, 30919) },</span>
+<span id="L766"><span class="lineNum">     766</span>                 :             :           { AOM_CDF6(17210, 20528, 23319, 26750, 29582) },</span>
+<span id="L767"><span class="lineNum">     767</span>                 :             :           { AOM_CDF6(30674, 30953, 31396, 31735, 32207) },</span>
+<span id="L768"><span class="lineNum">     768</span>                 :             :       },</span>
+<span id="L769"><span class="lineNum">     769</span>                 :             :       {</span>
+<span id="L770"><span class="lineNum">     770</span>                 :             :           { AOM_CDF7(21239, 23168, 25044, 26962, 28705, 30506) },</span>
+<span id="L771"><span class="lineNum">     771</span>                 :             :           { AOM_CDF7(6545, 15012, 18004, 21817, 25503, 28701) },</span>
+<span id="L772"><span class="lineNum">     772</span>                 :             :           { AOM_CDF7(3448, 26295, 27437, 28704, 30126, 31442) },</span>
+<span id="L773"><span class="lineNum">     773</span>                 :             :           { AOM_CDF7(15889, 18323, 21704, 24698, 26976, 29690) },</span>
+<span id="L774"><span class="lineNum">     774</span>                 :             :           { AOM_CDF7(30988, 31204, 31479, 31734, 31983, 32325) },</span>
+<span id="L775"><span class="lineNum">     775</span>                 :             :       },</span>
+<span id="L776"><span class="lineNum">     776</span>                 :             :       {</span>
+<span id="L777"><span class="lineNum">     777</span>                 :             :           { AOM_CDF8(21442, 23288, 24758, 26246, 27649, 28980, 30563) },</span>
+<span id="L778"><span class="lineNum">     778</span>                 :             :           { AOM_CDF8(5863, 14933, 17552, 20668, 23683, 26411, 29273) },</span>
+<span id="L779"><span class="lineNum">     779</span>                 :             :           { AOM_CDF8(3415, 25810, 26877, 27990, 29223, 30394, 31618) },</span>
+<span id="L780"><span class="lineNum">     780</span>                 :             :           { AOM_CDF8(17965, 20084, 22232, 23974, 26274, 28402, 30390) },</span>
+<span id="L781"><span class="lineNum">     781</span>                 :             :           { AOM_CDF8(31190, 31329, 31516, 31679, 31825, 32026, 32322) },</span>
+<span id="L782"><span class="lineNum">     782</span>                 :             :       },</span>
+<span id="L783"><span class="lineNum">     783</span>                 :             :     };</span>
+<span id="L784"><span class="lineNum">     784</span>                 :             : </span>
+<span id="L785"><span class="lineNum">     785</span>                 :             : static const aom_cdf_prob</span>
+<span id="L786"><span class="lineNum">     786</span>                 :             :     default_txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)] = {</span>
+<span id="L787"><span class="lineNum">     787</span>                 :             :       { AOM_CDF2(28581) }, { AOM_CDF2(23846) }, { AOM_CDF2(20847) },</span>
+<span id="L788"><span class="lineNum">     788</span>                 :             :       { AOM_CDF2(24315) }, { AOM_CDF2(18196) }, { AOM_CDF2(12133) },</span>
+<span id="L789"><span class="lineNum">     789</span>                 :             :       { AOM_CDF2(18791) }, { AOM_CDF2(10887) }, { AOM_CDF2(11005) },</span>
+<span id="L790"><span class="lineNum">     790</span>                 :             :       { AOM_CDF2(27179) }, { AOM_CDF2(20004) }, { AOM_CDF2(11281) },</span>
+<span id="L791"><span class="lineNum">     791</span>                 :             :       { AOM_CDF2(26549) }, { AOM_CDF2(19308) }, { AOM_CDF2(14224) },</span>
+<span id="L792"><span class="lineNum">     792</span>                 :             :       { AOM_CDF2(28015) }, { AOM_CDF2(21546) }, { AOM_CDF2(14400) },</span>
+<span id="L793"><span class="lineNum">     793</span>                 :             :       { AOM_CDF2(28165) }, { AOM_CDF2(22401) }, { AOM_CDF2(16088) }</span>
+<span id="L794"><span class="lineNum">     794</span>                 :             :     };</span>
+<span id="L795"><span class="lineNum">     795</span>                 :             : </span>
+<span id="L796"><span class="lineNum">     796</span>                 :             : static const aom_cdf_prob default_skip_txfm_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {</span>
+<span id="L797"><span class="lineNum">     797</span>                 :             :   { AOM_CDF2(31671) }, { AOM_CDF2(16515) }, { AOM_CDF2(4576) }</span>
+<span id="L798"><span class="lineNum">     798</span>                 :             : };</span>
+<span id="L799"><span class="lineNum">     799</span>                 :             : </span>
+<span id="L800"><span class="lineNum">     800</span>                 :             : static const aom_cdf_prob default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(</span>
+<span id="L801"><span class="lineNum">     801</span>                 :             :     2)] = { { AOM_CDF2(32621) }, { AOM_CDF2(20708) }, { AOM_CDF2(8127) } };</span>
+<span id="L802"><span class="lineNum">     802</span>                 :             : </span>
+<span id="L803"><span class="lineNum">     803</span>                 :             : static const aom_cdf_prob</span>
+<span id="L804"><span class="lineNum">     804</span>                 :             :     default_compound_idx_cdfs[COMP_INDEX_CONTEXTS][CDF_SIZE(2)] = {</span>
+<span id="L805"><span class="lineNum">     805</span>                 :             :       { AOM_CDF2(18244) }, { AOM_CDF2(12865) }, { AOM_CDF2(7053) },</span>
+<span id="L806"><span class="lineNum">     806</span>                 :             :       { AOM_CDF2(13259) }, { AOM_CDF2(9334) },  { AOM_CDF2(4644) }</span>
+<span id="L807"><span class="lineNum">     807</span>                 :             :     };</span>
+<span id="L808"><span class="lineNum">     808</span>                 :             : </span>
+<span id="L809"><span class="lineNum">     809</span>                 :             : static const aom_cdf_prob</span>
+<span id="L810"><span class="lineNum">     810</span>                 :             :     default_comp_group_idx_cdfs[COMP_GROUP_IDX_CONTEXTS][CDF_SIZE(2)] = {</span>
+<span id="L811"><span class="lineNum">     811</span>                 :             :       { AOM_CDF2(26607) }, { AOM_CDF2(22891) }, { AOM_CDF2(18840) },</span>
+<span id="L812"><span class="lineNum">     812</span>                 :             :       { AOM_CDF2(24594) }, { AOM_CDF2(19934) }, { AOM_CDF2(22674) }</span>
+<span id="L813"><span class="lineNum">     813</span>                 :             :     };</span>
+<span id="L814"><span class="lineNum">     814</span>                 :             : </span>
+<span id="L815"><span class="lineNum">     815</span>                 :             : static const aom_cdf_prob default_intrabc_cdf[CDF_SIZE(2)] = { AOM_CDF2(</span>
+<span id="L816"><span class="lineNum">     816</span>                 :             :     30531) };</span>
+<span id="L817"><span class="lineNum">     817</span>                 :             : </span>
+<span id="L818"><span class="lineNum">     818</span>                 :             : static const aom_cdf_prob default_filter_intra_mode_cdf[CDF_SIZE(</span>
+<span id="L819"><span class="lineNum">     819</span>                 :             :     FILTER_INTRA_MODES)] = { AOM_CDF5(8949, 12776, 17211, 29558) };</span>
+<span id="L820"><span class="lineNum">     820</span>                 :             : </span>
+<span id="L821"><span class="lineNum">     821</span>                 :             : static const aom_cdf_prob default_filter_intra_cdfs[BLOCK_SIZES_ALL][CDF_SIZE(</span>
+<span id="L822"><span class="lineNum">     822</span>                 :             :     2)] = { { AOM_CDF2(4621) },  { AOM_CDF2(6743) },  { AOM_CDF2(5893) },</span>
+<span id="L823"><span class="lineNum">     823</span>                 :             :             { AOM_CDF2(7866) },  { AOM_CDF2(12551) }, { AOM_CDF2(9394) },</span>
+<span id="L824"><span class="lineNum">     824</span>                 :             :             { AOM_CDF2(12408) }, { AOM_CDF2(14301) }, { AOM_CDF2(12756) },</span>
+<span id="L825"><span class="lineNum">     825</span>                 :             :             { AOM_CDF2(22343) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L826"><span class="lineNum">     826</span>                 :             :             { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },</span>
+<span id="L827"><span class="lineNum">     827</span>                 :             :             { AOM_CDF2(16384) }, { AOM_CDF2(12770) }, { AOM_CDF2(10368) },</span>
+<span id="L828"><span class="lineNum">     828</span>                 :             :             { AOM_CDF2(20229) }, { AOM_CDF2(18101) }, { AOM_CDF2(16384) },</span>
+<span id="L829"><span class="lineNum">     829</span>                 :             :             { AOM_CDF2(16384) } };</span>
+<span id="L830"><span class="lineNum">     830</span>                 :             : </span>
+<span id="L831"><span class="lineNum">     831</span>                 :             : static const aom_cdf_prob default_switchable_restore_cdf[CDF_SIZE(</span>
+<span id="L832"><span class="lineNum">     832</span>                 :             :     RESTORE_SWITCHABLE_TYPES)] = { AOM_CDF3(9413, 22581) };</span>
+<span id="L833"><span class="lineNum">     833</span>                 :             : </span>
+<span id="L834"><span class="lineNum">     834</span>                 :             : static const aom_cdf_prob default_wiener_restore_cdf[CDF_SIZE(2)] = { AOM_CDF2(</span>
+<span id="L835"><span class="lineNum">     835</span>                 :             :     11570) };</span>
+<span id="L836"><span class="lineNum">     836</span>                 :             : </span>
+<span id="L837"><span class="lineNum">     837</span>                 :             : static const aom_cdf_prob default_sgrproj_restore_cdf[CDF_SIZE(2)] = { AOM_CDF2(</span>
+<span id="L838"><span class="lineNum">     838</span>                 :             :     16855) };</span>
+<span id="L839"><span class="lineNum">     839</span>                 :             : </span>
+<span id="L840"><span class="lineNum">     840</span>                 :             : static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {</span>
+<span id="L841"><span class="lineNum">     841</span>                 :             :   AOM_CDF4(28160, 32120, 32677)</span>
+<span id="L842"><span class="lineNum">     842</span>                 :             : };</span>
+<span id="L843"><span class="lineNum">     843</span>                 :             : </span>
+<span id="L844"><span class="lineNum">     844</span>                 :             : static const aom_cdf_prob default_delta_lf_multi_cdf[FRAME_LF_COUNT][CDF_SIZE(</span>
+<span id="L845"><span class="lineNum">     845</span>                 :             :     DELTA_LF_PROBS + 1)] = { { AOM_CDF4(28160, 32120, 32677) },</span>
+<span id="L846"><span class="lineNum">     846</span>                 :             :                              { AOM_CDF4(28160, 32120, 32677) },</span>
+<span id="L847"><span class="lineNum">     847</span>                 :             :                              { AOM_CDF4(28160, 32120, 32677) },</span>
+<span id="L848"><span class="lineNum">     848</span>                 :             :                              { AOM_CDF4(28160, 32120, 32677) } };</span>
+<span id="L849"><span class="lineNum">     849</span>                 :             : static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {</span>
+<span id="L850"><span class="lineNum">     850</span>                 :             :   AOM_CDF4(28160, 32120, 32677)</span>
+<span id="L851"><span class="lineNum">     851</span>                 :             : };</span>
+<span id="L852"><span class="lineNum">     852</span>                 :             : </span>
+<span id="L853"><span class="lineNum">     853</span>                 :             : static const aom_cdf_prob</span>
+<span id="L854"><span class="lineNum">     854</span>                 :             :     default_segment_pred_cdf[SEG_TEMPORAL_PRED_CTXS][CDF_SIZE(2)] = {</span>
+<span id="L855"><span class="lineNum">     855</span>                 :             :       { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }</span>
+<span id="L856"><span class="lineNum">     856</span>                 :             :     };</span>
+<span id="L857"><span class="lineNum">     857</span>                 :             : </span>
+<span id="L858"><span class="lineNum">     858</span>                 :             : static const aom_cdf_prob</span>
+<span id="L859"><span class="lineNum">     859</span>                 :             :     default_spatial_pred_seg_tree_cdf[SPATIAL_PREDICTION_PROBS][CDF_SIZE(</span>
+<span id="L860"><span class="lineNum">     860</span>                 :             :         MAX_SEGMENTS)] = {</span>
+<span id="L861"><span class="lineNum">     861</span>                 :             :       {</span>
+<span id="L862"><span class="lineNum">     862</span>                 :             :           AOM_CDF8(5622, 7893, 16093, 18233, 27809, 28373, 32533),</span>
+<span id="L863"><span class="lineNum">     863</span>                 :             :       },</span>
+<span id="L864"><span class="lineNum">     864</span>                 :             :       {</span>
+<span id="L865"><span class="lineNum">     865</span>                 :             :           AOM_CDF8(14274, 18230, 22557, 24935, 29980, 30851, 32344),</span>
+<span id="L866"><span class="lineNum">     866</span>                 :             :       },</span>
+<span id="L867"><span class="lineNum">     867</span>                 :             :       {</span>
+<span id="L868"><span class="lineNum">     868</span>                 :             :           AOM_CDF8(27527, 28487, 28723, 28890, 32397, 32647, 32679),</span>
+<span id="L869"><span class="lineNum">     869</span>                 :             :       },</span>
+<span id="L870"><span class="lineNum">     870</span>                 :             :     };</span>
+<span id="L871"><span class="lineNum">     871</span>                 :             : </span>
+<span id="L872"><span class="lineNum">     872</span>                 :             : static const aom_cdf_prob default_tx_size_cdf[MAX_TX_CATS][TX_SIZE_CONTEXTS]</span>
+<span id="L873"><span class="lineNum">     873</span>                 :             :                                              [CDF_SIZE(MAX_TX_DEPTH + 1)] = {</span>
+<span id="L874"><span class="lineNum">     874</span>                 :             :                                                { { AOM_CDF2(19968) },</span>
+<span id="L875"><span class="lineNum">     875</span>                 :             :                                                  { AOM_CDF2(19968) },</span>
+<span id="L876"><span class="lineNum">     876</span>                 :             :                                                  { AOM_CDF2(24320) } },</span>
+<span id="L877"><span class="lineNum">     877</span>                 :             :                                                { { AOM_CDF3(12272, 30172) },</span>
+<span id="L878"><span class="lineNum">     878</span>                 :             :                                                  { AOM_CDF3(12272, 30172) },</span>
+<span id="L879"><span class="lineNum">     879</span>                 :             :                                                  { AOM_CDF3(18677, 30848) } },</span>
+<span id="L880"><span class="lineNum">     880</span>                 :             :                                                { { AOM_CDF3(12986, 15180) },</span>
+<span id="L881"><span class="lineNum">     881</span>                 :             :                                                  { AOM_CDF3(12986, 15180) },</span>
+<span id="L882"><span class="lineNum">     882</span>                 :             :                                                  { AOM_CDF3(24302, 25602) } },</span>
+<span id="L883"><span class="lineNum">     883</span>                 :             :                                                { { AOM_CDF3(5782, 11475) },</span>
+<span id="L884"><span class="lineNum">     884</span>                 :             :                                                  { AOM_CDF3(5782, 11475) },</span>
+<span id="L885"><span class="lineNum">     885</span>                 :             :                                                  { AOM_CDF3(16803, 22759) } },</span>
+<span id="L886"><span class="lineNum">     886</span>                 :             :                                              };</span>
+<span id="L887"><span class="lineNum">     887</span>                 :             : </span>
+<span id="L888"><span class="lineNum">     888</span>                 :             : // Negative values are invalid</span>
+<span id="L889"><span class="lineNum">     889</span>                 :             : const int av1_palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH + 1] = {</span>
+<span id="L890"><span class="lineNum">     890</span>                 :             :   -1, -1, 0, -1, -1, 4, 3, 2, 1</span>
+<span id="L891"><span class="lineNum">     891</span>                 :             : };</span>
+<span id="L892"><span class="lineNum">     892</span>                 :             : </span>
+<span id="L893"><span class="lineNum">     893</span>                 :<span class="tlaUNC tlaBgUNC">           0 : int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,</span></span>
+<span id="L894"><span class="lineNum">     894</span>                 :             :                                         int r, int c, int palette_size,</span>
+<span id="L895"><span class="lineNum">     895</span>                 :             :                                         uint8_t *color_order, int *color_idx) {</span>
+<span id="L896"><span class="lineNum">     896</span>                 :             :   assert(palette_size &lt;= PALETTE_MAX_SIZE);</span>
+<span id="L897"><span class="lineNum">     897</span>                 :             :   assert(r &gt; 0 || c &gt; 0);</span>
+<span id="L898"><span class="lineNum">     898</span>                 :             : </span>
+<span id="L899"><span class="lineNum">     899</span>                 :             :   // Get color indices of neighbors.</span>
+<span id="L900"><span class="lineNum">     900</span>                 :<span class="tlaUNC">           0 :   int color_neighbors[NUM_PALETTE_NEIGHBORS];</span></span>
+<span id="L901"><span class="lineNum">     901</span>                 :<span class="tlaUNC">           0 :   color_neighbors[0] = (c - 1 &gt;= 0) ? color_map[r * stride + c - 1] : -1;</span></span>
+<span id="L902"><span class="lineNum">     902</span>                 :<span class="tlaUNC">           0 :   color_neighbors[1] =</span></span>
+<span id="L903"><span class="lineNum">     903</span>                 :<span class="tlaUNC">           0 :       (c - 1 &gt;= 0 &amp;&amp; r - 1 &gt;= 0) ? color_map[(r - 1) * stride + c - 1] : -1;</span></span>
+<span id="L904"><span class="lineNum">     904</span>                 :<span class="tlaUNC">           0 :   color_neighbors[2] = (r - 1 &gt;= 0) ? color_map[(r - 1) * stride + c] : -1;</span></span>
+<span id="L905"><span class="lineNum">     905</span>                 :             : </span>
+<span id="L906"><span class="lineNum">     906</span>                 :             :   // The +10 below should not be needed. But we get a warning &quot;array subscript</span>
+<span id="L907"><span class="lineNum">     907</span>                 :             :   // is above array bounds [-Werror=array-bounds]&quot; without it, possibly due to</span>
+<span id="L908"><span class="lineNum">     908</span>                 :             :   // this (or similar) bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=59124</span>
+<span id="L909"><span class="lineNum">     909</span>                 :<span class="tlaUNC">           0 :   int scores[PALETTE_MAX_SIZE + 10] = { 0 };</span></span>
+<span id="L910"><span class="lineNum">     910</span>                 :<span class="tlaUNC">           0 :   int i;</span></span>
+<span id="L911"><span class="lineNum">     911</span>                 :             :   static const int weights[NUM_PALETTE_NEIGHBORS] = { 2, 1, 2 };</span>
+<span id="L912"><span class="lineNum">     912</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; NUM_PALETTE_NEIGHBORS; ++i) {</span></span>
+<span id="L913"><span class="lineNum">     913</span>                 :<span class="tlaUNC">           0 :     if (color_neighbors[i] &gt;= 0) {</span></span>
+<span id="L914"><span class="lineNum">     914</span>                 :<span class="tlaUNC">           0 :       scores[color_neighbors[i]] += weights[i];</span></span>
+<span id="L915"><span class="lineNum">     915</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L916"><span class="lineNum">     916</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L917"><span class="lineNum">     917</span>                 :             : </span>
+<span id="L918"><span class="lineNum">     918</span>                 :<span class="tlaUNC">           0 :   int inverse_color_order[PALETTE_MAX_SIZE];</span></span>
+<span id="L919"><span class="lineNum">     919</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; PALETTE_MAX_SIZE; ++i) {</span></span>
+<span id="L920"><span class="lineNum">     920</span>                 :<span class="tlaUNC">           0 :     color_order[i] = i;</span></span>
+<span id="L921"><span class="lineNum">     921</span>                 :<span class="tlaUNC">           0 :     inverse_color_order[i] = i;</span></span>
+<span id="L922"><span class="lineNum">     922</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L923"><span class="lineNum">     923</span>                 :             : </span>
+<span id="L924"><span class="lineNum">     924</span>                 :             :   // Get the top NUM_PALETTE_NEIGHBORS scores (sorted from large to small).</span>
+<span id="L925"><span class="lineNum">     925</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; NUM_PALETTE_NEIGHBORS; ++i) {</span></span>
+<span id="L926"><span class="lineNum">     926</span>                 :<span class="tlaUNC">           0 :     int max = scores[i];</span></span>
+<span id="L927"><span class="lineNum">     927</span>                 :<span class="tlaUNC">           0 :     int max_idx = i;</span></span>
+<span id="L928"><span class="lineNum">     928</span>                 :<span class="tlaUNC">           0 :     for (int j = i + 1; j &lt; palette_size; ++j) {</span></span>
+<span id="L929"><span class="lineNum">     929</span>                 :<span class="tlaUNC">           0 :       if (scores[j] &gt; max) {</span></span>
+<span id="L930"><span class="lineNum">     930</span>                 :<span class="tlaUNC">           0 :         max = scores[j];</span></span>
+<span id="L931"><span class="lineNum">     931</span>                 :<span class="tlaUNC">           0 :         max_idx = j;</span></span>
+<span id="L932"><span class="lineNum">     932</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L933"><span class="lineNum">     933</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L934"><span class="lineNum">     934</span>                 :<span class="tlaUNC">           0 :     if (max_idx != i) {</span></span>
+<span id="L935"><span class="lineNum">     935</span>                 :             :       // Move the score at index 'max_idx' to index 'i', and shift the scores</span>
+<span id="L936"><span class="lineNum">     936</span>                 :             :       // from 'i' to 'max_idx - 1' by 1.</span>
+<span id="L937"><span class="lineNum">     937</span>                 :<span class="tlaUNC">           0 :       const int max_score = scores[max_idx];</span></span>
+<span id="L938"><span class="lineNum">     938</span>                 :<span class="tlaUNC">           0 :       const uint8_t max_color_order = color_order[max_idx];</span></span>
+<span id="L939"><span class="lineNum">     939</span>                 :<span class="tlaUNC">           0 :       for (int k = max_idx; k &gt; i; --k) {</span></span>
+<span id="L940"><span class="lineNum">     940</span>                 :<span class="tlaUNC">           0 :         scores[k] = scores[k - 1];</span></span>
+<span id="L941"><span class="lineNum">     941</span>                 :<span class="tlaUNC">           0 :         color_order[k] = color_order[k - 1];</span></span>
+<span id="L942"><span class="lineNum">     942</span>                 :<span class="tlaUNC">           0 :         inverse_color_order[color_order[k]] = k;</span></span>
+<span id="L943"><span class="lineNum">     943</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L944"><span class="lineNum">     944</span>                 :<span class="tlaUNC">           0 :       scores[i] = max_score;</span></span>
+<span id="L945"><span class="lineNum">     945</span>                 :<span class="tlaUNC">           0 :       color_order[i] = max_color_order;</span></span>
+<span id="L946"><span class="lineNum">     946</span>                 :<span class="tlaUNC">           0 :       inverse_color_order[color_order[i]] = i;</span></span>
+<span id="L947"><span class="lineNum">     947</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L948"><span class="lineNum">     948</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L949"><span class="lineNum">     949</span>                 :             : </span>
+<span id="L950"><span class="lineNum">     950</span>                 :<span class="tlaUNC">           0 :   if (color_idx != NULL)</span></span>
+<span id="L951"><span class="lineNum">     951</span>                 :<span class="tlaUNC">           0 :     *color_idx = inverse_color_order[color_map[r * stride + c]];</span></span>
+<span id="L952"><span class="lineNum">     952</span>                 :             : </span>
+<span id="L953"><span class="lineNum">     953</span>                 :             :   // Get hash value of context.</span>
+<span id="L954"><span class="lineNum">     954</span>                 :<span class="tlaUNC">           0 :   int color_index_ctx_hash = 0;</span></span>
+<span id="L955"><span class="lineNum">     955</span>                 :             :   static const int hash_multipliers[NUM_PALETTE_NEIGHBORS] = { 1, 2, 2 };</span>
+<span id="L956"><span class="lineNum">     956</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; NUM_PALETTE_NEIGHBORS; ++i) {</span></span>
+<span id="L957"><span class="lineNum">     957</span>                 :<span class="tlaUNC">           0 :     color_index_ctx_hash += scores[i] * hash_multipliers[i];</span></span>
+<span id="L958"><span class="lineNum">     958</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L959"><span class="lineNum">     959</span>                 :             :   assert(color_index_ctx_hash &gt; 0);</span>
+<span id="L960"><span class="lineNum">     960</span>                 :             :   assert(color_index_ctx_hash &lt;= MAX_COLOR_CONTEXT_HASH);</span>
+<span id="L961"><span class="lineNum">     961</span>                 :             : </span>
+<span id="L962"><span class="lineNum">     962</span>                 :             :   // Lookup context from hash.</span>
+<span id="L963"><span class="lineNum">     963</span>                 :<span class="tlaUNC">           0 :   const int color_index_ctx =</span></span>
+<span id="L964"><span class="lineNum">     964</span>                 :<span class="tlaUNC">           0 :       av1_palette_color_index_context_lookup[color_index_ctx_hash];</span></span>
+<span id="L965"><span class="lineNum">     965</span>                 :             :   assert(color_index_ctx &gt;= 0);</span>
+<span id="L966"><span class="lineNum">     966</span>                 :             :   assert(color_index_ctx &lt; PALETTE_COLOR_INDEX_CONTEXTS);</span>
+<span id="L967"><span class="lineNum">     967</span>                 :<span class="tlaUNC">           0 :   return color_index_ctx;</span></span>
+<span id="L968"><span class="lineNum">     968</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L969"><span class="lineNum">     969</span>                 :             : </span>
+<span id="L970"><span class="lineNum">     970</span>                 :<span class="tlaUNC">           0 : void av1_init_mode_probs(FRAME_CONTEXT *fc) {</span></span>
+<span id="L971"><span class="lineNum">     971</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;palette_y_size_cdf, default_palette_y_size_cdf);</span></span>
+<span id="L972"><span class="lineNum">     972</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;palette_uv_size_cdf, default_palette_uv_size_cdf);</span></span>
+<span id="L973"><span class="lineNum">     973</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;palette_y_color_index_cdf, default_palette_y_color_index_cdf);</span></span>
+<span id="L974"><span class="lineNum">     974</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;palette_uv_color_index_cdf, default_palette_uv_color_index_cdf);</span></span>
+<span id="L975"><span class="lineNum">     975</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;kf_y_cdf, default_kf_y_mode_cdf);</span></span>
+<span id="L976"><span class="lineNum">     976</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;angle_delta_cdf, default_angle_delta_cdf);</span></span>
+<span id="L977"><span class="lineNum">     977</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;comp_inter_cdf, default_comp_inter_cdf);</span></span>
+<span id="L978"><span class="lineNum">     978</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;comp_ref_type_cdf, default_comp_ref_type_cdf);</span></span>
+<span id="L979"><span class="lineNum">     979</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;uni_comp_ref_cdf, default_uni_comp_ref_cdf);</span></span>
+<span id="L980"><span class="lineNum">     980</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;palette_y_mode_cdf, default_palette_y_mode_cdf);</span></span>
+<span id="L981"><span class="lineNum">     981</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;palette_uv_mode_cdf, default_palette_uv_mode_cdf);</span></span>
+<span id="L982"><span class="lineNum">     982</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;comp_ref_cdf, default_comp_ref_cdf);</span></span>
+<span id="L983"><span class="lineNum">     983</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;comp_bwdref_cdf, default_comp_bwdref_cdf);</span></span>
+<span id="L984"><span class="lineNum">     984</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;single_ref_cdf, default_single_ref_cdf);</span></span>
+<span id="L985"><span class="lineNum">     985</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;txfm_partition_cdf, default_txfm_partition_cdf);</span></span>
+<span id="L986"><span class="lineNum">     986</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;compound_index_cdf, default_compound_idx_cdfs);</span></span>
+<span id="L987"><span class="lineNum">     987</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;comp_group_idx_cdf, default_comp_group_idx_cdfs);</span></span>
+<span id="L988"><span class="lineNum">     988</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;newmv_cdf, default_newmv_cdf);</span></span>
+<span id="L989"><span class="lineNum">     989</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;zeromv_cdf, default_zeromv_cdf);</span></span>
+<span id="L990"><span class="lineNum">     990</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;refmv_cdf, default_refmv_cdf);</span></span>
+<span id="L991"><span class="lineNum">     991</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;drl_cdf, default_drl_cdf);</span></span>
+<span id="L992"><span class="lineNum">     992</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;motion_mode_cdf, default_motion_mode_cdf);</span></span>
+<span id="L993"><span class="lineNum">     993</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;obmc_cdf, default_obmc_cdf);</span></span>
+<span id="L994"><span class="lineNum">     994</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;inter_compound_mode_cdf, default_inter_compound_mode_cdf);</span></span>
+<span id="L995"><span class="lineNum">     995</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;compound_type_cdf, default_compound_type_cdf);</span></span>
+<span id="L996"><span class="lineNum">     996</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;wedge_idx_cdf, default_wedge_idx_cdf);</span></span>
+<span id="L997"><span class="lineNum">     997</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;interintra_cdf, default_interintra_cdf);</span></span>
+<span id="L998"><span class="lineNum">     998</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;wedge_interintra_cdf, default_wedge_interintra_cdf);</span></span>
+<span id="L999"><span class="lineNum">     999</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;interintra_mode_cdf, default_interintra_mode_cdf);</span></span>
+<span id="L1000"><span class="lineNum">    1000</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;seg.pred_cdf, default_segment_pred_cdf);</span></span>
+<span id="L1001"><span class="lineNum">    1001</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;filter_intra_cdfs, default_filter_intra_cdfs);</span></span>
+<span id="L1002"><span class="lineNum">    1002</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;filter_intra_mode_cdf, default_filter_intra_mode_cdf);</span></span>
+<span id="L1003"><span class="lineNum">    1003</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;switchable_restore_cdf, default_switchable_restore_cdf);</span></span>
+<span id="L1004"><span class="lineNum">    1004</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;wiener_restore_cdf, default_wiener_restore_cdf);</span></span>
+<span id="L1005"><span class="lineNum">    1005</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;sgrproj_restore_cdf, default_sgrproj_restore_cdf);</span></span>
+<span id="L1006"><span class="lineNum">    1006</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;y_mode_cdf, default_if_y_mode_cdf);</span></span>
+<span id="L1007"><span class="lineNum">    1007</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;uv_mode_cdf, default_uv_mode_cdf);</span></span>
+<span id="L1008"><span class="lineNum">    1008</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;switchable_interp_cdf, default_switchable_interp_cdf);</span></span>
+<span id="L1009"><span class="lineNum">    1009</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;partition_cdf, default_partition_cdf);</span></span>
+<span id="L1010"><span class="lineNum">    1010</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;intra_ext_tx_cdf, default_intra_ext_tx_cdf);</span></span>
+<span id="L1011"><span class="lineNum">    1011</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;inter_ext_tx_cdf, default_inter_ext_tx_cdf);</span></span>
+<span id="L1012"><span class="lineNum">    1012</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;skip_mode_cdfs, default_skip_mode_cdfs);</span></span>
+<span id="L1013"><span class="lineNum">    1013</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;skip_txfm_cdfs, default_skip_txfm_cdfs);</span></span>
+<span id="L1014"><span class="lineNum">    1014</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;intra_inter_cdf, default_intra_inter_cdf);</span></span>
+<span id="L1015"><span class="lineNum">    1015</span>                 :<span class="tlaUNC">           0 :   for (int i = 0; i &lt; SPATIAL_PREDICTION_PROBS; i++)</span></span>
+<span id="L1016"><span class="lineNum">    1016</span>                 :<span class="tlaUNC">           0 :     av1_copy(fc-&gt;seg.spatial_pred_seg_cdf[i],</span></span>
+<span id="L1017"><span class="lineNum">    1017</span>                 :             :              default_spatial_pred_seg_tree_cdf[i]);</span>
+<span id="L1018"><span class="lineNum">    1018</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;tx_size_cdf, default_tx_size_cdf);</span></span>
+<span id="L1019"><span class="lineNum">    1019</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;delta_q_cdf, default_delta_q_cdf);</span></span>
+<span id="L1020"><span class="lineNum">    1020</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;delta_lf_cdf, default_delta_lf_cdf);</span></span>
+<span id="L1021"><span class="lineNum">    1021</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;delta_lf_multi_cdf, default_delta_lf_multi_cdf);</span></span>
+<span id="L1022"><span class="lineNum">    1022</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;cfl_sign_cdf, default_cfl_sign_cdf);</span></span>
+<span id="L1023"><span class="lineNum">    1023</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;cfl_alpha_cdf, default_cfl_alpha_cdf);</span></span>
+<span id="L1024"><span class="lineNum">    1024</span>                 :<span class="tlaUNC">           0 :   av1_copy(fc-&gt;intrabc_cdf, default_intrabc_cdf);</span></span>
+<span id="L1025"><span class="lineNum">    1025</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L1026"><span class="lineNum">    1026</span>                 :             : </span>
+<span id="L1027"><span class="lineNum">    1027</span>                 :<span class="tlaUNC">           0 : void av1_set_default_ref_deltas(int8_t *ref_deltas) {</span></span>
+<span id="L1028"><span class="lineNum">    1028</span>                 :             :   assert(ref_deltas != NULL);</span>
+<span id="L1029"><span class="lineNum">    1029</span>                 :             : </span>
+<span id="L1030"><span class="lineNum">    1030</span>                 :<span class="tlaUNC">           0 :   ref_deltas[INTRA_FRAME] = 1;</span></span>
+<span id="L1031"><span class="lineNum">    1031</span>                 :<span class="tlaUNC">           0 :   ref_deltas[LAST_FRAME] = 0;</span></span>
+<span id="L1032"><span class="lineNum">    1032</span>                 :<span class="tlaUNC">           0 :   ref_deltas[LAST2_FRAME] = ref_deltas[LAST_FRAME];</span></span>
+<span id="L1033"><span class="lineNum">    1033</span>                 :<span class="tlaUNC">           0 :   ref_deltas[LAST3_FRAME] = ref_deltas[LAST_FRAME];</span></span>
+<span id="L1034"><span class="lineNum">    1034</span>                 :<span class="tlaUNC">           0 :   ref_deltas[BWDREF_FRAME] = ref_deltas[LAST_FRAME];</span></span>
+<span id="L1035"><span class="lineNum">    1035</span>                 :<span class="tlaUNC">           0 :   ref_deltas[GOLDEN_FRAME] = -1;</span></span>
+<span id="L1036"><span class="lineNum">    1036</span>                 :<span class="tlaUNC">           0 :   ref_deltas[ALTREF2_FRAME] = -1;</span></span>
+<span id="L1037"><span class="lineNum">    1037</span>                 :<span class="tlaUNC">           0 :   ref_deltas[ALTREF_FRAME] = -1;</span></span>
+<span id="L1038"><span class="lineNum">    1038</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L1039"><span class="lineNum">    1039</span>                 :             : </span>
+<span id="L1040"><span class="lineNum">    1040</span>                 :<span class="tlaUNC">           0 : void av1_set_default_mode_deltas(int8_t *mode_deltas) {</span></span>
+<span id="L1041"><span class="lineNum">    1041</span>                 :             :   assert(mode_deltas != NULL);</span>
+<span id="L1042"><span class="lineNum">    1042</span>                 :             : </span>
+<span id="L1043"><span class="lineNum">    1043</span>                 :<span class="tlaUNC">           0 :   mode_deltas[0] = 0;</span></span>
+<span id="L1044"><span class="lineNum">    1044</span>                 :<span class="tlaUNC">           0 :   mode_deltas[1] = 0;</span></span>
+<span id="L1045"><span class="lineNum">    1045</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L1046"><span class="lineNum">    1046</span>                 :             : </span>
+<span id="L1047"><span class="lineNum">    1047</span>                 :<span class="tlaUNC">           0 : static void set_default_lf_deltas(struct loopfilter *lf) {</span></span>
+<span id="L1048"><span class="lineNum">    1048</span>                 :<span class="tlaUNC">           0 :   lf-&gt;mode_ref_delta_enabled = 1;</span></span>
+<span id="L1049"><span class="lineNum">    1049</span>                 :<span class="tlaUNC">           0 :   lf-&gt;mode_ref_delta_update = 1;</span></span>
+<span id="L1050"><span class="lineNum">    1050</span>                 :             : </span>
+<span id="L1051"><span class="lineNum">    1051</span>                 :<span class="tlaUNC">           0 :   av1_set_default_ref_deltas(lf-&gt;ref_deltas);</span></span>
+<span id="L1052"><span class="lineNum">    1052</span>                 :<span class="tlaUNC">           0 :   av1_set_default_mode_deltas(lf-&gt;mode_deltas);</span></span>
+<span id="L1053"><span class="lineNum">    1053</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L1054"><span class="lineNum">    1054</span>                 :             : </span>
+<span id="L1055"><span class="lineNum">    1055</span>                 :<span class="tlaUNC">           0 : void av1_setup_frame_contexts(AV1_COMMON *cm) {</span></span>
+<span id="L1056"><span class="lineNum">    1056</span>                 :             :   // Store the frame context into a special slot (not associated with any</span>
+<span id="L1057"><span class="lineNum">    1057</span>                 :             :   // reference buffer), so that we can set up cm-&gt;pre_fc correctly later</span>
+<span id="L1058"><span class="lineNum">    1058</span>                 :             :   // This function must ONLY be called when cm-&gt;fc has been initialized with</span>
+<span id="L1059"><span class="lineNum">    1059</span>                 :             :   // default probs, either by av1_setup_past_independence or after manually</span>
+<span id="L1060"><span class="lineNum">    1060</span>                 :             :   // initializing them</span>
+<span id="L1061"><span class="lineNum">    1061</span>                 :<span class="tlaUNC">           0 :   *cm-&gt;default_frame_context = *cm-&gt;fc;</span></span>
+<span id="L1062"><span class="lineNum">    1062</span>                 :             :   // TODO(jack.haughton@argondesign.com): don't think this should be necessary,</span>
+<span id="L1063"><span class="lineNum">    1063</span>                 :             :   // but could do with fuller testing</span>
+<span id="L1064"><span class="lineNum">    1064</span>                 :<span class="tlaUNC">           0 :   if (cm-&gt;tiles.large_scale) {</span></span>
+<span id="L1065"><span class="lineNum">    1065</span>                 :<span class="tlaUNC">           0 :     for (int i = LAST_FRAME; i &lt;= ALTREF_FRAME; ++i) {</span></span>
+<span id="L1066"><span class="lineNum">    1066</span>                 :<span class="tlaUNC">           0 :       RefCntBuffer *const buf = get_ref_frame_buf(cm, i);</span></span>
+<span id="L1067"><span class="lineNum">    1067</span>                 :<span class="tlaUNC">           0 :       if (buf != NULL) buf-&gt;frame_context = *cm-&gt;fc;</span></span>
+<span id="L1068"><span class="lineNum">    1068</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L1069"><span class="lineNum">    1069</span>                 :<span class="tlaUNC">           0 :     for (int i = 0; i &lt; cm-&gt;buffer_pool-&gt;num_frame_bufs; ++i)</span></span>
+<span id="L1070"><span class="lineNum">    1070</span>                 :<span class="tlaUNC">           0 :       cm-&gt;buffer_pool-&gt;frame_bufs[i].frame_context = *cm-&gt;fc;</span></span>
+<span id="L1071"><span class="lineNum">    1071</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L1072"><span class="lineNum">    1072</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L1073"><span class="lineNum">    1073</span>                 :             : </span>
+<span id="L1074"><span class="lineNum">    1074</span>                 :<span class="tlaUNC">           0 : void av1_setup_past_independence(AV1_COMMON *cm) {</span></span>
+<span id="L1075"><span class="lineNum">    1075</span>                 :             :   // Reset the segment feature data to the default stats:</span>
+<span id="L1076"><span class="lineNum">    1076</span>                 :             :   // Features disabled, 0, with delta coding (Default state).</span>
+<span id="L1077"><span class="lineNum">    1077</span>                 :<span class="tlaUNC">           0 :   av1_clearall_segfeatures(&amp;cm-&gt;seg);</span></span>
+<span id="L1078"><span class="lineNum">    1078</span>                 :             : </span>
+<span id="L1079"><span class="lineNum">    1079</span>                 :<span class="tlaUNC">           0 :   if (cm-&gt;cur_frame-&gt;seg_map) {</span></span>
+<span id="L1080"><span class="lineNum">    1080</span>                 :<span class="tlaUNC">           0 :     memset(cm-&gt;cur_frame-&gt;seg_map, 0,</span></span>
+<span id="L1081"><span class="lineNum">    1081</span>                 :<span class="tlaUNC">           0 :            (cm-&gt;cur_frame-&gt;mi_rows * cm-&gt;cur_frame-&gt;mi_cols));</span></span>
+<span id="L1082"><span class="lineNum">    1082</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L1083"><span class="lineNum">    1083</span>                 :             : </span>
+<span id="L1084"><span class="lineNum">    1084</span>                 :             :   // reset mode ref deltas</span>
+<span id="L1085"><span class="lineNum">    1085</span>                 :<span class="tlaUNC">           0 :   av1_set_default_ref_deltas(cm-&gt;cur_frame-&gt;ref_deltas);</span></span>
+<span id="L1086"><span class="lineNum">    1086</span>                 :<span class="tlaUNC">           0 :   av1_set_default_mode_deltas(cm-&gt;cur_frame-&gt;mode_deltas);</span></span>
+<span id="L1087"><span class="lineNum">    1087</span>                 :<span class="tlaUNC">           0 :   set_default_lf_deltas(&amp;cm-&gt;lf);</span></span>
+<span id="L1088"><span class="lineNum">    1088</span>                 :             : </span>
+<span id="L1089"><span class="lineNum">    1089</span>                 :<span class="tlaUNC">           0 :   av1_default_coef_probs(cm);</span></span>
+<span id="L1090"><span class="lineNum">    1090</span>                 :<span class="tlaUNC">           0 :   av1_init_mode_probs(cm-&gt;fc);</span></span>
+<span id="L1091"><span class="lineNum">    1091</span>                 :<span class="tlaUNC">           0 :   av1_init_mv_probs(cm);</span></span>
+<span id="L1092"><span class="lineNum">    1092</span>                 :<span class="tlaUNC">           0 :   cm-&gt;fc-&gt;initialized = 1;</span></span>
+<span id="L1093"><span class="lineNum">    1093</span>                 :<span class="tlaUNC">           0 :   av1_setup_frame_contexts(cm);</span></span>
+<span id="L1094"><span class="lineNum">    1094</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

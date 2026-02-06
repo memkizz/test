@@ -1,0 +1,252 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/aom_dsp/x86/fwd_txfm_sse2.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/aom_dsp/x86</a> - fwd_txfm_sse2.h<span style="font-size: 80%;"> (source / <a href="fwd_txfm_sse2.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2016, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #ifndef AOM_AOM_DSP_X86_FWD_TXFM_SSE2_H_</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #define AOM_AOM_DSP_X86_FWD_TXFM_SSE2_H_</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #ifdef __cplusplus</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : extern &quot;C&quot; {</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #endif</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : </span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : static inline __m128i k_madd_epi32(__m128i a, __m128i b) {</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             :   __m128i buf0, buf1;</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             :   buf0 = _mm_mul_epu32(a, b);</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             :   a = _mm_srli_epi64(a, 32);</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             :   b = _mm_srli_epi64(b, 32);</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             :   buf1 = _mm_mul_epu32(a, b);</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             :   return _mm_add_epi64(buf0, buf1);</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : }</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : </span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : static inline __m128i k_packs_epi64(__m128i a, __m128i b) {</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :   __m128i buf0 = _mm_shuffle_epi32(a, _MM_SHUFFLE(0, 0, 2, 0));</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :   __m128i buf1 = _mm_shuffle_epi32(b, _MM_SHUFFLE(0, 0, 2, 0));</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :   return _mm_unpacklo_epi64(buf0, buf1);</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : }</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : </span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : static inline int check_epi16_overflow_x2(const __m128i *preg0,</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :                                           const __m128i *preg1) {</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             :   const __m128i max_overflow = _mm_set1_epi16(0x7fff);</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :   const __m128i min_overflow = _mm_set1_epi16((short)0x8000);</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :   __m128i cmp0 = _mm_or_si128(_mm_cmpeq_epi16(*preg0, max_overflow),</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :                               _mm_cmpeq_epi16(*preg0, min_overflow));</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :   __m128i cmp1 = _mm_or_si128(_mm_cmpeq_epi16(*preg1, max_overflow),</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :                               _mm_cmpeq_epi16(*preg1, min_overflow));</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :   cmp0 = _mm_or_si128(cmp0, cmp1);</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :   return _mm_movemask_epi8(cmp0);</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : }</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : </span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : static inline int check_epi16_overflow_x4(const __m128i *preg0,</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :                                           const __m128i *preg1,</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :                                           const __m128i *preg2,</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :                                           const __m128i *preg3) {</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :   const __m128i max_overflow = _mm_set1_epi16(0x7fff);</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :   const __m128i min_overflow = _mm_set1_epi16((short)0x8000);</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   __m128i cmp0 = _mm_or_si128(_mm_cmpeq_epi16(*preg0, max_overflow),</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :                               _mm_cmpeq_epi16(*preg0, min_overflow));</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :   __m128i cmp1 = _mm_or_si128(_mm_cmpeq_epi16(*preg1, max_overflow),</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :                               _mm_cmpeq_epi16(*preg1, min_overflow));</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :   __m128i cmp2 = _mm_or_si128(_mm_cmpeq_epi16(*preg2, max_overflow),</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :                               _mm_cmpeq_epi16(*preg2, min_overflow));</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :   __m128i cmp3 = _mm_or_si128(_mm_cmpeq_epi16(*preg3, max_overflow),</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :                               _mm_cmpeq_epi16(*preg3, min_overflow));</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :   cmp0 = _mm_or_si128(_mm_or_si128(cmp0, cmp1), _mm_or_si128(cmp2, cmp3));</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :   return _mm_movemask_epi8(cmp0);</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             : }</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             : </span>
+<span id="L64"><span class="lineNum">      64</span>                 :             : static inline int check_epi16_overflow_x8(</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :     const __m128i *preg0, const __m128i *preg1, const __m128i *preg2,</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :     const __m128i *preg3, const __m128i *preg4, const __m128i *preg5,</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :     const __m128i *preg6, const __m128i *preg7) {</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :   int res0, res1;</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :   res0 = check_epi16_overflow_x4(preg0, preg1, preg2, preg3);</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :   res1 = check_epi16_overflow_x4(preg4, preg5, preg6, preg7);</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   return res0 + res1;</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             : }</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : </span>
+<span id="L74"><span class="lineNum">      74</span>                 :             : static inline int check_epi16_overflow_x12(</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :     const __m128i *preg0, const __m128i *preg1, const __m128i *preg2,</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :     const __m128i *preg3, const __m128i *preg4, const __m128i *preg5,</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :     const __m128i *preg6, const __m128i *preg7, const __m128i *preg8,</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :     const __m128i *preg9, const __m128i *preg10, const __m128i *preg11) {</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :   int res0, res1;</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :   res0 = check_epi16_overflow_x4(preg0, preg1, preg2, preg3);</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :   res1 = check_epi16_overflow_x4(preg4, preg5, preg6, preg7);</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   if (!res0) res0 = check_epi16_overflow_x4(preg8, preg9, preg10, preg11);</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   return res0 + res1;</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             : }</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : </span>
+<span id="L86"><span class="lineNum">      86</span>                 :             : static inline int check_epi16_overflow_x16(</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :     const __m128i *preg0, const __m128i *preg1, const __m128i *preg2,</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :     const __m128i *preg3, const __m128i *preg4, const __m128i *preg5,</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :     const __m128i *preg6, const __m128i *preg7, const __m128i *preg8,</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :     const __m128i *preg9, const __m128i *preg10, const __m128i *preg11,</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :     const __m128i *preg12, const __m128i *preg13, const __m128i *preg14,</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :     const __m128i *preg15) {</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :   int res0, res1;</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :   res0 = check_epi16_overflow_x4(preg0, preg1, preg2, preg3);</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :   res1 = check_epi16_overflow_x4(preg4, preg5, preg6, preg7);</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             :   if (!res0) {</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :     res0 = check_epi16_overflow_x4(preg8, preg9, preg10, preg11);</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :     if (!res1) res1 = check_epi16_overflow_x4(preg12, preg13, preg14, preg15);</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :   }</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :   return res0 + res1;</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : }</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             : </span>
+<span id="L103"><span class="lineNum">     103</span>                 :             : static inline int check_epi16_overflow_x32(</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :     const __m128i *preg0, const __m128i *preg1, const __m128i *preg2,</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :     const __m128i *preg3, const __m128i *preg4, const __m128i *preg5,</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :     const __m128i *preg6, const __m128i *preg7, const __m128i *preg8,</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :     const __m128i *preg9, const __m128i *preg10, const __m128i *preg11,</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :     const __m128i *preg12, const __m128i *preg13, const __m128i *preg14,</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :     const __m128i *preg15, const __m128i *preg16, const __m128i *preg17,</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :     const __m128i *preg18, const __m128i *preg19, const __m128i *preg20,</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :     const __m128i *preg21, const __m128i *preg22, const __m128i *preg23,</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :     const __m128i *preg24, const __m128i *preg25, const __m128i *preg26,</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :     const __m128i *preg27, const __m128i *preg28, const __m128i *preg29,</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :     const __m128i *preg30, const __m128i *preg31) {</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :   int res0, res1;</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :   res0 = check_epi16_overflow_x4(preg0, preg1, preg2, preg3);</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :   res1 = check_epi16_overflow_x4(preg4, preg5, preg6, preg7);</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :   if (!res0) {</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :     res0 = check_epi16_overflow_x4(preg8, preg9, preg10, preg11);</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :     if (!res1) {</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :       res1 = check_epi16_overflow_x4(preg12, preg13, preg14, preg15);</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :       if (!res0) {</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :         res0 = check_epi16_overflow_x4(preg16, preg17, preg18, preg19);</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :         if (!res1) {</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :           res1 = check_epi16_overflow_x4(preg20, preg21, preg22, preg23);</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :           if (!res0) {</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :             res0 = check_epi16_overflow_x4(preg24, preg25, preg26, preg27);</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :             if (!res1)</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :               res1 = check_epi16_overflow_x4(preg28, preg29, preg30, preg31);</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :           }</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :         }</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :       }</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :     }</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :   }</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :   return res0 + res1;</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : }</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : </span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : static inline void store_output(const __m128i *poutput, tran_low_t *dst_ptr) {</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :   const __m128i zero = _mm_setzero_si128();</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :   const __m128i sign_bits = _mm_cmplt_epi16(*poutput, zero);</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   __m128i out0 = _mm_unpacklo_epi16(*poutput, sign_bits);</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :   __m128i out1 = _mm_unpackhi_epi16(*poutput, sign_bits);</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :   _mm_store_si128((__m128i *)(dst_ptr), out0);</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :   _mm_store_si128((__m128i *)(dst_ptr + 4), out1);</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             : }</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : </span>
+<span id="L147"><span class="lineNum">     147</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static inline void storeu_output(const __m128i *poutput, tran_low_t *dst_ptr) {</span></span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :   const __m128i zero = _mm_setzero_si128();</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :   const __m128i sign_bits = _mm_cmplt_epi16(*poutput, zero);</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :<span class="tlaUNC">           0 :   __m128i out0 = _mm_unpacklo_epi16(*poutput, sign_bits);</span></span>
+<span id="L151"><span class="lineNum">     151</span>                 :<span class="tlaUNC">           0 :   __m128i out1 = _mm_unpackhi_epi16(*poutput, sign_bits);</span></span>
+<span id="L152"><span class="lineNum">     152</span>                 :<span class="tlaUNC">           0 :   _mm_storeu_si128((__m128i *)(dst_ptr), out0);</span></span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 :   _mm_storeu_si128((__m128i *)(dst_ptr + 4), out1);</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :             : </span>
+<span id="L156"><span class="lineNum">     156</span>                 :             : #ifdef __cplusplus</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             : }  // extern &quot;C&quot;</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             : #endif</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :             : #endif  // AOM_AOM_DSP_X86_FWD_TXFM_SSE2_H_</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

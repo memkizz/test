@@ -1,0 +1,615 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libwebp-1.3.2/src/enc/vp8i_enc.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libwebp-1.3.2/src/enc</a> - vp8i_enc.h<span style="font-size: 80%;"> (source / <a href="vp8i_enc.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // Copyright 2011 Google Inc. All Rights Reserved.</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : //</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : // Use of this source code is governed by a BSD-style license</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : // that can be found in the COPYING file in the root of the source</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : // tree. An additional intellectual property rights grant can be found</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : // in the file PATENTS. All contributing project authors may</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : // be found in the AUTHORS file in the root of the source tree.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : //   WebP encoder: internal header.</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : //</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : // Author: Skal (pascal.massimino@gmail.com)</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #ifndef WEBP_ENC_VP8I_ENC_H_</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #define WEBP_ENC_VP8I_ENC_H_</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &lt;string.h&gt;     // for memcpy()</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &quot;src/dec/common_dec.h&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &quot;src/dsp/dsp.h&quot;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #include &quot;src/utils/bit_writer_utils.h&quot;</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #include &quot;src/utils/thread_utils.h&quot;</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #include &quot;src/utils/utils.h&quot;</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : #include &quot;src/webp/encode.h&quot;</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : </span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : #ifdef __cplusplus</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : extern &quot;C&quot; {</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : #endif</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : </span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : // Various defines and enums</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             : </span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : // version numbers</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : #define ENC_MAJ_VERSION 1</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : #define ENC_MIN_VERSION 3</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : #define ENC_REV_VERSION 2</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : </span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : enum { MAX_LF_LEVELS = 64,       // Maximum loop filter level</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :        MAX_VARIABLE_LEVEL = 67,  // last (inclusive) level with variable cost</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :        MAX_LEVEL = 2047          // max level (note: max codable is 2047 + 67)</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :      };</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : </span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : typedef enum {   // Rate-distortion optimization levels</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :   RD_OPT_NONE        = 0,  // no rd-opt</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :   RD_OPT_BASIC       = 1,  // basic scoring (no trellis)</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :   RD_OPT_TRELLIS     = 2,  // perform trellis-quant on the final decision only</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :   RD_OPT_TRELLIS_ALL = 3   // trellis-quant for every scoring (much slower)</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : } VP8RDLevel;</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : </span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : // YUV-cache parameters. Cache is 32-bytes wide (= one cacheline).</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : // The original or reconstructed samples can be accessed using VP8Scan[].</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : // The predicted blocks can be accessed using offsets to yuv_p_ and</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : // the arrays VP8*ModeOffsets[].</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : // * YUV Samples area (yuv_in_/yuv_out_/yuv_out2_)</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             : //   (see VP8Scan[] for accessing the blocks, along with</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : //   Y_OFF_ENC/U_OFF_ENC/V_OFF_ENC):</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : //             +----+----+</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             : //  Y_OFF_ENC  |YYYY|UUVV|</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : //  U_OFF_ENC  |YYYY|UUVV|</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : //  V_OFF_ENC  |YYYY|....| &lt;- 25% wasted U/V area</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : //             |YYYY|....|</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             : //             +----+----+</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             : // * Prediction area ('yuv_p_', size = PRED_SIZE_ENC)</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             : //   Intra16 predictions (16x16 block each, two per row):</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             : //         |I16DC16|I16TM16|</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             : //         |I16VE16|I16HE16|</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             : //   Chroma U/V predictions (16x8 block each, two per row):</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : //         |C8DC8|C8TM8|</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : //         |C8VE8|C8HE8|</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             : //   Intra 4x4 predictions (4x4 block each)</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             : //         |I4DC4 I4TM4 I4VE4 I4HE4|I4RD4 I4VR4 I4LD4 I4VL4|</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             : //         |I4HD4 I4HU4 I4TMP .....|.......................| &lt;- ~31% wasted</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             : #define YUV_SIZE_ENC (BPS * 16)</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : #define PRED_SIZE_ENC (32 * BPS + 16 * BPS + 8 * BPS)   // I16+Chroma+I4 preds</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             : #define Y_OFF_ENC    (0)</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             : #define U_OFF_ENC    (16)</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : #define V_OFF_ENC    (16 + 8)</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : </span>
+<span id="L78"><span class="lineNum">      78</span>                 :             : extern const uint16_t VP8Scan[16];</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : extern const uint16_t VP8UVModeOffsets[4];</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             : extern const uint16_t VP8I16ModeOffsets[4];</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             : extern const uint16_t VP8I4ModeOffsets[NUM_BMODES];</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             : </span>
+<span id="L83"><span class="lineNum">      83</span>                 :             : // Layout of prediction blocks</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             : // intra 16x16</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : #define I16DC16 (0 * 16 * BPS)</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             : #define I16TM16 (I16DC16 + 16)</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : #define I16VE16 (1 * 16 * BPS)</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : #define I16HE16 (I16VE16 + 16)</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             : // chroma 8x8, two U/V blocks side by side (hence: 16x8 each)</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : #define C8DC8 (2 * 16 * BPS)</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             : #define C8TM8 (C8DC8 + 1 * 16)</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             : #define C8VE8 (2 * 16 * BPS + 8 * BPS)</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             : #define C8HE8 (C8VE8 + 1 * 16)</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             : // intra 4x4</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             : #define I4DC4 (3 * 16 * BPS +  0)</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : #define I4TM4 (I4DC4 +  4)</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : #define I4VE4 (I4DC4 +  8)</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             : #define I4HE4 (I4DC4 + 12)</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             : #define I4RD4 (I4DC4 + 16)</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : #define I4VR4 (I4DC4 + 20)</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : #define I4LD4 (I4DC4 + 24)</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             : #define I4VL4 (I4DC4 + 28)</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             : #define I4HD4 (3 * 16 * BPS + 4 * BPS)</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             : #define I4HU4 (I4HD4 + 4)</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : #define I4TMP (I4HD4 + 8)</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             : </span>
+<span id="L107"><span class="lineNum">     107</span>                 :             : typedef int64_t score_t;     // type used for scores, rate, distortion</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             : // Note that MAX_COST is not the maximum allowed by sizeof(score_t),</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             : // in order to allow overflowing computations.</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             : #define MAX_COST ((score_t)0x7fffffffffffffLL)</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : </span>
+<span id="L112"><span class="lineNum">     112</span>                 :             : #define QFIX 17</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             : #define BIAS(b)  ((b) &lt;&lt; (QFIX - 8))</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : // Fun fact: this is the _only_ line where we're actually being lossy and</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : // discarding bits.</span>
+<span id="L116"><span class="lineNum">     116</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static WEBP_INLINE int QUANTDIV(uint32_t n, uint32_t iQ, uint32_t B) {</span></span>
+<span id="L117"><span class="lineNum">     117</span>                 :<span class="tlaUNC">           0 :   return (int)((n * iQ + B) &gt;&gt; QFIX);</span></span>
+<span id="L118"><span class="lineNum">     118</span>                 :             : }</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             : </span>
+<span id="L120"><span class="lineNum">     120</span>                 :             : // Uncomment the following to remove token-buffer code:</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             : // #define DISABLE_TOKEN_BUFFER</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             : </span>
+<span id="L123"><span class="lineNum">     123</span>                 :             : // quality below which error-diffusion is enabled</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             : #define ERROR_DIFFUSION_QUALITY 98</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             : </span>
+<span id="L126"><span class="lineNum">     126</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : // Headers</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : </span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : typedef uint32_t proba_t;   // 16b + 16b</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : typedef uint8_t ProbaArray[NUM_CTX][NUM_PROBAS];</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             : typedef proba_t StatsArray[NUM_CTX][NUM_PROBAS];</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             : typedef uint16_t CostArray[NUM_CTX][MAX_VARIABLE_LEVEL + 1];</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             : typedef const uint16_t* (*CostArrayPtr)[NUM_CTX];   // for easy casting</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             : typedef const uint16_t* CostArrayMap[16][NUM_CTX];</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             : typedef double LFStats[NUM_MB_SEGMENTS][MAX_LF_LEVELS];  // filter stats</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : </span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : typedef struct VP8Encoder VP8Encoder;</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : </span>
+<span id="L139"><span class="lineNum">     139</span>                 :             : // segment features</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : typedef struct {</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   int num_segments_;      // Actual number of segments. 1 segment only = unused.</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :   int update_map_;        // whether to update the segment map or not.</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :                           // must be 0 if there's only 1 segment.</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :   int size_;              // bit-cost for transmitting the segment map</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             : } VP8EncSegmentHeader;</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : </span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : // Struct collecting all frame-persistent probabilities.</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             : typedef struct {</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :   uint8_t segments_[3];     // probabilities for segment tree</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :   uint8_t skip_proba_;      // final probability of being skipped.</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :   ProbaArray coeffs_[NUM_TYPES][NUM_BANDS];      // 1056 bytes</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :   StatsArray stats_[NUM_TYPES][NUM_BANDS];       // 4224 bytes</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :   CostArray level_cost_[NUM_TYPES][NUM_BANDS];   // 13056 bytes</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :   CostArrayMap remapped_costs_[NUM_TYPES];       // 1536 bytes</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :   int dirty_;               // if true, need to call VP8CalculateLevelCosts()</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :   int use_skip_proba_;      // Note: we always use skip_proba for now.</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :   int nb_skip_;             // number of skipped blocks</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             : } VP8EncProba;</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :             : // Filter parameters. Not actually used in the code (we don't perform</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             : // the in-loop filtering), but filled from user's config</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             : typedef struct {</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :   int simple_;             // filtering type: 0=complex, 1=simple</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :   int level_;              // base filter level [0..63]</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :   int sharpness_;          // [0..7]</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :   int i4x4_lf_delta_;      // delta filter level for i4x4 relative to i16x16</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             : } VP8EncFilterHeader;</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             : </span>
+<span id="L169"><span class="lineNum">     169</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             : // Informations about the macroblocks.</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             : </span>
+<span id="L172"><span class="lineNum">     172</span>                 :             : typedef struct {</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             :   // block type</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :   unsigned int type_:2;     // 0=i4x4, 1=i16x16</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             :   unsigned int uv_mode_:2;</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             :   unsigned int skip_:1;</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             :   unsigned int segment_:2;</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :   uint8_t alpha_;      // quantization-susceptibility</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : } VP8MBInfo;</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             : </span>
+<span id="L181"><span class="lineNum">     181</span>                 :             : typedef struct VP8Matrix {</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             :   uint16_t q_[16];        // quantizer steps</span>
+<span id="L183"><span class="lineNum">     183</span>                 :             :   uint16_t iq_[16];       // reciprocals, fixed point.</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             :   uint32_t bias_[16];     // rounding bias</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             :   uint32_t zthresh_[16];  // value below which a coefficient is zeroed</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :   uint16_t sharpen_[16];  // frequency boosters for slight sharpening</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             : } VP8Matrix;</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : </span>
+<span id="L189"><span class="lineNum">     189</span>                 :             : typedef struct {</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :   VP8Matrix y1_, y2_, uv_;  // quantization matrices</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :   int alpha_;      // quant-susceptibility, range [-127,127]. Zero is neutral.</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             :                    // Lower values indicate a lower risk of blurriness.</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             :   int beta_;       // filter-susceptibility, range [0,255].</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             :   int quant_;      // final segment quantizer.</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :   int fstrength_;  // final in-loop filtering strength</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :   int max_edge_;   // max edge delta (for filtering strength)</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :   int min_disto_;  // minimum distortion required to trigger filtering record</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :   // reactivities</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :   int lambda_i16_, lambda_i4_, lambda_uv_;</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :   int lambda_mode_, lambda_trellis_, tlambda_;</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :   int lambda_trellis_i16_, lambda_trellis_i4_, lambda_trellis_uv_;</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             : </span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :   // lambda values for distortion-based evaluation</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :   score_t i4_penalty_;   // penalty for using Intra4</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             : } VP8SegmentInfo;</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             : </span>
+<span id="L207"><span class="lineNum">     207</span>                 :             : typedef int8_t DError[2 /* u/v */][2 /* top or left */];</span>
+<span id="L208"><span class="lineNum">     208</span>                 :             : </span>
+<span id="L209"><span class="lineNum">     209</span>                 :             : // Handy transient struct to accumulate score and info during RD-optimization</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             : // and mode evaluation.</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             : typedef struct {</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             :   score_t D, SD;              // Distortion, spectral distortion</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :   score_t H, R, score;        // header bits, rate, score.</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             :   int16_t y_dc_levels[16];    // Quantized levels for luma-DC, luma-AC, chroma.</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             :   int16_t y_ac_levels[16][16];</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :   int16_t uv_levels[4 + 4][16];</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             :   int mode_i16;               // mode number for intra16 prediction</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :   uint8_t modes_i4[16];       // mode numbers for intra4 predictions</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :   int mode_uv;                // mode number of chroma prediction</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :   uint32_t nz;                // non-zero blocks</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             :   int8_t derr[2][3];          // DC diffusion errors for U/V for blocks #1/2/3</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             : } VP8ModeScore;</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             : </span>
+<span id="L224"><span class="lineNum">     224</span>                 :             : // Iterator structure to iterate through macroblocks, pointing to the</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             : // right neighbouring data (samples, predictions, contexts, ...)</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             : typedef struct {</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             :   int x_, y_;                      // current macroblock</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :   uint8_t*      yuv_in_;           // input samples</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             :   uint8_t*      yuv_out_;          // output samples</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             :   uint8_t*      yuv_out2_;         // secondary buffer swapped with yuv_out_.</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             :   uint8_t*      yuv_p_;            // scratch buffer for prediction</span>
+<span id="L232"><span class="lineNum">     232</span>                 :             :   VP8Encoder*   enc_;              // back-pointer</span>
+<span id="L233"><span class="lineNum">     233</span>                 :             :   VP8MBInfo*    mb_;               // current macroblock</span>
+<span id="L234"><span class="lineNum">     234</span>                 :             :   VP8BitWriter* bw_;               // current bit-writer</span>
+<span id="L235"><span class="lineNum">     235</span>                 :             :   uint8_t*      preds_;            // intra mode predictors (4x4 blocks)</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             :   uint32_t*     nz_;               // non-zero pattern</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             :   uint8_t       i4_boundary_[37];  // 32+5 boundary samples needed by intra4x4</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :   uint8_t*      i4_top_;           // pointer to the current top boundary sample</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :   int           i4_;               // current intra4x4 mode being tested</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             :   int           top_nz_[9];        // top-non-zero context.</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :   int           left_nz_[9];       // left-non-zero. left_nz[8] is independent.</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :   uint64_t      bit_count_[4][3];  // bit counters for coded levels.</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             :   uint64_t      luma_bits_;        // macroblock bit-cost for luma</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :   uint64_t      uv_bits_;          // macroblock bit-cost for chroma</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :   LFStats*      lf_stats_;         // filter stats (borrowed from enc_)</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             :   int           do_trellis_;       // if true, perform extra level optimisation</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             :   int           count_down_;       // number of mb still to be processed</span>
+<span id="L248"><span class="lineNum">     248</span>                 :             :   int           count_down0_;      // starting counter value (for progress)</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             :   int           percent0_;         // saved initial progress percent</span>
+<span id="L250"><span class="lineNum">     250</span>                 :             : </span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :   DError        left_derr_;        // left error diffusion (u/v)</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             :   DError*       top_derr_;         // top diffusion error - NULL if disabled</span>
+<span id="L253"><span class="lineNum">     253</span>                 :             : </span>
+<span id="L254"><span class="lineNum">     254</span>                 :             :   uint8_t* y_left_;    // left luma samples (addressable from index -1 to 15).</span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :   uint8_t* u_left_;    // left u samples (addressable from index -1 to 7)</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :   uint8_t* v_left_;    // left v samples (addressable from index -1 to 7)</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             : </span>
+<span id="L258"><span class="lineNum">     258</span>                 :             :   uint8_t* y_top_;     // top luma samples at position 'x_'</span>
+<span id="L259"><span class="lineNum">     259</span>                 :             :   uint8_t* uv_top_;    // top u/v samples at position 'x_', packed as 16 bytes</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             : </span>
+<span id="L261"><span class="lineNum">     261</span>                 :             :   // memory for storing y/u/v_left_</span>
+<span id="L262"><span class="lineNum">     262</span>                 :             :   uint8_t yuv_left_mem_[17 + 16 + 16 + 8 + WEBP_ALIGN_CST];</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :   // memory for yuv_*</span>
+<span id="L264"><span class="lineNum">     264</span>                 :             :   uint8_t yuv_mem_[3 * YUV_SIZE_ENC + PRED_SIZE_ENC + WEBP_ALIGN_CST];</span>
+<span id="L265"><span class="lineNum">     265</span>                 :             : } VP8EncIterator;</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             : </span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :   // in iterator.c</span>
+<span id="L268"><span class="lineNum">     268</span>                 :             : // must be called first</span>
+<span id="L269"><span class="lineNum">     269</span>                 :             : void VP8IteratorInit(VP8Encoder* const enc, VP8EncIterator* const it);</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             : // restart a scan</span>
+<span id="L271"><span class="lineNum">     271</span>                 :             : void VP8IteratorReset(VP8EncIterator* const it);</span>
+<span id="L272"><span class="lineNum">     272</span>                 :             : // reset iterator position to row 'y'</span>
+<span id="L273"><span class="lineNum">     273</span>                 :             : void VP8IteratorSetRow(VP8EncIterator* const it, int y);</span>
+<span id="L274"><span class="lineNum">     274</span>                 :             : // set count down (=number of iterations to go)</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             : void VP8IteratorSetCountDown(VP8EncIterator* const it, int count_down);</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             : // return true if iteration is finished</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             : int VP8IteratorIsDone(const VP8EncIterator* const it);</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             : // Import uncompressed samples from source.</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             : // If tmp_32 is not NULL, import boundary samples too.</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             : // tmp_32 is a 32-bytes scratch buffer that must be aligned in memory.</span>
+<span id="L281"><span class="lineNum">     281</span>                 :             : void VP8IteratorImport(VP8EncIterator* const it, uint8_t* const tmp_32);</span>
+<span id="L282"><span class="lineNum">     282</span>                 :             : // export decimated samples</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             : void VP8IteratorExport(const VP8EncIterator* const it);</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             : // go to next macroblock. Returns false if not finished.</span>
+<span id="L285"><span class="lineNum">     285</span>                 :             : int VP8IteratorNext(VP8EncIterator* const it);</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             : // save the yuv_out_ boundary values to top_/left_ arrays for next iterations.</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             : void VP8IteratorSaveBoundary(VP8EncIterator* const it);</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             : // Report progression based on macroblock rows. Return 0 for user-abort request.</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             : int VP8IteratorProgress(const VP8EncIterator* const it, int delta);</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             : // Intra4x4 iterations</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             : void VP8IteratorStartI4(VP8EncIterator* const it);</span>
+<span id="L292"><span class="lineNum">     292</span>                 :             : // returns true if not done.</span>
+<span id="L293"><span class="lineNum">     293</span>                 :             : int VP8IteratorRotateI4(VP8EncIterator* const it,</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :                         const uint8_t* const yuv_out);</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             : </span>
+<span id="L296"><span class="lineNum">     296</span>                 :             : // Non-zero context setup/teardown</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             : void VP8IteratorNzToBytes(VP8EncIterator* const it);</span>
+<span id="L298"><span class="lineNum">     298</span>                 :             : void VP8IteratorBytesToNz(VP8EncIterator* const it);</span>
+<span id="L299"><span class="lineNum">     299</span>                 :             : </span>
+<span id="L300"><span class="lineNum">     300</span>                 :             : // Helper functions to set mode properties</span>
+<span id="L301"><span class="lineNum">     301</span>                 :             : void VP8SetIntra16Mode(const VP8EncIterator* const it, int mode);</span>
+<span id="L302"><span class="lineNum">     302</span>                 :             : void VP8SetIntra4Mode(const VP8EncIterator* const it, const uint8_t* modes);</span>
+<span id="L303"><span class="lineNum">     303</span>                 :             : void VP8SetIntraUVMode(const VP8EncIterator* const it, int mode);</span>
+<span id="L304"><span class="lineNum">     304</span>                 :             : void VP8SetSkip(const VP8EncIterator* const it, int skip);</span>
+<span id="L305"><span class="lineNum">     305</span>                 :             : void VP8SetSegment(const VP8EncIterator* const it, int segment);</span>
+<span id="L306"><span class="lineNum">     306</span>                 :             : </span>
+<span id="L307"><span class="lineNum">     307</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L308"><span class="lineNum">     308</span>                 :             : // Paginated token buffer</span>
+<span id="L309"><span class="lineNum">     309</span>                 :             : </span>
+<span id="L310"><span class="lineNum">     310</span>                 :             : typedef struct VP8Tokens VP8Tokens;  // struct details in token.c</span>
+<span id="L311"><span class="lineNum">     311</span>                 :             : </span>
+<span id="L312"><span class="lineNum">     312</span>                 :             : typedef struct {</span>
+<span id="L313"><span class="lineNum">     313</span>                 :             : #if !defined(DISABLE_TOKEN_BUFFER)</span>
+<span id="L314"><span class="lineNum">     314</span>                 :             :   VP8Tokens* pages_;        // first page</span>
+<span id="L315"><span class="lineNum">     315</span>                 :             :   VP8Tokens** last_page_;   // last page</span>
+<span id="L316"><span class="lineNum">     316</span>                 :             :   uint16_t* tokens_;        // set to (*last_page_)-&gt;tokens_</span>
+<span id="L317"><span class="lineNum">     317</span>                 :             :   int left_;                // how many free tokens left before the page is full</span>
+<span id="L318"><span class="lineNum">     318</span>                 :             :   int page_size_;           // number of tokens per page</span>
+<span id="L319"><span class="lineNum">     319</span>                 :             : #endif</span>
+<span id="L320"><span class="lineNum">     320</span>                 :             :   int error_;         // true in case of malloc error</span>
+<span id="L321"><span class="lineNum">     321</span>                 :             : } VP8TBuffer;</span>
+<span id="L322"><span class="lineNum">     322</span>                 :             : </span>
+<span id="L323"><span class="lineNum">     323</span>                 :             : // initialize an empty buffer</span>
+<span id="L324"><span class="lineNum">     324</span>                 :             : void VP8TBufferInit(VP8TBuffer* const b, int page_size);</span>
+<span id="L325"><span class="lineNum">     325</span>                 :             : void VP8TBufferClear(VP8TBuffer* const b);   // de-allocate pages memory</span>
+<span id="L326"><span class="lineNum">     326</span>                 :             : </span>
+<span id="L327"><span class="lineNum">     327</span>                 :             : #if !defined(DISABLE_TOKEN_BUFFER)</span>
+<span id="L328"><span class="lineNum">     328</span>                 :             : </span>
+<span id="L329"><span class="lineNum">     329</span>                 :             : // Finalizes bitstream when probabilities are known.</span>
+<span id="L330"><span class="lineNum">     330</span>                 :             : // Deletes the allocated token memory if final_pass is true.</span>
+<span id="L331"><span class="lineNum">     331</span>                 :             : int VP8EmitTokens(VP8TBuffer* const b, VP8BitWriter* const bw,</span>
+<span id="L332"><span class="lineNum">     332</span>                 :             :                   const uint8_t* const probas, int final_pass);</span>
+<span id="L333"><span class="lineNum">     333</span>                 :             : </span>
+<span id="L334"><span class="lineNum">     334</span>                 :             : // record the coding of coefficients without knowing the probabilities yet</span>
+<span id="L335"><span class="lineNum">     335</span>                 :             : int VP8RecordCoeffTokens(int ctx, const struct VP8Residual* const res,</span>
+<span id="L336"><span class="lineNum">     336</span>                 :             :                          VP8TBuffer* const tokens);</span>
+<span id="L337"><span class="lineNum">     337</span>                 :             : </span>
+<span id="L338"><span class="lineNum">     338</span>                 :             : // Estimate the final coded size given a set of 'probas'.</span>
+<span id="L339"><span class="lineNum">     339</span>                 :             : size_t VP8EstimateTokenSize(VP8TBuffer* const b, const uint8_t* const probas);</span>
+<span id="L340"><span class="lineNum">     340</span>                 :             : </span>
+<span id="L341"><span class="lineNum">     341</span>                 :             : #endif  // !DISABLE_TOKEN_BUFFER</span>
+<span id="L342"><span class="lineNum">     342</span>                 :             : </span>
+<span id="L343"><span class="lineNum">     343</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L344"><span class="lineNum">     344</span>                 :             : // VP8Encoder</span>
+<span id="L345"><span class="lineNum">     345</span>                 :             : </span>
+<span id="L346"><span class="lineNum">     346</span>                 :             : struct VP8Encoder {</span>
+<span id="L347"><span class="lineNum">     347</span>                 :             :   const WebPConfig* config_;    // user configuration and parameters</span>
+<span id="L348"><span class="lineNum">     348</span>                 :             :   WebPPicture* pic_;            // input / output picture</span>
+<span id="L349"><span class="lineNum">     349</span>                 :             : </span>
+<span id="L350"><span class="lineNum">     350</span>                 :             :   // headers</span>
+<span id="L351"><span class="lineNum">     351</span>                 :             :   VP8EncFilterHeader   filter_hdr_;     // filtering information</span>
+<span id="L352"><span class="lineNum">     352</span>                 :             :   VP8EncSegmentHeader  segment_hdr_;    // segment information</span>
+<span id="L353"><span class="lineNum">     353</span>                 :             : </span>
+<span id="L354"><span class="lineNum">     354</span>                 :             :   int profile_;                      // VP8's profile, deduced from Config.</span>
+<span id="L355"><span class="lineNum">     355</span>                 :             : </span>
+<span id="L356"><span class="lineNum">     356</span>                 :             :   // dimension, in macroblock units.</span>
+<span id="L357"><span class="lineNum">     357</span>                 :             :   int mb_w_, mb_h_;</span>
+<span id="L358"><span class="lineNum">     358</span>                 :             :   int preds_w_;   // stride of the *preds_ prediction plane (=4*mb_w + 1)</span>
+<span id="L359"><span class="lineNum">     359</span>                 :             : </span>
+<span id="L360"><span class="lineNum">     360</span>                 :             :   // number of partitions (1, 2, 4 or 8 = MAX_NUM_PARTITIONS)</span>
+<span id="L361"><span class="lineNum">     361</span>                 :             :   int num_parts_;</span>
+<span id="L362"><span class="lineNum">     362</span>                 :             : </span>
+<span id="L363"><span class="lineNum">     363</span>                 :             :   // per-partition boolean decoders.</span>
+<span id="L364"><span class="lineNum">     364</span>                 :             :   VP8BitWriter bw_;                         // part0</span>
+<span id="L365"><span class="lineNum">     365</span>                 :             :   VP8BitWriter parts_[MAX_NUM_PARTITIONS];  // token partitions</span>
+<span id="L366"><span class="lineNum">     366</span>                 :             :   VP8TBuffer tokens_;                       // token buffer</span>
+<span id="L367"><span class="lineNum">     367</span>                 :             : </span>
+<span id="L368"><span class="lineNum">     368</span>                 :             :   int percent_;                             // for progress</span>
+<span id="L369"><span class="lineNum">     369</span>                 :             : </span>
+<span id="L370"><span class="lineNum">     370</span>                 :             :   // transparency blob</span>
+<span id="L371"><span class="lineNum">     371</span>                 :             :   int has_alpha_;</span>
+<span id="L372"><span class="lineNum">     372</span>                 :             :   uint8_t* alpha_data_;       // non-NULL if transparency is present</span>
+<span id="L373"><span class="lineNum">     373</span>                 :             :   uint32_t alpha_data_size_;</span>
+<span id="L374"><span class="lineNum">     374</span>                 :             :   WebPWorker alpha_worker_;</span>
+<span id="L375"><span class="lineNum">     375</span>                 :             : </span>
+<span id="L376"><span class="lineNum">     376</span>                 :             :   // quantization info (one set of DC/AC dequant factor per segment)</span>
+<span id="L377"><span class="lineNum">     377</span>                 :             :   VP8SegmentInfo dqm_[NUM_MB_SEGMENTS];</span>
+<span id="L378"><span class="lineNum">     378</span>                 :             :   int base_quant_;                 // nominal quantizer value. Only used</span>
+<span id="L379"><span class="lineNum">     379</span>                 :             :                                    // for relative coding of segments' quant.</span>
+<span id="L380"><span class="lineNum">     380</span>                 :             :   int alpha_;                      // global susceptibility (&lt;=&gt; complexity)</span>
+<span id="L381"><span class="lineNum">     381</span>                 :             :   int uv_alpha_;                   // U/V quantization susceptibility</span>
+<span id="L382"><span class="lineNum">     382</span>                 :             :   // global offset of quantizers, shared by all segments</span>
+<span id="L383"><span class="lineNum">     383</span>                 :             :   int dq_y1_dc_;</span>
+<span id="L384"><span class="lineNum">     384</span>                 :             :   int dq_y2_dc_, dq_y2_ac_;</span>
+<span id="L385"><span class="lineNum">     385</span>                 :             :   int dq_uv_dc_, dq_uv_ac_;</span>
+<span id="L386"><span class="lineNum">     386</span>                 :             : </span>
+<span id="L387"><span class="lineNum">     387</span>                 :             :   // probabilities and statistics</span>
+<span id="L388"><span class="lineNum">     388</span>                 :             :   VP8EncProba proba_;</span>
+<span id="L389"><span class="lineNum">     389</span>                 :             :   uint64_t    sse_[4];      // sum of Y/U/V/A squared errors for all macroblocks</span>
+<span id="L390"><span class="lineNum">     390</span>                 :             :   uint64_t    sse_count_;   // pixel count for the sse_[] stats</span>
+<span id="L391"><span class="lineNum">     391</span>                 :             :   int         coded_size_;</span>
+<span id="L392"><span class="lineNum">     392</span>                 :             :   int         residual_bytes_[3][4];</span>
+<span id="L393"><span class="lineNum">     393</span>                 :             :   int         block_count_[3];</span>
+<span id="L394"><span class="lineNum">     394</span>                 :             : </span>
+<span id="L395"><span class="lineNum">     395</span>                 :             :   // quality/speed settings</span>
+<span id="L396"><span class="lineNum">     396</span>                 :             :   int method_;               // 0=fastest, 6=best/slowest.</span>
+<span id="L397"><span class="lineNum">     397</span>                 :             :   VP8RDLevel rd_opt_level_;  // Deduced from method_.</span>
+<span id="L398"><span class="lineNum">     398</span>                 :             :   int max_i4_header_bits_;   // partition #0 safeness factor</span>
+<span id="L399"><span class="lineNum">     399</span>                 :             :   int mb_header_limit_;      // rough limit for header bits per MB</span>
+<span id="L400"><span class="lineNum">     400</span>                 :             :   int thread_level_;         // derived from config-&gt;thread_level</span>
+<span id="L401"><span class="lineNum">     401</span>                 :             :   int do_search_;            // derived from config-&gt;target_XXX</span>
+<span id="L402"><span class="lineNum">     402</span>                 :             :   int use_tokens_;           // if true, use token buffer</span>
+<span id="L403"><span class="lineNum">     403</span>                 :             : </span>
+<span id="L404"><span class="lineNum">     404</span>                 :             :   // Memory</span>
+<span id="L405"><span class="lineNum">     405</span>                 :             :   VP8MBInfo* mb_info_;   // contextual macroblock infos (mb_w_ + 1)</span>
+<span id="L406"><span class="lineNum">     406</span>                 :             :   uint8_t*   preds_;     // predictions modes: (4*mb_w+1) * (4*mb_h+1)</span>
+<span id="L407"><span class="lineNum">     407</span>                 :             :   uint32_t*  nz_;        // non-zero bit context: mb_w+1</span>
+<span id="L408"><span class="lineNum">     408</span>                 :             :   uint8_t*   y_top_;     // top luma samples.</span>
+<span id="L409"><span class="lineNum">     409</span>                 :             :   uint8_t*   uv_top_;    // top u/v samples.</span>
+<span id="L410"><span class="lineNum">     410</span>                 :             :                          // U and V are packed into 16 bytes (8 U + 8 V)</span>
+<span id="L411"><span class="lineNum">     411</span>                 :             :   LFStats*   lf_stats_;  // autofilter stats (if NULL, autofilter is off)</span>
+<span id="L412"><span class="lineNum">     412</span>                 :             :   DError*    top_derr_;  // diffusion error (NULL if disabled)</span>
+<span id="L413"><span class="lineNum">     413</span>                 :             : };</span>
+<span id="L414"><span class="lineNum">     414</span>                 :             : </span>
+<span id="L415"><span class="lineNum">     415</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L416"><span class="lineNum">     416</span>                 :             : // internal functions. Not public.</span>
+<span id="L417"><span class="lineNum">     417</span>                 :             : </span>
+<span id="L418"><span class="lineNum">     418</span>                 :             :   // in tree.c</span>
+<span id="L419"><span class="lineNum">     419</span>                 :             : extern const uint8_t VP8CoeffsProba0[NUM_TYPES][NUM_BANDS][NUM_CTX][NUM_PROBAS];</span>
+<span id="L420"><span class="lineNum">     420</span>                 :             : extern const uint8_t</span>
+<span id="L421"><span class="lineNum">     421</span>                 :             :     VP8CoeffsUpdateProba[NUM_TYPES][NUM_BANDS][NUM_CTX][NUM_PROBAS];</span>
+<span id="L422"><span class="lineNum">     422</span>                 :             : // Reset the token probabilities to their initial (default) values</span>
+<span id="L423"><span class="lineNum">     423</span>                 :             : void VP8DefaultProbas(VP8Encoder* const enc);</span>
+<span id="L424"><span class="lineNum">     424</span>                 :             : // Write the token probabilities</span>
+<span id="L425"><span class="lineNum">     425</span>                 :             : void VP8WriteProbas(VP8BitWriter* const bw, const VP8EncProba* const probas);</span>
+<span id="L426"><span class="lineNum">     426</span>                 :             : // Writes the partition #0 modes (that is: all intra modes)</span>
+<span id="L427"><span class="lineNum">     427</span>                 :             : void VP8CodeIntraModes(VP8Encoder* const enc);</span>
+<span id="L428"><span class="lineNum">     428</span>                 :             : </span>
+<span id="L429"><span class="lineNum">     429</span>                 :             :   // in syntax.c</span>
+<span id="L430"><span class="lineNum">     430</span>                 :             : // Generates the final bitstream by coding the partition0 and headers,</span>
+<span id="L431"><span class="lineNum">     431</span>                 :             : // and appending an assembly of all the pre-coded token partitions.</span>
+<span id="L432"><span class="lineNum">     432</span>                 :             : // Return true if everything is ok.</span>
+<span id="L433"><span class="lineNum">     433</span>                 :             : int VP8EncWrite(VP8Encoder* const enc);</span>
+<span id="L434"><span class="lineNum">     434</span>                 :             : // Release memory allocated for bit-writing in VP8EncLoop &amp; seq.</span>
+<span id="L435"><span class="lineNum">     435</span>                 :             : void VP8EncFreeBitWriters(VP8Encoder* const enc);</span>
+<span id="L436"><span class="lineNum">     436</span>                 :             : </span>
+<span id="L437"><span class="lineNum">     437</span>                 :             :   // in frame.c</span>
+<span id="L438"><span class="lineNum">     438</span>                 :             : extern const uint8_t VP8Cat3[];</span>
+<span id="L439"><span class="lineNum">     439</span>                 :             : extern const uint8_t VP8Cat4[];</span>
+<span id="L440"><span class="lineNum">     440</span>                 :             : extern const uint8_t VP8Cat5[];</span>
+<span id="L441"><span class="lineNum">     441</span>                 :             : extern const uint8_t VP8Cat6[];</span>
+<span id="L442"><span class="lineNum">     442</span>                 :             : </span>
+<span id="L443"><span class="lineNum">     443</span>                 :             : // Form all the four Intra16x16 predictions in the yuv_p_ cache</span>
+<span id="L444"><span class="lineNum">     444</span>                 :             : void VP8MakeLuma16Preds(const VP8EncIterator* const it);</span>
+<span id="L445"><span class="lineNum">     445</span>                 :             : // Form all the four Chroma8x8 predictions in the yuv_p_ cache</span>
+<span id="L446"><span class="lineNum">     446</span>                 :             : void VP8MakeChroma8Preds(const VP8EncIterator* const it);</span>
+<span id="L447"><span class="lineNum">     447</span>                 :             : // Form all the ten Intra4x4 predictions in the yuv_p_ cache</span>
+<span id="L448"><span class="lineNum">     448</span>                 :             : // for the 4x4 block it-&gt;i4_</span>
+<span id="L449"><span class="lineNum">     449</span>                 :             : void VP8MakeIntra4Preds(const VP8EncIterator* const it);</span>
+<span id="L450"><span class="lineNum">     450</span>                 :             : // Rate calculation</span>
+<span id="L451"><span class="lineNum">     451</span>                 :             : int VP8GetCostLuma16(VP8EncIterator* const it, const VP8ModeScore* const rd);</span>
+<span id="L452"><span class="lineNum">     452</span>                 :             : int VP8GetCostLuma4(VP8EncIterator* const it, const int16_t levels[16]);</span>
+<span id="L453"><span class="lineNum">     453</span>                 :             : int VP8GetCostUV(VP8EncIterator* const it, const VP8ModeScore* const rd);</span>
+<span id="L454"><span class="lineNum">     454</span>                 :             : // Main coding calls</span>
+<span id="L455"><span class="lineNum">     455</span>                 :             : int VP8EncLoop(VP8Encoder* const enc);</span>
+<span id="L456"><span class="lineNum">     456</span>                 :             : int VP8EncTokenLoop(VP8Encoder* const enc);</span>
+<span id="L457"><span class="lineNum">     457</span>                 :             : </span>
+<span id="L458"><span class="lineNum">     458</span>                 :             :   // in webpenc.c</span>
+<span id="L459"><span class="lineNum">     459</span>                 :             : // Assign an error code to a picture. Return false for convenience.</span>
+<span id="L460"><span class="lineNum">     460</span>                 :             : int WebPEncodingSetError(const WebPPicture* const pic, WebPEncodingError error);</span>
+<span id="L461"><span class="lineNum">     461</span>                 :             : int WebPReportProgress(const WebPPicture* const pic,</span>
+<span id="L462"><span class="lineNum">     462</span>                 :             :                        int percent, int* const percent_store);</span>
+<span id="L463"><span class="lineNum">     463</span>                 :             : </span>
+<span id="L464"><span class="lineNum">     464</span>                 :             :   // in analysis.c</span>
+<span id="L465"><span class="lineNum">     465</span>                 :             : // Main analysis loop. Decides the segmentations and complexity.</span>
+<span id="L466"><span class="lineNum">     466</span>                 :             : // Assigns a first guess for Intra16 and uvmode_ prediction modes.</span>
+<span id="L467"><span class="lineNum">     467</span>                 :             : int VP8EncAnalyze(VP8Encoder* const enc);</span>
+<span id="L468"><span class="lineNum">     468</span>                 :             : </span>
+<span id="L469"><span class="lineNum">     469</span>                 :             :   // in quant.c</span>
+<span id="L470"><span class="lineNum">     470</span>                 :             : // Sets up segment's quantization values, base_quant_ and filter strengths.</span>
+<span id="L471"><span class="lineNum">     471</span>                 :             : void VP8SetSegmentParams(VP8Encoder* const enc, float quality);</span>
+<span id="L472"><span class="lineNum">     472</span>                 :             : // Pick best modes and fills the levels. Returns true if skipped.</span>
+<span id="L473"><span class="lineNum">     473</span>                 :             : int VP8Decimate(VP8EncIterator* WEBP_RESTRICT const it,</span>
+<span id="L474"><span class="lineNum">     474</span>                 :             :                 VP8ModeScore* WEBP_RESTRICT const rd,</span>
+<span id="L475"><span class="lineNum">     475</span>                 :             :                 VP8RDLevel rd_opt);</span>
+<span id="L476"><span class="lineNum">     476</span>                 :             : </span>
+<span id="L477"><span class="lineNum">     477</span>                 :             :   // in alpha.c</span>
+<span id="L478"><span class="lineNum">     478</span>                 :             : void VP8EncInitAlpha(VP8Encoder* const enc);    // initialize alpha compression</span>
+<span id="L479"><span class="lineNum">     479</span>                 :             : int VP8EncStartAlpha(VP8Encoder* const enc);    // start alpha coding process</span>
+<span id="L480"><span class="lineNum">     480</span>                 :             : int VP8EncFinishAlpha(VP8Encoder* const enc);   // finalize compressed data</span>
+<span id="L481"><span class="lineNum">     481</span>                 :             : int VP8EncDeleteAlpha(VP8Encoder* const enc);   // delete compressed data</span>
+<span id="L482"><span class="lineNum">     482</span>                 :             : </span>
+<span id="L483"><span class="lineNum">     483</span>                 :             : // autofilter</span>
+<span id="L484"><span class="lineNum">     484</span>                 :             : void VP8InitFilter(VP8EncIterator* const it);</span>
+<span id="L485"><span class="lineNum">     485</span>                 :             : void VP8StoreFilterStats(VP8EncIterator* const it);</span>
+<span id="L486"><span class="lineNum">     486</span>                 :             : void VP8AdjustFilterStrength(VP8EncIterator* const it);</span>
+<span id="L487"><span class="lineNum">     487</span>                 :             : </span>
+<span id="L488"><span class="lineNum">     488</span>                 :             : // returns the approximate filtering strength needed to smooth a edge</span>
+<span id="L489"><span class="lineNum">     489</span>                 :             : // step of 'delta', given a sharpness parameter 'sharpness'.</span>
+<span id="L490"><span class="lineNum">     490</span>                 :             : int VP8FilterStrengthFromDelta(int sharpness, int delta);</span>
+<span id="L491"><span class="lineNum">     491</span>                 :             : </span>
+<span id="L492"><span class="lineNum">     492</span>                 :             :   // misc utils for picture_*.c:</span>
+<span id="L493"><span class="lineNum">     493</span>                 :             : </span>
+<span id="L494"><span class="lineNum">     494</span>                 :             : // Returns true if 'picture' is non-NULL and dimensions/colorspace are within</span>
+<span id="L495"><span class="lineNum">     495</span>                 :             : // their valid ranges. If returning false, the 'error_code' in 'picture' is</span>
+<span id="L496"><span class="lineNum">     496</span>                 :             : // updated.</span>
+<span id="L497"><span class="lineNum">     497</span>                 :             : int WebPValidatePicture(const WebPPicture* const picture);</span>
+<span id="L498"><span class="lineNum">     498</span>                 :             : </span>
+<span id="L499"><span class="lineNum">     499</span>                 :             : // Remove reference to the ARGB/YUVA buffer (doesn't free anything).</span>
+<span id="L500"><span class="lineNum">     500</span>                 :             : void WebPPictureResetBuffers(WebPPicture* const picture);</span>
+<span id="L501"><span class="lineNum">     501</span>                 :             : </span>
+<span id="L502"><span class="lineNum">     502</span>                 :             : // Allocates ARGB buffer according to set width/height (previous one is</span>
+<span id="L503"><span class="lineNum">     503</span>                 :             : // always free'd). Preserves the YUV(A) buffer. Returns false in case of error</span>
+<span id="L504"><span class="lineNum">     504</span>                 :             : // (invalid param, out-of-memory).</span>
+<span id="L505"><span class="lineNum">     505</span>                 :             : int WebPPictureAllocARGB(WebPPicture* const picture);</span>
+<span id="L506"><span class="lineNum">     506</span>                 :             : </span>
+<span id="L507"><span class="lineNum">     507</span>                 :             : // Allocates YUVA buffer according to set width/height (previous one is always</span>
+<span id="L508"><span class="lineNum">     508</span>                 :             : // free'd). Uses picture-&gt;csp to determine whether an alpha buffer is needed.</span>
+<span id="L509"><span class="lineNum">     509</span>                 :             : // Preserves the ARGB buffer.</span>
+<span id="L510"><span class="lineNum">     510</span>                 :             : // Returns false in case of error (invalid param, out-of-memory).</span>
+<span id="L511"><span class="lineNum">     511</span>                 :             : int WebPPictureAllocYUVA(WebPPicture* const picture);</span>
+<span id="L512"><span class="lineNum">     512</span>                 :             : </span>
+<span id="L513"><span class="lineNum">     513</span>                 :             : // Replace samples that are fully transparent by 'color' to help compressibility</span>
+<span id="L514"><span class="lineNum">     514</span>                 :             : // (no guarantee, though). Assumes pic-&gt;use_argb is true.</span>
+<span id="L515"><span class="lineNum">     515</span>                 :             : void WebPReplaceTransparentPixels(WebPPicture* const pic, uint32_t color);</span>
+<span id="L516"><span class="lineNum">     516</span>                 :             : </span>
+<span id="L517"><span class="lineNum">     517</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L518"><span class="lineNum">     518</span>                 :             : </span>
+<span id="L519"><span class="lineNum">     519</span>                 :             : #ifdef __cplusplus</span>
+<span id="L520"><span class="lineNum">     520</span>                 :             : }    // extern &quot;C&quot;</span>
+<span id="L521"><span class="lineNum">     521</span>                 :             : #endif</span>
+<span id="L522"><span class="lineNum">     522</span>                 :             : </span>
+<span id="L523"><span class="lineNum">     523</span>                 :             : #endif  // WEBP_ENC_VP8I_ENC_H_</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - home/kuzz/ImageMagickFuzzing/ImageMagick_cov/MagickCore/quantum.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">/home/kuzz/ImageMagickFuzzing/ImageMagick_cov/MagickCore</a> - quantum.h<span style="font-size: 80%;"> (source / <a href="quantum.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">11</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">2</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :   Copyright @ 1999 ImageMagick Studio LLC, a non-profit organization</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :   dedicated to making software imaging solutions freely available.</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : </span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :   You may not use this file except in compliance with the License.  You may</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :   obtain a copy of the License at</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : </span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :     https://imagemagick.org/license/</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : </span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :   Unless required by applicable law or agreed to in writing, software</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             :   distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             :   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             :   See the License for the specific language governing permissions and</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             :   limitations under the License.</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : </span>
+<span id="L16"><span class="lineNum">      16</span>                 :             :   MagickCore quantum inline methods.</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : */</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #ifndef MAGICKCORE_QUANTUM_H</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #define MAGICKCORE_QUANTUM_H</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : </span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #include &lt;float.h&gt;</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #include &quot;MagickCore/image.h&quot;</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : #include &quot;MagickCore/semaphore.h&quot;</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : </span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : #if defined(__cplusplus) || defined(c_plusplus)</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : extern &quot;C&quot; {</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : #endif</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : </span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : typedef enum</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : {</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :   UndefinedEndian,</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :   LSBEndian,</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :   MSBEndian</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : } EndianType;</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : </span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : typedef enum</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : {</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :   UndefinedQuantumAlpha,</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :   AssociatedQuantumAlpha,</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :   DisassociatedQuantumAlpha</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : } QuantumAlphaType;</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : </span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : typedef enum</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : {</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :   UndefinedQuantumFormat,</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :   FloatingPointQuantumFormat,</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :   SignedQuantumFormat,</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :   UnsignedQuantumFormat</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : } QuantumFormatType;</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : </span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : typedef enum</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : {</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :   UndefinedQuantum,</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :   AlphaQuantum,</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :   BGRAQuantum,</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :   BGROQuantum,</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :   BGRQuantum,</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :   BlackQuantum,</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :   BlueQuantum,</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :   CbYCrAQuantum,</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :   CbYCrQuantum,</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   CbYCrYQuantum,</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   CMYKAQuantum,</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   CMYKOQuantum,</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   CMYKQuantum,</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   CyanQuantum,</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :   GrayAlphaQuantum,</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :   GrayQuantum,</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :   GreenQuantum,</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :   IndexAlphaQuantum,</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   IndexQuantum,</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   MagentaQuantum,</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :   OpacityQuantum,</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   RedQuantum,</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :   RGBAQuantum,</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :   RGBOQuantum,</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :   RGBPadQuantum,</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   RGBQuantum,</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :   YellowQuantum,</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :   MultispectralQuantum</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             : } QuantumType;</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             : </span>
+<span id="L83"><span class="lineNum">      83</span>                 :             : typedef struct _QuantumInfo</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :   QuantumInfo;</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : </span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaGNC tlaBgGNC">  1313156269 : static inline Quantum ClampToQuantum(const MagickRealType quantum)</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : {</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : #if defined(MAGICKCORE_HDRI_SUPPORT)</span>
+<span id="L89"><span class="lineNum">      89</span>                 :<span class="tlaGNC">  1313156269 :   return((Quantum) quantum);</span></span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : #else</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :   if ((IsNaN(quantum) != 0) || (quantum &lt;= 0.0))</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :     return((Quantum) 0);</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :   if (quantum &gt;= (MagickRealType) QuantumRange)</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :     return(QuantumRange);</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :   return((Quantum) (quantum+0.5));</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : #endif</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : }</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             : </span>
+<span id="L99"><span class="lineNum">      99</span>                 :             : #if (MAGICKCORE_QUANTUM_DEPTH == 8)</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : static inline unsigned char ScaleQuantumToChar(const Quantum quantum)</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : {</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             : #if !defined(MAGICKCORE_HDRI_SUPPORT)</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :   return((unsigned char) quantum);</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             : #else</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :   if ((IsNaN(quantum) != 0) || (quantum &lt;= 0.0))</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :     return((unsigned char) 0);</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :   if (quantum &gt;= 255.0)</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :     return((unsigned char) 255);</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :   return((unsigned char) (quantum+0.5));</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             : #endif</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : }</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             : #elif (MAGICKCORE_QUANTUM_DEPTH == 16)</span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaGNC">    39831339 : static inline unsigned char ScaleQuantumToChar(const Quantum quantum)</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : {</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : #if !defined(MAGICKCORE_HDRI_SUPPORT)</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :   return((unsigned char) (((quantum+128UL)-((quantum+128UL) &gt;&gt; 8)) &gt;&gt; 8));</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             : #else</span>
+<span id="L118"><span class="lineNum">     118</span>                 :<span class="tlaGNC">    39831339 :   if ((IsNaN(quantum) != 0) || (quantum &lt;= 0.0f))</span></span>
+<span id="L119"><span class="lineNum">     119</span>                 :<span class="tlaGNC">    26535442 :     return((unsigned char) 0);</span></span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :   {</span>
+<span id="L121"><span class="lineNum">     121</span>                 :<span class="tlaGNC">    13295897 :     const Quantum scaled = quantum/257.0f;</span></span>
+<span id="L122"><span class="lineNum">     122</span>                 :<span class="tlaGNC">    13295897 :     if (scaled &gt;= 255.0f)</span></span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaGNC">    13292024 :       return((unsigned char) 255);</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :<span class="tlaGNC">        3873 :     return((unsigned char) (scaled+0.5f));</span></span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaGNC">    13295897 :   }</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :             : #endif</span>
+<span id="L127"><span class="lineNum">     127</span>                 :<span class="tlaGNC">    39831339 : }</span></span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : #elif (MAGICKCORE_QUANTUM_DEPTH == 32)</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : static inline unsigned char ScaleQuantumToChar(const Quantum quantum)</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : {</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             : #if !defined(MAGICKCORE_HDRI_SUPPORT)</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :   return((unsigned char) ((quantum+MagickULLConstant(8421504))/</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :     MagickULLConstant(16843009)));</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             : #else</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :   if ((IsNaN(quantum) != 0) || (quantum &lt;= 0.0))</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :     return(0);</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :   {</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :     const Quantum scaled = quantum/16843009.0;</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :     if (scaled &gt;= 255.0)</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :       return((unsigned char) 255);</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :     return((unsigned char) (scaled+0.5));</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :   }</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             : #endif</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             : }</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             : #elif (MAGICKCORE_QUANTUM_DEPTH == 64)</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : static inline unsigned char ScaleQuantumToChar(const Quantum quantum)</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : {</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             : #if !defined(MAGICKCORE_HDRI_SUPPORT)</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :   return((unsigned char) (quantum/72340172838076673.0+0.5));</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             : #else</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :   if ((IsNaN(quantum) != 0) || (quantum &lt;= 0.0))</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :     return(0);</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :   {</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :     const Quantum scaled = quantum/72340172838076673.0;</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :     if (scaled &gt;= 255.0)</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :       return((unsigned char) 255);</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :     return((unsigned char) (scaled+0.5));</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :   }</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : #endif</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             : }</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             : #endif</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             : </span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : extern MagickExport EndianType</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :   GetQuantumEndian(const QuantumInfo *);</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             : </span>
+<span id="L166"><span class="lineNum">     166</span>                 :             : extern MagickExport MagickBooleanType</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             :   SetQuantumDepth(const Image *,QuantumInfo *,const size_t),</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             :   SetQuantumEndian(const Image *,QuantumInfo *,const EndianType),</span>
+<span id="L169"><span class="lineNum">     169</span>                 :             :   SetQuantumFormat(const Image *,QuantumInfo *,const QuantumFormatType),</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :   SetQuantumMetaChannel(const Image *,QuantumInfo *,const ssize_t),</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             :   SetQuantumPad(const Image *,QuantumInfo *,const size_t);</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             : </span>
+<span id="L173"><span class="lineNum">     173</span>                 :             : extern MagickExport QuantumFormatType</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :   GetQuantumFormat(const QuantumInfo *);</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             : </span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : extern MagickExport QuantumInfo</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             :   *AcquireQuantumInfo(const ImageInfo *,Image *),</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :   *DestroyQuantumInfo(QuantumInfo *);</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : </span>
+<span id="L180"><span class="lineNum">     180</span>                 :             : extern MagickExport QuantumType</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :   GetQuantumType(Image *,ExceptionInfo *);</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : </span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : extern MagickExport size_t</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             :   ExportQuantumPixels(const Image *,CacheView *,QuantumInfo *,const QuantumType,</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             :     unsigned char *magick_restrict,ExceptionInfo *),</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :   GetQuantumExtent(const Image *,const QuantumInfo *,const QuantumType),</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :   ImportQuantumPixels(const Image *,CacheView *,QuantumInfo *,const QuantumType,</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             :     const unsigned char *magick_restrict,ExceptionInfo *);</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             : </span>
+<span id="L190"><span class="lineNum">     190</span>                 :             : extern MagickExport unsigned char</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :   *GetQuantumPixels(const QuantumInfo *);</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : </span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : extern MagickExport void</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             :   GetQuantumInfo(const ImageInfo *,QuantumInfo *),</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :   SetQuantumAlphaType(QuantumInfo *,const QuantumAlphaType),</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :   SetQuantumImageType(Image *,const QuantumType),</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :   SetQuantumMinIsWhite(QuantumInfo *,const MagickBooleanType),</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :   SetQuantumPack(QuantumInfo *,const MagickBooleanType),</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :   SetQuantumQuantum(QuantumInfo *,const size_t),</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :   SetQuantumScale(QuantumInfo *,const double);</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             : </span>
+<span id="L202"><span class="lineNum">     202</span>                 :             : #if defined(__cplusplus) || defined(c_plusplus)</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             : }</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             : #endif</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             : </span>
+<span id="L206"><span class="lineNum">     206</span>                 :             : #endif</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

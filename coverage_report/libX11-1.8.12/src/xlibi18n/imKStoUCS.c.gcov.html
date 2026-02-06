@@ -1,0 +1,414 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libX11-1.8.12/src/xlibi18n/imKStoUCS.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libX11-1.8.12/src/xlibi18n</a> - imKStoUCS.c<span style="font-size: 80%;"> (source / <a href="imKStoUCS.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">47</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : </span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : #ifdef HAVE_CONFIG_H</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : #include &lt;config.h&gt;</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : #endif</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : #include &quot;Xlibint.h&quot;</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : #include &quot;Ximint.h&quot;</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : </span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : static unsigned short const keysym_to_unicode_1a1_1ff[] = {</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :             0x0104, 0x02d8, 0x0141, 0x0000, 0x013d, 0x015a, 0x0000, /* 0x01a0-0x01a7 */</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :     0x0000, 0x0160, 0x015e, 0x0164, 0x0179, 0x0000, 0x017d, 0x017b, /* 0x01a8-0x01af */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             :     0x0000, 0x0105, 0x02db, 0x0142, 0x0000, 0x013e, 0x015b, 0x02c7, /* 0x01b0-0x01b7 */</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             :     0x0000, 0x0161, 0x015f, 0x0165, 0x017a, 0x02dd, 0x017e, 0x017c, /* 0x01b8-0x01bf */</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             :     0x0154, 0x0000, 0x0000, 0x0102, 0x0000, 0x0139, 0x0106, 0x0000, /* 0x01c0-0x01c7 */</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             :     0x010c, 0x0000, 0x0118, 0x0000, 0x011a, 0x0000, 0x0000, 0x010e, /* 0x01c8-0x01cf */</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             :     0x0110, 0x0143, 0x0147, 0x0000, 0x0000, 0x0150, 0x0000, 0x0000, /* 0x01d0-0x01d7 */</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             :     0x0158, 0x016e, 0x0000, 0x0170, 0x0000, 0x0000, 0x0162, 0x0000, /* 0x01d8-0x01df */</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             :     0x0155, 0x0000, 0x0000, 0x0103, 0x0000, 0x013a, 0x0107, 0x0000, /* 0x01e0-0x01e7 */</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             :     0x010d, 0x0000, 0x0119, 0x0000, 0x011b, 0x0000, 0x0000, 0x010f, /* 0x01e8-0x01ef */</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             :     0x0111, 0x0144, 0x0148, 0x0000, 0x0000, 0x0151, 0x0000, 0x0000, /* 0x01f0-0x01f7 */</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             :     0x0159, 0x016f, 0x0000, 0x0171, 0x0000, 0x0000, 0x0163, 0x02d9  /* 0x01f8-0x01ff */</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : };</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : </span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : static unsigned short const keysym_to_unicode_2a1_2fe[] = {</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             :             0x0126, 0x0000, 0x0000, 0x0000, 0x0000, 0x0124, 0x0000, /* 0x02a0-0x02a7 */</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             :     0x0000, 0x0130, 0x0000, 0x011e, 0x0134, 0x0000, 0x0000, 0x0000, /* 0x02a8-0x02af */</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             :     0x0000, 0x0127, 0x0000, 0x0000, 0x0000, 0x0000, 0x0125, 0x0000, /* 0x02b0-0x02b7 */</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             :     0x0000, 0x0131, 0x0000, 0x011f, 0x0135, 0x0000, 0x0000, 0x0000, /* 0x02b8-0x02bf */</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x010a, 0x0108, 0x0000, /* 0x02c0-0x02c7 */</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x02c8-0x02cf */</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0120, 0x0000, 0x0000, /* 0x02d0-0x02d7 */</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :     0x011c, 0x0000, 0x0000, 0x0000, 0x0000, 0x016c, 0x015c, 0x0000, /* 0x02d8-0x02df */</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x010b, 0x0109, 0x0000, /* 0x02e0-0x02e7 */</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x02e8-0x02ef */</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0121, 0x0000, 0x0000, /* 0x02f0-0x02f7 */</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :     0x011d, 0x0000, 0x0000, 0x0000, 0x0000, 0x016d, 0x015d          /* 0x02f8-0x02ff */</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : };</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : </span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : static unsigned short const keysym_to_unicode_3a2_3fe[] = {</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :                     0x0138, 0x0156, 0x0000, 0x0128, 0x013b, 0x0000, /* 0x03a0-0x03a7 */</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :     0x0000, 0x0000, 0x0112, 0x0122, 0x0166, 0x0000, 0x0000, 0x0000, /* 0x03a8-0x03af */</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0157, 0x0000, 0x0129, 0x013c, 0x0000, /* 0x03b0-0x03b7 */</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :     0x0000, 0x0000, 0x0113, 0x0123, 0x0167, 0x014a, 0x0000, 0x014b, /* 0x03b8-0x03bf */</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :     0x0100, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x012e, /* 0x03c0-0x03c7 */</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0116, 0x0000, 0x0000, 0x012a, /* 0x03c8-0x03cf */</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :     0x0000, 0x0145, 0x014c, 0x0136, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x03d0-0x03d7 */</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :     0x0000, 0x0172, 0x0000, 0x0000, 0x0000, 0x0168, 0x016a, 0x0000, /* 0x03d8-0x03df */</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :     0x0101, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x012f, /* 0x03e0-0x03e7 */</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0117, 0x0000, 0x0000, 0x012b, /* 0x03e8-0x03ef */</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :     0x0000, 0x0146, 0x014d, 0x0137, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x03f0-0x03f7 */</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :     0x0000, 0x0173, 0x0000, 0x0000, 0x0000, 0x0169, 0x016b          /* 0x03f8-0x03ff */</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : };</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : </span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : static unsigned short const keysym_to_unicode_4a1_4df[] = {</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :             0x3002, 0x3008, 0x3009, 0x3001, 0x30fb, 0x30f2, 0x30a1, /* 0x04a0-0x04a7 */</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :     0x30a3, 0x30a5, 0x30a7, 0x30a9, 0x30e3, 0x30e5, 0x30e7, 0x30c3, /* 0x04a8-0x04af */</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :     0x30fc, 0x30a2, 0x30a4, 0x30a6, 0x30a8, 0x30aa, 0x30ab, 0x30ad, /* 0x04b0-0x04b7 */</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :     0x30af, 0x30b1, 0x30b3, 0x30b5, 0x30b7, 0x30b9, 0x30bb, 0x30bd, /* 0x04b8-0x04bf */</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :     0x30bf, 0x30c1, 0x30c4, 0x30c6, 0x30c8, 0x30ca, 0x30cb, 0x30cc, /* 0x04c0-0x04c7 */</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :     0x30cd, 0x30ce, 0x30cf, 0x30d2, 0x30d5, 0x30d8, 0x30db, 0x30de, /* 0x04c8-0x04cf */</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :     0x30df, 0x30e0, 0x30e1, 0x30e2, 0x30e4, 0x30e6, 0x30e8, 0x30e9, /* 0x04d0-0x04d7 */</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :     0x30ea, 0x30eb, 0x30ec, 0x30ed, 0x30ef, 0x30f3, 0x309b, 0x309c  /* 0x04d8-0x04df */</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             : };</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             : </span>
+<span id="L64"><span class="lineNum">      64</span>                 :             : static unsigned short const keysym_to_unicode_590_5fe[] = {</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :     0x06f0, 0x06f1, 0x06f2, 0x06f3, 0x06f4, 0x06f5, 0x06f6, 0x06f7, /* 0x0590-0x0597 */</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :     0x06f8, 0x06f9, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x0598-0x059f */</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x066a, 0x0670, 0x0679, /* 0x05a0-0x05a7 */</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : </span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :     0x067e, 0x0686, 0x0688, 0x0691, 0x060c, 0x0000, 0x06d4, 0x0000, /* 0x05ac-0x05af */</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :     0x0660, 0x0661, 0x0662, 0x0663, 0x0664, 0x0665, 0x0666, 0x0667, /* 0x05b0-0x05b7 */</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :     0x0668, 0x0669, 0x0000, 0x061b, 0x0000, 0x0000, 0x0000, 0x061f, /* 0x05b8-0x05bf */</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :     0x0000, 0x0621, 0x0622, 0x0623, 0x0624, 0x0625, 0x0626, 0x0627, /* 0x05c0-0x05c7 */</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :     0x0628, 0x0629, 0x062a, 0x062b, 0x062c, 0x062d, 0x062e, 0x062f, /* 0x05c8-0x05cf */</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :     0x0630, 0x0631, 0x0632, 0x0633, 0x0634, 0x0635, 0x0636, 0x0637, /* 0x05d0-0x05d7 */</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :     0x0638, 0x0639, 0x063a, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x05d8-0x05df */</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :     0x0640, 0x0641, 0x0642, 0x0643, 0x0644, 0x0645, 0x0646, 0x0647, /* 0x05e0-0x05e7 */</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :     0x0648, 0x0649, 0x064a, 0x064b, 0x064c, 0x064d, 0x064e, 0x064f, /* 0x05e8-0x05ef */</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :     0x0650, 0x0651, 0x0652, 0x0653, 0x0654, 0x0655, 0x0698, 0x06a4, /* 0x05f0-0x05f7 */</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :     0x06a9, 0x06af, 0x06ba, 0x06be, 0x06cc, 0x06d2, 0x06c1          /* 0x05f8-0x05fe */</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             : };</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             : </span>
+<span id="L82"><span class="lineNum">      82</span>                 :             : static unsigned short keysym_to_unicode_680_6ff[] = {</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :     0x0492, 0x0496, 0x049a, 0x049c, 0x04a2, 0x04ae, 0x04b0, 0x04b2, /* 0x0680-0x0687 */</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :     0x04b6, 0x04b8, 0x04ba, 0x0000, 0x04d8, 0x04e2, 0x04e8, 0x04ee, /* 0x0688-0x068f */</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :     0x0493, 0x0497, 0x049b, 0x049d, 0x04a3, 0x04af, 0x04b1, 0x04b3, /* 0x0690-0x0697 */</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :     0x04b7, 0x04b9, 0x04bb, 0x0000, 0x04d9, 0x04e3, 0x04e9, 0x04ef, /* 0x0698-0x069f */</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :     0x0000, 0x0452, 0x0453, 0x0451, 0x0454, 0x0455, 0x0456, 0x0457, /* 0x06a0-0x06a7 */</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :     0x0458, 0x0459, 0x045a, 0x045b, 0x045c, 0x0491, 0x045e, 0x045f, /* 0x06a8-0x06af */</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :     0x2116, 0x0402, 0x0403, 0x0401, 0x0404, 0x0405, 0x0406, 0x0407, /* 0x06b0-0x06b7 */</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :     0x0408, 0x0409, 0x040a, 0x040b, 0x040c, 0x0490, 0x040e, 0x040f, /* 0x06b8-0x06bf */</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :     0x044e, 0x0430, 0x0431, 0x0446, 0x0434, 0x0435, 0x0444, 0x0433, /* 0x06c0-0x06c7 */</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :     0x0445, 0x0438, 0x0439, 0x043a, 0x043b, 0x043c, 0x043d, 0x043e, /* 0x06c8-0x06cf */</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :     0x043f, 0x044f, 0x0440, 0x0441, 0x0442, 0x0443, 0x0436, 0x0432, /* 0x06d0-0x06d7 */</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :     0x044c, 0x044b, 0x0437, 0x0448, 0x044d, 0x0449, 0x0447, 0x044a, /* 0x06d8-0x06df */</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :     0x042e, 0x0410, 0x0411, 0x0426, 0x0414, 0x0415, 0x0424, 0x0413, /* 0x06e0-0x06e7 */</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             :     0x0425, 0x0418, 0x0419, 0x041a, 0x041b, 0x041c, 0x041d, 0x041e, /* 0x06e8-0x06ef */</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :     0x041f, 0x042f, 0x0420, 0x0421, 0x0422, 0x0423, 0x0416, 0x0412, /* 0x06f0-0x06f7 */</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :     0x042c, 0x042b, 0x0417, 0x0428, 0x042d, 0x0429, 0x0427, 0x042a  /* 0x06f8-0x06ff */</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             : };</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : </span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : static unsigned short const keysym_to_unicode_7a1_7f9[] = {</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :             0x0386, 0x0388, 0x0389, 0x038a, 0x03aa, 0x0000, 0x038c, /* 0x07a0-0x07a7 */</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :     0x038e, 0x03ab, 0x0000, 0x038f, 0x0000, 0x0000, 0x0385, 0x2015, /* 0x07a8-0x07af */</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :     0x0000, 0x03ac, 0x03ad, 0x03ae, 0x03af, 0x03ca, 0x0390, 0x03cc, /* 0x07b0-0x07b7 */</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :     0x03cd, 0x03cb, 0x03b0, 0x03ce, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x07b8-0x07bf */</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :     0x0000, 0x0391, 0x0392, 0x0393, 0x0394, 0x0395, 0x0396, 0x0397, /* 0x07c0-0x07c7 */</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :     0x0398, 0x0399, 0x039a, 0x039b, 0x039c, 0x039d, 0x039e, 0x039f, /* 0x07c8-0x07cf */</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :     0x03a0, 0x03a1, 0x03a3, 0x0000, 0x03a4, 0x03a5, 0x03a6, 0x03a7, /* 0x07d0-0x07d7 */</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :     0x03a8, 0x03a9, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x07d8-0x07df */</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :     0x0000, 0x03b1, 0x03b2, 0x03b3, 0x03b4, 0x03b5, 0x03b6, 0x03b7, /* 0x07e0-0x07e7 */</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :     0x03b8, 0x03b9, 0x03ba, 0x03bb, 0x03bc, 0x03bd, 0x03be, 0x03bf, /* 0x07e8-0x07ef */</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :     0x03c0, 0x03c1, 0x03c3, 0x03c2, 0x03c4, 0x03c5, 0x03c6, 0x03c7, /* 0x07f0-0x07f7 */</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :     0x03c8, 0x03c9                                                  /* 0x07f8-0x07ff */</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : };</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : </span>
+<span id="L116"><span class="lineNum">     116</span>                 :             : static unsigned short const keysym_to_unicode_8a4_8fe[] = {</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :                                     0x2320, 0x2321, 0x0000, 0x231c, /* 0x08a0-0x08a7 */</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :     0x231d, 0x231e, 0x231f, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x08a8-0x08af */</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x08b0-0x08b7 */</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x2264, 0x2260, 0x2265, 0x222b, /* 0x08b8-0x08bf */</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :     0x2234, 0x0000, 0x221e, 0x0000, 0x0000, 0x2207, 0x0000, 0x0000, /* 0x08c0-0x08c7 */</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :     0x2245, 0x2246, 0x0000, 0x0000, 0x0000, 0x0000, 0x21d2, 0x0000, /* 0x08c8-0x08cf */</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x221a, 0x0000, /* 0x08d0-0x08d7 */</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :     0x0000, 0x0000, 0x2282, 0x2283, 0x2229, 0x222a, 0x2227, 0x2228, /* 0x08d8-0x08df */</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x08e0-0x08e7 */</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x2202, /* 0x08e8-0x08ef */</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0192, 0x0000, /* 0x08f0-0x08f7 */</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :     0x0000, 0x0000, 0x0000, 0x2190, 0x2191, 0x2192, 0x2193          /* 0x08f8-0x08ff */</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : };</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : </span>
+<span id="L131"><span class="lineNum">     131</span>                 :             : static unsigned short const keysym_to_unicode_9df_9f8[] = {</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :                                                             0x2422, /* 0x09d8-0x09df */</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :     0x2666, 0x25a6, 0x2409, 0x240c, 0x240d, 0x240a, 0x0000, 0x0000, /* 0x09e0-0x09e7 */</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :     0x240a, 0x240b, 0x2518, 0x2510, 0x250c, 0x2514, 0x253c, 0x23ba, /* 0x09e8-0x09ef */</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :     0x23bb, 0x2500, 0x23bc, 0x23bd, 0x251c, 0x2524, 0x2534, 0x252c, /* 0x09f0-0x09f7 */</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :     0x2502                                                          /* 0x09f8-0x09ff */</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : };</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : </span>
+<span id="L139"><span class="lineNum">     139</span>                 :             : static unsigned short const keysym_to_unicode_aa1_afe[] = {</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :             0x2003, 0x2002, 0x2004, 0x2005, 0x2007, 0x2008, 0x2009, /* 0x0aa0-0x0aa7 */</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :     0x200a, 0x2014, 0x2013, 0x0000, 0x0000, 0x0000, 0x2026, 0x2025, /* 0x0aa8-0x0aaf */</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :     0x2153, 0x2154, 0x2155, 0x2156, 0x2157, 0x2158, 0x2159, 0x215a, /* 0x0ab0-0x0ab7 */</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :     0x2105, 0x0000, 0x0000, 0x2012, 0x2039, 0x2024, 0x203a, 0x0000, /* 0x0ab8-0x0abf */</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :     0x0000, 0x0000, 0x0000, 0x215b, 0x215c, 0x215d, 0x215e, 0x0000, /* 0x0ac0-0x0ac7 */</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :     0x0000, 0x2122, 0x2120, 0x0000, 0x25c1, 0x25b7, 0x25cb, 0x25ad, /* 0x0ac8-0x0acf */</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             :     0x2018, 0x2019, 0x201c, 0x201d, 0x211e, 0x2030, 0x2032, 0x2033, /* 0x0ad0-0x0ad7 */</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :     0x0000, 0x271d, 0x0000, 0x220e, 0x25c2, 0x2023, 0x25cf, 0x25ac, /* 0x0ad8-0x0adf */</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :     0x25e6, 0x25ab, 0x25ae, 0x25b5, 0x25bf, 0x2606, 0x2022, 0x25aa, /* 0x0ae0-0x0ae7 */</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :     0x25b4, 0x25be, 0x261a, 0x261b, 0x2663, 0x2666, 0x2665, 0x0000, /* 0x0ae8-0x0aef */</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :     0x2720, 0x2020, 0x2021, 0x2713, 0x2612, 0x266f, 0x266d, 0x2642, /* 0x0af0-0x0af7 */</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :     0x2640, 0x2121, 0x2315, 0x2117, 0x2038, 0x201a, 0x201e          /* 0x0af8-0x0aff */</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             : };</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             : </span>
+<span id="L154"><span class="lineNum">     154</span>                 :             : /* none of the APL keysyms match the Unicode characters */</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             : </span>
+<span id="L156"><span class="lineNum">     156</span>                 :             : static unsigned short const keysym_to_unicode_cdf_cfa[] = {</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :                                                             0x2017, /* 0x0cd8-0x0cdf */</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :     0x05d0, 0x05d1, 0x05d2, 0x05d3, 0x05d4, 0x05d5, 0x05d6, 0x05d7, /* 0x0ce0-0x0ce7 */</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             :     0x05d8, 0x05d9, 0x05da, 0x05db, 0x05dc, 0x05dd, 0x05de, 0x05df, /* 0x0ce8-0x0cef */</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :     0x05e0, 0x05e1, 0x05e2, 0x05e3, 0x05e4, 0x05e5, 0x05e6, 0x05e7, /* 0x0cf0-0x0cf7 */</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :     0x05e8, 0x05e9, 0x05ea                                          /* 0x0cf8-0x0cff */</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             : };</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : </span>
+<span id="L164"><span class="lineNum">     164</span>                 :             : static unsigned short const keysym_to_unicode_da1_df9[] = {</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :             0x0e01, 0x0e02, 0x0e03, 0x0e04, 0x0e05, 0x0e06, 0x0e07, /* 0x0da0-0x0da7 */</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :     0x0e08, 0x0e09, 0x0e0a, 0x0e0b, 0x0e0c, 0x0e0d, 0x0e0e, 0x0e0f, /* 0x0da8-0x0daf */</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             :     0x0e10, 0x0e11, 0x0e12, 0x0e13, 0x0e14, 0x0e15, 0x0e16, 0x0e17, /* 0x0db0-0x0db7 */</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             :     0x0e18, 0x0e19, 0x0e1a, 0x0e1b, 0x0e1c, 0x0e1d, 0x0e1e, 0x0e1f, /* 0x0db8-0x0dbf */</span>
+<span id="L169"><span class="lineNum">     169</span>                 :             :     0x0e20, 0x0e21, 0x0e22, 0x0e23, 0x0e24, 0x0e25, 0x0e26, 0x0e27, /* 0x0dc0-0x0dc7 */</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :     0x0e28, 0x0e29, 0x0e2a, 0x0e2b, 0x0e2c, 0x0e2d, 0x0e2e, 0x0e2f, /* 0x0dc8-0x0dcf */</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             :     0x0e30, 0x0e31, 0x0e32, 0x0e33, 0x0e34, 0x0e35, 0x0e36, 0x0e37, /* 0x0dd0-0x0dd7 */</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             :     0x0e38, 0x0e39, 0x0e3a, 0x0000, 0x0000, 0x0000, 0x0e3e, 0x0e3f, /* 0x0dd8-0x0ddf */</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             :     0x0e40, 0x0e41, 0x0e42, 0x0e43, 0x0e44, 0x0e45, 0x0e46, 0x0e47, /* 0x0de0-0x0de7 */</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :     0x0e48, 0x0e49, 0x0e4a, 0x0e4b, 0x0e4c, 0x0e4d, 0x0000, 0x0000, /* 0x0de8-0x0def */</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             :     0x0e50, 0x0e51, 0x0e52, 0x0e53, 0x0e54, 0x0e55, 0x0e56, 0x0e57, /* 0x0df0-0x0df7 */</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             :     0x0e58, 0x0e59                                                  /* 0x0df8-0x0dff */</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             : };</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             : </span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : static unsigned short const keysym_to_unicode_ea0_eff[] = {</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             :     0x0000, 0x1101, 0x1101, 0x11aa, 0x1102, 0x11ac, 0x11ad, 0x1103, /* 0x0ea0-0x0ea7 */</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :     0x1104, 0x1105, 0x11b0, 0x11b1, 0x11b2, 0x11b3, 0x11b4, 0x11b5, /* 0x0ea8-0x0eaf */</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             :     0x11b6, 0x1106, 0x1107, 0x1108, 0x11b9, 0x1109, 0x110a, 0x110b, /* 0x0eb0-0x0eb7 */</span>
+<span id="L183"><span class="lineNum">     183</span>                 :             :     0x110c, 0x110d, 0x110e, 0x110f, 0x1110, 0x1111, 0x1112, 0x1161, /* 0x0eb8-0x0ebf */</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             :     0x1162, 0x1163, 0x1164, 0x1165, 0x1166, 0x1167, 0x1168, 0x1169, /* 0x0ec0-0x0ec7 */</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             :     0x116a, 0x116b, 0x116c, 0x116d, 0x116e, 0x116f, 0x1170, 0x1171, /* 0x0ec8-0x0ecf */</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :     0x1172, 0x1173, 0x1174, 0x1175, 0x11a8, 0x11a9, 0x11aa, 0x11ab, /* 0x0ed0-0x0ed7 */</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :     0x11ac, 0x11ad, 0x11ae, 0x11af, 0x11b0, 0x11b1, 0x11b2, 0x11b3, /* 0x0ed8-0x0edf */</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             :     0x11b4, 0x11b5, 0x11b6, 0x11b7, 0x11b8, 0x11b9, 0x11ba, 0x11bb, /* 0x0ee0-0x0ee7 */</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             :     0x11bc, 0x11bd, 0x11be, 0x11bf, 0x11c0, 0x11c1, 0x11c2, 0x0000, /* 0x0ee8-0x0eef */</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :     0x0000, 0x0000, 0x1140, 0x0000, 0x0000, 0x1159, 0x119e, 0x0000, /* 0x0ef0-0x0ef7 */</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :     0x11eb, 0x0000, 0x11f9, 0x0000, 0x0000, 0x0000, 0x0000, 0x20a9, /* 0x0ef8-0x0eff */</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : };</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : </span>
+<span id="L194"><span class="lineNum">     194</span>                 :             : static unsigned short keysym_to_unicode_12a1_12fe[] = {</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :             0x1e02, 0x1e03, 0x0000, 0x0000, 0x0000, 0x1e0a, 0x0000, /* 0x12a0-0x12a7 */</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :     0x1e80, 0x0000, 0x1e82, 0x1e0b, 0x1ef2, 0x0000, 0x0000, 0x0000, /* 0x12a8-0x12af */</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :     0x1e1e, 0x1e1f, 0x0000, 0x0000, 0x1e40, 0x1e41, 0x0000, 0x1e56, /* 0x12b0-0x12b7 */</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :     0x1e81, 0x1e57, 0x1e83, 0x1e60, 0x1ef3, 0x1e84, 0x1e85, 0x1e61, /* 0x12b8-0x12bf */</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x12c0-0x12c7 */</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x12c8-0x12cf */</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :     0x0174, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x1e6a, /* 0x12d0-0x12d7 */</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0176, 0x0000, /* 0x12d8-0x12df */</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x12e0-0x12e7 */</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x12e8-0x12ef */</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :     0x0175, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x1e6b, /* 0x12f0-0x12f7 */</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0177          /* 0x12f0-0x12ff */</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             : };</span>
+<span id="L208"><span class="lineNum">     208</span>                 :             : </span>
+<span id="L209"><span class="lineNum">     209</span>                 :             : static unsigned short const keysym_to_unicode_13bc_13be[] = {</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :                                     0x0152, 0x0153, 0x0178          /* 0x13b8-0x13bf */</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             : };</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             : </span>
+<span id="L213"><span class="lineNum">     213</span>                 :             : static unsigned short keysym_to_unicode_14a1_14ff[] = {</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             :             0x2741, 0x00a7, 0x0589, 0x0029, 0x0028, 0x00bb, 0x00ab, /* 0x14a0-0x14a7 */</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             :     0x2014, 0x002e, 0x055d, 0x002c, 0x2013, 0x058a, 0x2026, 0x055c, /* 0x14a8-0x14af */</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :     0x055b, 0x055e, 0x0531, 0x0561, 0x0532, 0x0562, 0x0533, 0x0563, /* 0x14b0-0x14b7 */</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             :     0x0534, 0x0564, 0x0535, 0x0565, 0x0536, 0x0566, 0x0537, 0x0567, /* 0x14b8-0x14bf */</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :     0x0538, 0x0568, 0x0539, 0x0569, 0x053a, 0x056a, 0x053b, 0x056b, /* 0x14c0-0x14c7 */</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :     0x053c, 0x056c, 0x053d, 0x056d, 0x053e, 0x056e, 0x053f, 0x056f, /* 0x14c8-0x14cf */</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :     0x0540, 0x0570, 0x0541, 0x0571, 0x0542, 0x0572, 0x0543, 0x0573, /* 0x14d0-0x14d7 */</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             :     0x0544, 0x0574, 0x0545, 0x0575, 0x0546, 0x0576, 0x0547, 0x0577, /* 0x14d8-0x14df */</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             :     0x0548, 0x0578, 0x0549, 0x0579, 0x054a, 0x057a, 0x054b, 0x057b, /* 0x14e0-0x14e7 */</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             :     0x054c, 0x057c, 0x054d, 0x057d, 0x054e, 0x057e, 0x054f, 0x057f, /* 0x14e8-0x14ef */</span>
+<span id="L224"><span class="lineNum">     224</span>                 :             :     0x0550, 0x0580, 0x0551, 0x0581, 0x0552, 0x0582, 0x0553, 0x0583, /* 0x14f0-0x14f7 */</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :     0x0554, 0x0584, 0x0555, 0x0585, 0x0556, 0x0586, 0x2019, 0x0027, /* 0x14f8-0x14ff */</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             : };</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             : </span>
+<span id="L228"><span class="lineNum">     228</span>                 :             : static unsigned short keysym_to_unicode_15d0_15f6[] = {</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             :     0x10d0, 0x10d1, 0x10d2, 0x10d3, 0x10d4, 0x10d5, 0x10d6, 0x10d7, /* 0x15d0-0x15d7 */</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             :     0x10d8, 0x10d9, 0x10da, 0x10db, 0x10dc, 0x10dd, 0x10de, 0x10df, /* 0x15d8-0x15df */</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             :     0x10e0, 0x10e1, 0x10e2, 0x10e3, 0x10e4, 0x10e5, 0x10e6, 0x10e7, /* 0x15e0-0x15e7 */</span>
+<span id="L232"><span class="lineNum">     232</span>                 :             :     0x10e8, 0x10e9, 0x10ea, 0x10eb, 0x10ec, 0x10ed, 0x10ee, 0x10ef, /* 0x15e8-0x15ef */</span>
+<span id="L233"><span class="lineNum">     233</span>                 :             :     0x10f0, 0x10f1, 0x10f2, 0x10f3, 0x10f4, 0x10f5, 0x10f6          /* 0x15f0-0x15f7 */</span>
+<span id="L234"><span class="lineNum">     234</span>                 :             : };</span>
+<span id="L235"><span class="lineNum">     235</span>                 :             : </span>
+<span id="L236"><span class="lineNum">     236</span>                 :             : static unsigned short keysym_to_unicode_16a0_16f6[] = {</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             :     0x0000, 0x0000, 0xf0a2, 0x1e8a, 0x0000, 0xf0a5, 0x012c, 0xf0a7, /* 0x16a0-0x16a7 */</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :     0xf0a8, 0x01b5, 0x01e6, 0x0000, 0x0000, 0x0000, 0x0000, 0x019f, /* 0x16a8-0x16af */</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :     0x0000, 0x0000, 0xf0b2, 0x1e8b, 0x01d1, 0xf0b5, 0x012d, 0xf0b7, /* 0x16b0-0x16b7 */</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             :     0xf0b8, 0x01b6, 0x01e7, 0x0000, 0x0000, 0x01d2, 0x0000, 0x0275, /* 0x16b8-0x16bf */</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x018f, 0x0000, /* 0x16c0-0x16c7 */</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x16c8-0x16cf */</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             :     0x0000, 0x1e36, 0xf0d2, 0xf0d3, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x16d0-0x16d7 */</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x16d8-0x16df */</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :     0x0000, 0x1e37, 0xf0e2, 0xf0e3, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x16e0-0x16e7 */</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /* 0x16e8-0x16ef */</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             :     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0259          /* 0x16f0-0x16f6 */</span>
+<span id="L248"><span class="lineNum">     248</span>                 :             : };</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             : </span>
+<span id="L250"><span class="lineNum">     250</span>                 :             : static unsigned short const keysym_to_unicode_1e9f_1eff[] = {</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :                                                             0x0303,</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             :     0x1ea0, 0x1ea1, 0x1ea2, 0x1ea3, 0x1ea4, 0x1ea5, 0x1ea6, 0x1ea7, /* 0x1ea0-0x1ea7 */</span>
+<span id="L253"><span class="lineNum">     253</span>                 :             :     0x1ea8, 0x1ea9, 0x1eaa, 0x1eab, 0x1eac, 0x1ead, 0x1eae, 0x1eaf, /* 0x1ea8-0x1eaf */</span>
+<span id="L254"><span class="lineNum">     254</span>                 :             :     0x1eb0, 0x1eb1, 0x1eb2, 0x1eb3, 0x1eb4, 0x1eb5, 0x1eb6, 0x1eb7, /* 0x1eb0-0x1eb7 */</span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :     0x1eb8, 0x1eb9, 0x1eba, 0x1ebb, 0x1ebc, 0x1ebd, 0x1ebe, 0x1ebf, /* 0x1eb8-0x1ebf */</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :     0x1ec0, 0x1ec1, 0x1ec2, 0x1ec3, 0x1ec4, 0x1ec5, 0x1ec6, 0x1ec7, /* 0x1ec0-0x1ec7 */</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             :     0x1ec8, 0x1ec9, 0x1eca, 0x1ecb, 0x1ecc, 0x1ecd, 0x1ece, 0x1ecf, /* 0x1ec8-0x1ecf */</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             :     0x1ed0, 0x1ed1, 0x1ed2, 0x1ed3, 0x1ed4, 0x1ed5, 0x1ed6, 0x1ed7, /* 0x1ed0-0x1ed7 */</span>
+<span id="L259"><span class="lineNum">     259</span>                 :             :     0x1ed8, 0x1ed9, 0x1eda, 0x1edb, 0x1edc, 0x1edd, 0x1ede, 0x1edf, /* 0x1ed8-0x1edf */</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :     0x1ee0, 0x1ee1, 0x1ee2, 0x1ee3, 0x1ee4, 0x1ee5, 0x1ee6, 0x1ee7, /* 0x1ee0-0x1ee7 */</span>
+<span id="L261"><span class="lineNum">     261</span>                 :             :     0x1ee8, 0x1ee9, 0x1eea, 0x1eeb, 0x1eec, 0x1eed, 0x1eee, 0x1eef, /* 0x1ee8-0x1eef */</span>
+<span id="L262"><span class="lineNum">     262</span>                 :             :     0x1ef0, 0x1ef1, 0x0300, 0x0301, 0x1ef4, 0x1ef5, 0x1ef6, 0x1ef7, /* 0x1ef0-0x1ef7 */</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :     0x1ef8, 0x1ef9, 0x01a0, 0x01a1, 0x01af, 0x01b0, 0x0309, 0x0323  /* 0x1ef8-0x1eff */</span>
+<span id="L264"><span class="lineNum">     264</span>                 :             : };</span>
+<span id="L265"><span class="lineNum">     265</span>                 :             : </span>
+<span id="L266"><span class="lineNum">     266</span>                 :             : static unsigned short const keysym_to_unicode_20a0_20ac[] = {</span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :     0x20a0, 0x20a1, 0x20a2, 0x20a3, 0x20a4, 0x20a5, 0x20a6, 0x20a7, /* 0x20a0-0x20a7 */</span>
+<span id="L268"><span class="lineNum">     268</span>                 :             :     0x20a8, 0x20a9, 0x20aa, 0x20ab, 0x20ac                          /* 0x20a8-0x20af */</span>
+<span id="L269"><span class="lineNum">     269</span>                 :             : };</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             : </span>
+<span id="L271"><span class="lineNum">     271</span>                 :             : unsigned int</span>
+<span id="L272"><span class="lineNum">     272</span>                 :<span class="tlaUNC tlaBgUNC">           0 : KeySymToUcs4(KeySym keysym)</span></span>
+<span id="L273"><span class="lineNum">     273</span>                 :             : {</span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :     /* 'Unicode keysym' */</span>
+<span id="L275"><span class="lineNum">     275</span>                 :<span class="tlaUNC">           0 :     if ((keysym &amp; 0xff000000) == 0x01000000)</span></span>
+<span id="L276"><span class="lineNum">     276</span>                 :<span class="tlaUNC">           0 :         return (keysym &amp; 0x00ffffff);</span></span>
+<span id="L277"><span class="lineNum">     277</span>                 :             : </span>
+<span id="L278"><span class="lineNum">     278</span>                 :<span class="tlaUNC">           0 :     if (keysym &gt; 0 &amp;&amp; keysym &lt; 0x100)</span></span>
+<span id="L279"><span class="lineNum">     279</span>                 :<span class="tlaUNC">           0 :         return keysym;</span></span>
+<span id="L280"><span class="lineNum">     280</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x1a0 &amp;&amp; keysym &lt; 0x200)</span></span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_1a1_1ff[keysym - 0x1a1];</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x2a0 &amp;&amp; keysym &lt; 0x2ff)</span></span>
+<span id="L283"><span class="lineNum">     283</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_2a1_2fe[keysym - 0x2a1];</span></span>
+<span id="L284"><span class="lineNum">     284</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x3a1 &amp;&amp; keysym &lt; 0x3ff)</span></span>
+<span id="L285"><span class="lineNum">     285</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_3a2_3fe[keysym - 0x3a2];</span></span>
+<span id="L286"><span class="lineNum">     286</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x4a0 &amp;&amp; keysym &lt; 0x4e0)</span></span>
+<span id="L287"><span class="lineNum">     287</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_4a1_4df[keysym - 0x4a1];</span></span>
+<span id="L288"><span class="lineNum">     288</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x58f &amp;&amp; keysym &lt; 0x5ff)</span></span>
+<span id="L289"><span class="lineNum">     289</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_590_5fe[keysym - 0x590];</span></span>
+<span id="L290"><span class="lineNum">     290</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x67f &amp;&amp; keysym &lt; 0x700)</span></span>
+<span id="L291"><span class="lineNum">     291</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_680_6ff[keysym - 0x680];</span></span>
+<span id="L292"><span class="lineNum">     292</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x7a0 &amp;&amp; keysym &lt; 0x7fa)</span></span>
+<span id="L293"><span class="lineNum">     293</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_7a1_7f9[keysym - 0x7a1];</span></span>
+<span id="L294"><span class="lineNum">     294</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x8a3 &amp;&amp; keysym &lt; 0x8ff)</span></span>
+<span id="L295"><span class="lineNum">     295</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_8a4_8fe[keysym - 0x8a4];</span></span>
+<span id="L296"><span class="lineNum">     296</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x9de &amp;&amp; keysym &lt; 0x9f9)</span></span>
+<span id="L297"><span class="lineNum">     297</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_9df_9f8[keysym - 0x9df];</span></span>
+<span id="L298"><span class="lineNum">     298</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0xaa0 &amp;&amp; keysym &lt; 0xaff)</span></span>
+<span id="L299"><span class="lineNum">     299</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_aa1_afe[keysym - 0xaa1];</span></span>
+<span id="L300"><span class="lineNum">     300</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0xcde &amp;&amp; keysym &lt; 0xcfb)</span></span>
+<span id="L301"><span class="lineNum">     301</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_cdf_cfa[keysym - 0xcdf];</span></span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0xda0 &amp;&amp; keysym &lt; 0xdfa)</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_da1_df9[keysym - 0xda1];</span></span>
+<span id="L304"><span class="lineNum">     304</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0xe9f &amp;&amp; keysym &lt; 0xf00)</span></span>
+<span id="L305"><span class="lineNum">     305</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_ea0_eff[keysym - 0xea0];</span></span>
+<span id="L306"><span class="lineNum">     306</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x12a0 &amp;&amp; keysym &lt; 0x12ff)</span></span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_12a1_12fe[keysym - 0x12a1];</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x13bb &amp;&amp; keysym &lt; 0x13bf)</span></span>
+<span id="L309"><span class="lineNum">     309</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_13bc_13be[keysym - 0x13bc];</span></span>
+<span id="L310"><span class="lineNum">     310</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x14a0 &amp;&amp; keysym &lt; 0x1500)</span></span>
+<span id="L311"><span class="lineNum">     311</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_14a1_14ff[keysym - 0x14a1];</span></span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x15cf &amp;&amp; keysym &lt; 0x15f7)</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_15d0_15f6[keysym - 0x15d0];</span></span>
+<span id="L314"><span class="lineNum">     314</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x169f &amp;&amp; keysym &lt; 0x16f7)</span></span>
+<span id="L315"><span class="lineNum">     315</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_16a0_16f6[keysym - 0x16a0];</span></span>
+<span id="L316"><span class="lineNum">     316</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x1e9e &amp;&amp; keysym &lt; 0x1f00)</span></span>
+<span id="L317"><span class="lineNum">     317</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_1e9f_1eff[keysym - 0x1e9f];</span></span>
+<span id="L318"><span class="lineNum">     318</span>                 :<span class="tlaUNC">           0 :     else if (keysym &gt; 0x209f &amp;&amp; keysym &lt; 0x20ad)</span></span>
+<span id="L319"><span class="lineNum">     319</span>                 :<span class="tlaUNC">           0 :         return keysym_to_unicode_20a0_20ac[keysym - 0x20a0];</span></span>
+<span id="L320"><span class="lineNum">     320</span>                 :             :     else</span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

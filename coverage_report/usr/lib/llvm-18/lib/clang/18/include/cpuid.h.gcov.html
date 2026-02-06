@@ -1,0 +1,423 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - usr/lib/llvm-18/lib/clang/18/include/cpuid.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../../../../index.html">top level</a> - <a href="index.html">/usr/lib/llvm-18/lib/clang/18/include</a> - cpuid.h<span style="font-size: 80%;"> (source / <a href="cpuid.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryMed">83.3&nbsp;%</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">10</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">2</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*===---- cpuid.h - X86 cpu model detection --------------------------------===</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  *</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  * Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * See https://llvm.org/LICENSE.txt for license information.</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  *</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  *===-----------------------------------------------------------------------===</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  */</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : </span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : #ifndef __CPUID_H</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : #define __CPUID_H</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : </span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #if !(__x86_64__ || __i386__)</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #error this header is for x86 only</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #endif</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : /* Responses identification request with %eax 0 */</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : /* AMD:     &quot;AuthenticAMD&quot; */</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #define signature_AMD_ebx 0x68747541</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #define signature_AMD_edx 0x69746e65</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #define signature_AMD_ecx 0x444d4163</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : /* CENTAUR: &quot;CentaurHauls&quot; */</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : #define signature_CENTAUR_ebx 0x746e6543</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : #define signature_CENTAUR_edx 0x48727561</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : #define signature_CENTAUR_ecx 0x736c7561</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : /* CYRIX:   &quot;CyrixInstead&quot; */</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : #define signature_CYRIX_ebx 0x69727943</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : #define signature_CYRIX_edx 0x736e4978</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : #define signature_CYRIX_ecx 0x64616574</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : /* HYGON:   &quot;HygonGenuine&quot; */</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             : #define signature_HYGON_ebx 0x6f677948</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : #define signature_HYGON_edx 0x6e65476e</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : #define signature_HYGON_ecx 0x656e6975</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : /* INTEL:   &quot;GenuineIntel&quot; */</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : #define signature_INTEL_ebx 0x756e6547</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : #define signature_INTEL_edx 0x49656e69</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : #define signature_INTEL_ecx 0x6c65746e</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : /* TM1:     &quot;TransmetaCPU&quot; */</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : #define signature_TM1_ebx 0x6e617254</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : #define signature_TM1_edx 0x74656d73</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : #define signature_TM1_ecx 0x55504361</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : /* TM2:     &quot;GenuineTMx86&quot; */</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : #define signature_TM2_ebx 0x756e6547</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : #define signature_TM2_edx 0x54656e69</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : #define signature_TM2_ecx 0x3638784d</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : /* NSC:     &quot;Geode by NSC&quot; */</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : #define signature_NSC_ebx 0x646f6547</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : #define signature_NSC_edx 0x79622065</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : #define signature_NSC_ecx 0x43534e20</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : /* NEXGEN:  &quot;NexGenDriven&quot; */</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : #define signature_NEXGEN_ebx 0x4778654e</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : #define signature_NEXGEN_edx 0x72446e65</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : #define signature_NEXGEN_ecx 0x6e657669</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             : /* RISE:    &quot;RiseRiseRise&quot; */</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : #define signature_RISE_ebx 0x65736952</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : #define signature_RISE_edx 0x65736952</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             : #define signature_RISE_ecx 0x65736952</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : /* SIS:     &quot;SiS SiS SiS &quot; */</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : #define signature_SIS_ebx 0x20536953</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : #define signature_SIS_edx 0x20536953</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             : #define signature_SIS_ecx 0x20536953</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             : /* UMC:     &quot;UMC UMC UMC &quot; */</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             : #define signature_UMC_ebx 0x20434d55</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             : #define signature_UMC_edx 0x20434d55</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             : #define signature_UMC_ecx 0x20434d55</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             : /* VIA:     &quot;VIA VIA VIA &quot; */</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : #define signature_VIA_ebx 0x20414956</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : #define signature_VIA_edx 0x20414956</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             : #define signature_VIA_ecx 0x20414956</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             : /* VORTEX:  &quot;Vortex86 SoC&quot; */</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             : #define signature_VORTEX_ebx 0x74726f56</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             : #define signature_VORTEX_edx 0x36387865</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : #define signature_VORTEX_ecx 0x436f5320</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             : </span>
+<span id="L75"><span class="lineNum">      75</span>                 :             : /* Features in %ecx for leaf 1 */</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : #define bit_SSE3        0x00000001</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : #define bit_PCLMULQDQ   0x00000002</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             : #define bit_PCLMUL      bit_PCLMULQDQ   /* for gcc compat */</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : #define bit_DTES64      0x00000004</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             : #define bit_MONITOR     0x00000008</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             : #define bit_DSCPL       0x00000010</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             : #define bit_VMX         0x00000020</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             : #define bit_SMX         0x00000040</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             : #define bit_EIST        0x00000080</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : #define bit_TM2         0x00000100</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             : #define bit_SSSE3       0x00000200</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : #define bit_CNXTID      0x00000400</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : #define bit_FMA         0x00001000</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             : #define bit_CMPXCHG16B  0x00002000</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : #define bit_xTPR        0x00004000</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             : #define bit_PDCM        0x00008000</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             : #define bit_PCID        0x00020000</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             : #define bit_DCA         0x00040000</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             : #define bit_SSE41       0x00080000</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             : #define bit_SSE4_1      bit_SSE41       /* for gcc compat */</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : #define bit_SSE42       0x00100000</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : #define bit_SSE4_2      bit_SSE42       /* for gcc compat */</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             : #define bit_x2APIC      0x00200000</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             : #define bit_MOVBE       0x00400000</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : #define bit_POPCNT      0x00800000</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : #define bit_TSCDeadline 0x01000000</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             : #define bit_AESNI       0x02000000</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             : #define bit_AES         bit_AESNI       /* for gcc compat */</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             : #define bit_XSAVE       0x04000000</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : #define bit_OSXSAVE     0x08000000</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             : #define bit_AVX         0x10000000</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             : #define bit_F16C        0x20000000</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             : #define bit_RDRND       0x40000000</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             : </span>
+<span id="L110"><span class="lineNum">     110</span>                 :             : /* Features in %edx for leaf 1 */</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : #define bit_FPU         0x00000001</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             : #define bit_VME         0x00000002</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             : #define bit_DE          0x00000004</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : #define bit_PSE         0x00000008</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : #define bit_TSC         0x00000010</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             : #define bit_MSR         0x00000020</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             : #define bit_PAE         0x00000040</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             : #define bit_MCE         0x00000080</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             : #define bit_CX8         0x00000100</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             : #define bit_CMPXCHG8B   bit_CX8         /* for gcc compat */</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             : #define bit_APIC        0x00000200</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             : #define bit_SEP         0x00000800</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             : #define bit_MTRR        0x00001000</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             : #define bit_PGE         0x00002000</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             : #define bit_MCA         0x00004000</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             : #define bit_CMOV        0x00008000</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : #define bit_PAT         0x00010000</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : #define bit_PSE36       0x00020000</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : #define bit_PSN         0x00040000</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : #define bit_CLFSH       0x00080000</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             : #define bit_DS          0x00200000</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             : #define bit_ACPI        0x00400000</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             : #define bit_MMX         0x00800000</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             : #define bit_FXSR        0x01000000</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             : #define bit_FXSAVE      bit_FXSR        /* for gcc compat */</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : #define bit_SSE         0x02000000</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : #define bit_SSE2        0x04000000</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : #define bit_SS          0x08000000</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             : #define bit_HTT         0x10000000</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : #define bit_TM          0x20000000</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             : #define bit_PBE         0x80000000</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             : </span>
+<span id="L143"><span class="lineNum">     143</span>                 :             : /* Features in %ebx for leaf 7 sub-leaf 0 */</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             : #define bit_FSGSBASE    0x00000001</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             : #define bit_SGX         0x00000004</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : #define bit_BMI         0x00000008</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : #define bit_HLE         0x00000010</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             : #define bit_AVX2        0x00000020</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             : #define bit_SMEP        0x00000080</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             : #define bit_BMI2        0x00000100</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : #define bit_ENH_MOVSB   0x00000200</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             : #define bit_INVPCID     0x00000400</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             : #define bit_RTM         0x00000800</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             : #define bit_MPX         0x00004000</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             : #define bit_AVX512F     0x00010000</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             : #define bit_AVX512DQ    0x00020000</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             : #define bit_RDSEED      0x00040000</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             : #define bit_ADX         0x00080000</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : #define bit_AVX512IFMA  0x00200000</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             : #define bit_CLFLUSHOPT  0x00800000</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             : #define bit_CLWB        0x01000000</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             : #define bit_AVX512PF    0x04000000</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : #define bit_AVX512ER    0x08000000</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             : #define bit_AVX512CD    0x10000000</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             : #define bit_SHA         0x20000000</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             : #define bit_AVX512BW    0x40000000</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             : #define bit_AVX512VL    0x80000000</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             : </span>
+<span id="L169"><span class="lineNum">     169</span>                 :             : /* Features in %ecx for leaf 7 sub-leaf 0 */</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             : #define bit_PREFTCHWT1       0x00000001</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             : #define bit_AVX512VBMI       0x00000002</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             : #define bit_PKU              0x00000004</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             : #define bit_OSPKE            0x00000010</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             : #define bit_WAITPKG          0x00000020</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             : #define bit_AVX512VBMI2      0x00000040</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : #define bit_SHSTK            0x00000080</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             : #define bit_GFNI             0x00000100</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             : #define bit_VAES             0x00000200</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : #define bit_VPCLMULQDQ       0x00000400</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             : #define bit_AVX512VNNI       0x00000800</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             : #define bit_AVX512BITALG     0x00001000</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : #define bit_AVX512VPOPCNTDQ  0x00004000</span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : #define bit_RDPID            0x00400000</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : #define bit_CLDEMOTE         0x02000000</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : #define bit_MOVDIRI          0x08000000</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             : #define bit_MOVDIR64B        0x10000000</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             : #define bit_ENQCMD           0x20000000</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : </span>
+<span id="L189"><span class="lineNum">     189</span>                 :             : /* Features in %edx for leaf 7 sub-leaf 0 */</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             : #define bit_AVX5124VNNIW  0x00000004</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             : #define bit_AVX5124FMAPS  0x00000008</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : #define bit_UINTR         0x00000020</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : #define bit_SERIALIZE     0x00004000</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             : #define bit_TSXLDTRK      0x00010000</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             : #define bit_PCONFIG       0x00040000</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             : #define bit_IBT           0x00100000</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             : #define bit_AMXBF16       0x00400000</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             : #define bit_AVX512FP16    0x00800000</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             : #define bit_AMXTILE       0x01000000</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             : #define bit_AMXINT8       0x02000000</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             : </span>
+<span id="L202"><span class="lineNum">     202</span>                 :             : /* Features in %eax for leaf 7 sub-leaf 1 */</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             : #define bit_RAOINT        0x00000008</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             : #define bit_AVXVNNI       0x00000010</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             : #define bit_AVX512BF16    0x00000020</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             : #define bit_CMPCCXADD     0x00000080</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             : #define bit_AMXFP16       0x00200000</span>
+<span id="L208"><span class="lineNum">     208</span>                 :             : #define bit_HRESET        0x00400000</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             : #define bit_AVXIFMA       0x00800000</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             : </span>
+<span id="L211"><span class="lineNum">     211</span>                 :             : /* Features in %edx for leaf 7 sub-leaf 1 */</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             : #define bit_AVXVNNIINT8   0x00000010</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             : #define bit_AVXNECONVERT  0x00000020</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             : #define bit_PREFETCHI     0x00004000</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             : </span>
+<span id="L216"><span class="lineNum">     216</span>                 :             : /* Features in %eax for leaf 13 sub-leaf 1 */</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             : #define bit_XSAVEOPT    0x00000001</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             : #define bit_XSAVEC      0x00000002</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             : #define bit_XSAVES      0x00000008</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             : </span>
+<span id="L221"><span class="lineNum">     221</span>                 :             : /* Features in %eax for leaf 0x14 sub-leaf 0 */</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             : #define bit_PTWRITE     0x00000010</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             : </span>
+<span id="L224"><span class="lineNum">     224</span>                 :             : /* Features in %ecx for leaf 0x80000001 */</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             : #define bit_LAHF_LM     0x00000001</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             : #define bit_ABM         0x00000020</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             : #define bit_LZCNT       bit_ABM        /* for gcc compat */</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             : #define bit_SSE4a       0x00000040</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             : #define bit_PRFCHW      0x00000100</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             : #define bit_XOP         0x00000800</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             : #define bit_LWP         0x00008000</span>
+<span id="L232"><span class="lineNum">     232</span>                 :             : #define bit_FMA4        0x00010000</span>
+<span id="L233"><span class="lineNum">     233</span>                 :             : #define bit_TBM         0x00200000</span>
+<span id="L234"><span class="lineNum">     234</span>                 :             : #define bit_MWAITX      0x20000000</span>
+<span id="L235"><span class="lineNum">     235</span>                 :             : </span>
+<span id="L236"><span class="lineNum">     236</span>                 :             : /* Features in %edx for leaf 0x80000001 */</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             : #define bit_MMXEXT      0x00400000</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             : #define bit_LM          0x20000000</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             : #define bit_3DNOWP      0x40000000</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             : #define bit_3DNOW       0x80000000</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             : </span>
+<span id="L242"><span class="lineNum">     242</span>                 :             : /* Features in %ebx for leaf 0x80000008 */</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             : #define bit_CLZERO      0x00000001</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             : #define bit_RDPRU       0x00000010</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             : #define bit_WBNOINVD    0x00000200</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             : </span>
+<span id="L247"><span class="lineNum">     247</span>                 :             : </span>
+<span id="L248"><span class="lineNum">     248</span>                 :             : #if __i386__</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             : #define __cpuid(__leaf, __eax, __ebx, __ecx, __edx) \</span>
+<span id="L250"><span class="lineNum">     250</span>                 :             :     __asm(&quot;cpuid&quot; : &quot;=a&quot;(__eax), &quot;=b&quot; (__ebx), &quot;=c&quot;(__ecx), &quot;=d&quot;(__edx) \</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :                   : &quot;0&quot;(__leaf))</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             : </span>
+<span id="L253"><span class="lineNum">     253</span>                 :             : #define __cpuid_count(__leaf, __count, __eax, __ebx, __ecx, __edx) \</span>
+<span id="L254"><span class="lineNum">     254</span>                 :             :     __asm(&quot;cpuid&quot; : &quot;=a&quot;(__eax), &quot;=b&quot; (__ebx), &quot;=c&quot;(__ecx), &quot;=d&quot;(__edx) \</span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :                   : &quot;0&quot;(__leaf), &quot;2&quot;(__count))</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             : #else</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             : /* x86-64 uses %rbx as the base register, so preserve it. */</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             : #define __cpuid(__leaf, __eax, __ebx, __ecx, __edx) \</span>
+<span id="L259"><span class="lineNum">     259</span>                 :             :     __asm(&quot;  xchgq  %%rbx,%q1\n&quot; \</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :           &quot;  cpuid\n&quot; \</span>
+<span id="L261"><span class="lineNum">     261</span>                 :             :           &quot;  xchgq  %%rbx,%q1&quot; \</span>
+<span id="L262"><span class="lineNum">     262</span>                 :             :         : &quot;=a&quot;(__eax), &quot;=r&quot; (__ebx), &quot;=c&quot;(__ecx), &quot;=d&quot;(__edx) \</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :         : &quot;0&quot;(__leaf))</span>
+<span id="L264"><span class="lineNum">     264</span>                 :             : </span>
+<span id="L265"><span class="lineNum">     265</span>                 :             : #define __cpuid_count(__leaf, __count, __eax, __ebx, __ecx, __edx) \</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             :     __asm(&quot;  xchgq  %%rbx,%q1\n&quot; \</span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :           &quot;  cpuid\n&quot; \</span>
+<span id="L268"><span class="lineNum">     268</span>                 :             :           &quot;  xchgq  %%rbx,%q1&quot; \</span>
+<span id="L269"><span class="lineNum">     269</span>                 :             :         : &quot;=a&quot;(__eax), &quot;=r&quot; (__ebx), &quot;=c&quot;(__ecx), &quot;=d&quot;(__edx) \</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             :         : &quot;0&quot;(__leaf), &quot;2&quot;(__count))</span>
+<span id="L271"><span class="lineNum">     271</span>                 :             : #endif</span>
+<span id="L272"><span class="lineNum">     272</span>                 :             : </span>
+<span id="L273"><span class="lineNum">     273</span>                 :<span class="tlaGNC tlaBgGNC">       20612 : static __inline unsigned int __get_cpuid_max (unsigned int __leaf,</span></span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :                                               unsigned int *__sig)</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             : {</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :     unsigned int __eax, __ebx, __ecx, __edx;</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             : #if __i386__</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :     int __cpuid_supported;</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             : </span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :     __asm(&quot;  pushfl\n&quot;</span>
+<span id="L281"><span class="lineNum">     281</span>                 :             :           &quot;  popl   %%eax\n&quot;</span>
+<span id="L282"><span class="lineNum">     282</span>                 :             :           &quot;  movl   %%eax,%%ecx\n&quot;</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             :           &quot;  xorl   $0x00200000,%%eax\n&quot;</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             :           &quot;  pushl  %%eax\n&quot;</span>
+<span id="L285"><span class="lineNum">     285</span>                 :             :           &quot;  popfl\n&quot;</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :           &quot;  pushfl\n&quot;</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             :           &quot;  popl   %%eax\n&quot;</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :           &quot;  movl   $0,%0\n&quot;</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             :           &quot;  cmpl   %%eax,%%ecx\n&quot;</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             :           &quot;  je     1f\n&quot;</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             :           &quot;  movl   $1,%0\n&quot;</span>
+<span id="L292"><span class="lineNum">     292</span>                 :             :           &quot;1:&quot;</span>
+<span id="L293"><span class="lineNum">     293</span>                 :             :         : &quot;=r&quot; (__cpuid_supported) : : &quot;eax&quot;, &quot;ecx&quot;);</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :     if (!__cpuid_supported)</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             :         return 0;</span>
+<span id="L296"><span class="lineNum">     296</span>                 :             : #endif</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             : </span>
+<span id="L298"><span class="lineNum">     298</span>                 :<span class="tlaGNC">       20612 :     __cpuid(__leaf, __eax, __ebx, __ecx, __edx);</span></span>
+<span id="L299"><span class="lineNum">     299</span>                 :<span class="tlaGNC">       20612 :     if (__sig)</span></span>
+<span id="L300"><span class="lineNum">     300</span>                 :<span class="tlaUNC tlaBgUNC">           0 :         *__sig = __ebx;</span></span>
+<span id="L301"><span class="lineNum">     301</span>                 :<span class="tlaGNC tlaBgGNC">       20612 :     return __eax;</span></span>
+<span id="L302"><span class="lineNum">     302</span>                 :             : }</span>
+<span id="L303"><span class="lineNum">     303</span>                 :             : </span>
+<span id="L304"><span class="lineNum">     304</span>                 :<span class="tlaGNC">       20612 : static __inline int __get_cpuid (unsigned int __leaf, unsigned int *__eax,</span></span>
+<span id="L305"><span class="lineNum">     305</span>                 :             :                                  unsigned int *__ebx, unsigned int *__ecx,</span>
+<span id="L306"><span class="lineNum">     306</span>                 :             :                                  unsigned int *__edx)</span>
+<span id="L307"><span class="lineNum">     307</span>                 :             : {</span>
+<span id="L308"><span class="lineNum">     308</span>                 :<span class="tlaGNC">       20612 :     unsigned int __max_leaf = __get_cpuid_max(__leaf &amp; 0x80000000, 0);</span></span>
+<span id="L309"><span class="lineNum">     309</span>                 :             : </span>
+<span id="L310"><span class="lineNum">     310</span>                 :<span class="tlaGNC">       20612 :     if (__max_leaf == 0 || __max_leaf &lt; __leaf)</span></span>
+<span id="L311"><span class="lineNum">     311</span>                 :<span class="tlaUNC tlaBgUNC">           0 :         return 0;</span></span>
+<span id="L312"><span class="lineNum">     312</span>                 :             : </span>
+<span id="L313"><span class="lineNum">     313</span>                 :<span class="tlaGNC tlaBgGNC">       20612 :     __cpuid(__leaf, *__eax, *__ebx, *__ecx, *__edx);</span></span>
+<span id="L314"><span class="lineNum">     314</span>                 :<span class="tlaGNC">       20612 :     return 1;</span></span>
+<span id="L315"><span class="lineNum">     315</span>                 :<span class="tlaGNC">       20612 : }</span></span>
+<span id="L316"><span class="lineNum">     316</span>                 :             : </span>
+<span id="L317"><span class="lineNum">     317</span>                 :             : static __inline int __get_cpuid_count (unsigned int __leaf,</span>
+<span id="L318"><span class="lineNum">     318</span>                 :             :                                        unsigned int __subleaf,</span>
+<span id="L319"><span class="lineNum">     319</span>                 :             :                                        unsigned int *__eax, unsigned int *__ebx,</span>
+<span id="L320"><span class="lineNum">     320</span>                 :             :                                        unsigned int *__ecx, unsigned int *__edx)</span>
+<span id="L321"><span class="lineNum">     321</span>                 :             : {</span>
+<span id="L322"><span class="lineNum">     322</span>                 :             :     unsigned int __max_leaf = __get_cpuid_max(__leaf &amp; 0x80000000, 0);</span>
+<span id="L323"><span class="lineNum">     323</span>                 :             : </span>
+<span id="L324"><span class="lineNum">     324</span>                 :             :     if (__max_leaf == 0 || __max_leaf &lt; __leaf)</span>
+<span id="L325"><span class="lineNum">     325</span>                 :             :         return 0;</span>
+<span id="L326"><span class="lineNum">     326</span>                 :             : </span>
+<span id="L327"><span class="lineNum">     327</span>                 :             :     __cpuid_count(__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);</span>
+<span id="L328"><span class="lineNum">     328</span>                 :             :     return 1;</span>
+<span id="L329"><span class="lineNum">     329</span>                 :             : }</span>
+<span id="L330"><span class="lineNum">     330</span>                 :             : </span>
+<span id="L331"><span class="lineNum">     331</span>                 :             : #endif /* __CPUID_H */</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

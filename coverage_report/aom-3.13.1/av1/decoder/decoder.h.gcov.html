@@ -1,0 +1,544 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/decoder/decoder.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/decoder</a> - decoder.h<span style="font-size: 80%;"> (source / <a href="decoder.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2016, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #ifndef AOM_AV1_DECODER_DECODER_H_</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #define AOM_AV1_DECODER_DECODER_H_</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;config/aom_config.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;aom/aom_codec.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &quot;aom_dsp/bitreader.h&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &quot;aom_scale/yv12config.h&quot;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #include &quot;aom_util/aom_thread.h&quot;</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : </span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #include &quot;av1/common/av1_common_int.h&quot;</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : #include &quot;av1/common/thread_common.h&quot;</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : #include &quot;av1/decoder/dthread.h&quot;</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : #if CONFIG_ACCOUNTING</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : #include &quot;av1/decoder/accounting.h&quot;</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : #endif</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : #if CONFIG_INSPECTION</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : #include &quot;av1/decoder/inspection.h&quot;</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : #endif</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             : </span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : #ifdef __cplusplus</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : extern &quot;C&quot; {</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : #endif</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : </span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : /*!</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :  * \brief Contains coding block data required by the decoder.</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :  *</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :  * This includes:</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :  * - Coding block info that is common between encoder and decoder.</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :  * - Other coding block info only needed by the decoder.</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :  * Contrast this with a similar struct MACROBLOCK on encoder side.</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :  * This data is also common between ThreadData and AV1Decoder structs.</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :  */</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : typedef struct DecoderCodingBlock {</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :   /*!</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :    * Coding block info that is common between encoder and decoder.</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :    */</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :   DECLARE_ALIGNED(32, MACROBLOCKD, xd);</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :   /*!</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :    * True if the at least one of the coding blocks decoded was corrupted.</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :    */</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :   int corrupted;</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :   /*!</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :    * Pointer to 'mc_buf' inside 'pbi-&gt;td' (single-threaded decoding) or</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :    * 'pbi-&gt;thread_data[i].td' (multi-threaded decoding).</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :    */</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :   uint8_t *mc_buf[2];</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :   /*!</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :    * Pointer to 'dqcoeff' inside 'td-&gt;cb_buffer_base' or 'pbi-&gt;cb_buffer_base'</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :    * with appropriate offset for the current superblock, for each plane.</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :    */</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   tran_low_t *dqcoeff_block[MAX_MB_PLANE];</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   /*!</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :    * cb_offset[p] is the offset into the dqcoeff_block[p] for the current coding</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :    * block, for each plane 'p'.</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :    */</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :   uint16_t cb_offset[MAX_MB_PLANE];</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :   /*!</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :    * Pointer to 'eob_data' inside 'td-&gt;cb_buffer_base' or 'pbi-&gt;cb_buffer_base'</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :    * with appropriate offset for the current superblock, for each plane.</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :    */</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :   eob_info *eob_data[MAX_MB_PLANE];</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   /*!</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :    * txb_offset[p] is the offset into the eob_data[p] for the current coding</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :    * block, for each plane 'p'.</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :    */</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   uint16_t txb_offset[MAX_MB_PLANE];</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :   /*!</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :    * ref_mv_count[i] specifies the number of number of motion vector candidates</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :    * in xd-&gt;ref_mv_stack[i].</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :    */</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             : } DecoderCodingBlock;</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : </span>
+<span id="L86"><span class="lineNum">      86</span>                 :             : /*!\cond */</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : </span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : typedef void (*decode_block_visitor_fn_t)(const AV1_COMMON *const cm,</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :                                           DecoderCodingBlock *dcb,</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :                                           aom_reader *const r, const int plane,</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :                                           const int row, const int col,</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :                                           const TX_SIZE tx_size);</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             : </span>
+<span id="L94"><span class="lineNum">      94</span>                 :             : typedef void (*predict_inter_block_visitor_fn_t)(AV1_COMMON *const cm,</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :                                                  DecoderCodingBlock *dcb,</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             :                                                  BLOCK_SIZE bsize);</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : </span>
+<span id="L98"><span class="lineNum">      98</span>                 :             : typedef void (*cfl_store_inter_block_visitor_fn_t)(AV1_COMMON *const cm,</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :                                                    MACROBLOCKD *const xd);</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : </span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : typedef struct ThreadData {</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :   DecoderCodingBlock dcb;</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             : </span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :   // Coding block buffer for the current superblock.</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :   // Used only for single-threaded decoding and multi-threaded decoding with</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :   // row_mt == 1 cases.</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :   // See also: similar buffer in 'AV1Decoder'.</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :   CB_BUFFER cb_buffer_base;</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             : </span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   aom_reader *bit_reader;</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : </span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :   // Motion compensation buffer used to get a prediction buffer with extended</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :   // borders. One buffer for each of the two possible references.</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :   uint8_t *mc_buf[2];</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :   // Mask for this block used for compound prediction.</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :   uint8_t *seg_mask;</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :   // Allocated size of 'mc_buf'.</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :   int32_t mc_buf_size;</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :   // If true, the pointers in 'mc_buf' were converted from highbd pointers.</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :   int mc_buf_use_highbd;  // Boolean: whether the byte pointers stored in</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :                           // mc_buf were converted from highbd pointers.</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             : </span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :   CONV_BUF_TYPE *tmp_conv_dst;</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :   uint8_t *tmp_obmc_bufs[2];</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             : </span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :   decode_block_visitor_fn_t read_coeffs_tx_intra_block_visit;</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :   decode_block_visitor_fn_t predict_and_recon_intra_block_visit;</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :   decode_block_visitor_fn_t read_coeffs_tx_inter_block_visit;</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :   decode_block_visitor_fn_t inverse_tx_inter_block_visit;</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :   predict_inter_block_visitor_fn_t predict_inter_block_visit;</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :   cfl_store_inter_block_visitor_fn_t cfl_store_inter_block_visit;</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             : } ThreadData;</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             : </span>
+<span id="L134"><span class="lineNum">     134</span>                 :             : typedef struct AV1DecRowMTJobInfo {</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :   int tile_row;</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :   int tile_col;</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :   int mi_row;</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : } AV1DecRowMTJobInfo;</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             : </span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : typedef struct AV1DecRowMTSyncData {</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             : #if CONFIG_MULTITHREAD</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :   pthread_mutex_t *mutex_;</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :   pthread_cond_t *cond_;</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             : #endif</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :   int allocated_sb_rows;</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             :   int *cur_sb_col;</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :   // Denotes the superblock interval at which conditional signalling should</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :   // happen. Also denotes the minimum number of extra superblocks of the top row</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :   // to be complete to start decoding the current superblock. A value of 1</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :   // indicates top-right dependency.</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :   int sync_range;</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :   // Denotes the additional number of superblocks in the previous row to be</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :   // complete to start decoding the current superblock when intraBC tool is</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :   // enabled. This additional top-right delay is required to satisfy the</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :   // hardware constraints for intraBC tool when row multithreading is enabled.</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :   int intrabc_extra_top_right_sb_delay;</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :   int mi_rows;</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :   int mi_cols;</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             :   int mi_rows_parse_done;</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :   int mi_rows_decode_started;</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :   int num_threads_working;</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             : } AV1DecRowMTSync;</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : </span>
+<span id="L164"><span class="lineNum">     164</span>                 :             : typedef struct AV1DecRowMTInfo {</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :   int tile_rows_start;</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :   int tile_rows_end;</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             :   int tile_cols_start;</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             :   int tile_cols_end;</span>
+<span id="L169"><span class="lineNum">     169</span>                 :             :   int start_tile;</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :   int end_tile;</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             :   int mi_rows_to_decode;</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             : </span>
+<span id="L173"><span class="lineNum">     173</span>                 :             :   // Invariant:</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :   //   mi_rows_parse_done &gt;= mi_rows_decode_started.</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             :   // mi_rows_parse_done and mi_rows_decode_started are both initialized to 0.</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             :   // mi_rows_parse_done is incremented freely. mi_rows_decode_started may only</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             :   // be incremented to catch up with mi_rows_parse_done but is not allowed to</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :   // surpass mi_rows_parse_done.</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             :   //</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             :   // When mi_rows_decode_started reaches mi_rows_to_decode, there are no more</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :   // decode jobs.</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : </span>
+<span id="L183"><span class="lineNum">     183</span>                 :             :   // Indicates the progress of the bit-stream parsing of superblocks.</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             :   // Initialized to 0. Incremented by sb_mi_size when parse sb row is done.</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             :   int mi_rows_parse_done;</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :   // Indicates the progress of the decoding of superblocks.</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :   // Initialized to 0. Incremented by sb_mi_size when decode sb row is started.</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             :   int mi_rows_decode_started;</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             :   // Boolean: Initialized to 0 (false). Set to 1 (true) on error to abort</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :   // decoding.</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :   int row_mt_exit;</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : } AV1DecRowMTInfo;</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : </span>
+<span id="L194"><span class="lineNum">     194</span>                 :             : typedef struct TileDataDec {</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :   TileInfo tile_info;</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :   aom_reader bit_reader;</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :   AV1DecRowMTSync dec_row_mt_sync;</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             : } TileDataDec;</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             : </span>
+<span id="L201"><span class="lineNum">     201</span>                 :             : typedef struct TileBufferDec {</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             :   const uint8_t *data;</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :   size_t size;</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             : } TileBufferDec;</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             : </span>
+<span id="L206"><span class="lineNum">     206</span>                 :             : typedef struct DataBuffer {</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             :   const uint8_t *data;</span>
+<span id="L208"><span class="lineNum">     208</span>                 :             :   size_t size;</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             : } DataBuffer;</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             : </span>
+<span id="L211"><span class="lineNum">     211</span>                 :             : typedef struct EXTERNAL_REFERENCES {</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             :   YV12_BUFFER_CONFIG refs[MAX_EXTERNAL_REFERENCES];</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :   int num;</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             : } EXTERNAL_REFERENCES;</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             : </span>
+<span id="L216"><span class="lineNum">     216</span>                 :             : typedef struct TileJobsDec {</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             :   TileBufferDec *tile_buffer;</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :   TileDataDec *tile_data;</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             : } TileJobsDec;</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             : </span>
+<span id="L221"><span class="lineNum">     221</span>                 :             : typedef struct AV1DecTileMTData {</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             : #if CONFIG_MULTITHREAD</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             :   pthread_mutex_t *job_mutex;</span>
+<span id="L224"><span class="lineNum">     224</span>                 :             : #endif</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :   TileJobsDec *job_queue;</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :   int jobs_enqueued;</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             :   int jobs_dequeued;</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :   int alloc_tile_rows;</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             :   int alloc_tile_cols;</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             : } AV1DecTileMT;</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             : </span>
+<span id="L232"><span class="lineNum">     232</span>                 :             : typedef struct AV1Decoder {</span>
+<span id="L233"><span class="lineNum">     233</span>                 :             :   DecoderCodingBlock dcb;</span>
+<span id="L234"><span class="lineNum">     234</span>                 :             : </span>
+<span id="L235"><span class="lineNum">     235</span>                 :             :   DECLARE_ALIGNED(32, AV1_COMMON, common);</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             : </span>
+<span id="L237"><span class="lineNum">     237</span>                 :             :   AVxWorker lf_worker;</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :   AV1LfSync lf_row_sync;</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :   AV1LrSync lr_row_sync;</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             :   AV1LrStruct lr_ctxt;</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :   AV1CdefSync cdef_sync;</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :   AV1CdefWorkerData *cdef_worker;</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             :   AVxWorker *tile_workers;</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :   int num_workers;</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :   DecWorkerData *thread_data;</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             :   ThreadData td;</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             :   TileDataDec *tile_data;</span>
+<span id="L248"><span class="lineNum">     248</span>                 :             :   int allocated_tiles;</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             : </span>
+<span id="L250"><span class="lineNum">     250</span>                 :             :   TileBufferDec tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :   AV1DecTileMT tile_mt_info;</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             : </span>
+<span id="L253"><span class="lineNum">     253</span>                 :             :   // Each time the decoder is called, we expect to receive a full temporal unit.</span>
+<span id="L254"><span class="lineNum">     254</span>                 :             :   // This can contain up to one shown frame per spatial layer in the current</span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :   // operating point (note that some layers may be entirely omitted).</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :   // If the 'output_all_layers' option is true, we save all of these shown</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             :   // frames so that they can be returned to the application. If the</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             :   // 'output_all_layers' option is false, then we only output one image per</span>
+<span id="L259"><span class="lineNum">     259</span>                 :             :   // temporal unit.</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :   //</span>
+<span id="L261"><span class="lineNum">     261</span>                 :             :   // Note: The saved buffers are released at the start of the next time the</span>
+<span id="L262"><span class="lineNum">     262</span>                 :             :   // application calls aom_codec_decode().</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :   int output_all_layers;</span>
+<span id="L264"><span class="lineNum">     264</span>                 :             :   RefCntBuffer *output_frames[MAX_NUM_SPATIAL_LAYERS];</span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :   size_t num_output_frames;  // How many frames are queued up so far?</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             : </span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :   // In order to properly support random-access decoding, we need</span>
+<span id="L268"><span class="lineNum">     268</span>                 :             :   // to behave slightly differently for the very first frame we decode.</span>
+<span id="L269"><span class="lineNum">     269</span>                 :             :   // So we track whether this is the first frame or not.</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             :   int decoding_first_frame;</span>
+<span id="L271"><span class="lineNum">     271</span>                 :             : </span>
+<span id="L272"><span class="lineNum">     272</span>                 :             :   int allow_lowbitdepth;</span>
+<span id="L273"><span class="lineNum">     273</span>                 :             :   int max_threads;</span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :   int inv_tile_order;</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             :   int need_resync;  // wait for key/intra-only frame.</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :   int reset_decoder_state;</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             : </span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :   int tile_size_bytes;</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             :   int tile_col_size_bytes;</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :   int dec_tile_row, dec_tile_col;  // always -1 for non-VR tile encoding</span>
+<span id="L281"><span class="lineNum">     281</span>                 :             : #if CONFIG_ACCOUNTING</span>
+<span id="L282"><span class="lineNum">     282</span>                 :             :   int acct_enabled;</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             :   Accounting accounting;</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             : #endif</span>
+<span id="L285"><span class="lineNum">     285</span>                 :             :   int sequence_header_ready;</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :   int sequence_header_changed;</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             : #if CONFIG_INSPECTION</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :   aom_inspect_cb inspect_cb;</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             :   void *inspect_ctx;</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             : #endif</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             :   int operating_point;</span>
+<span id="L292"><span class="lineNum">     292</span>                 :             :   int current_operating_point;</span>
+<span id="L293"><span class="lineNum">     293</span>                 :             :   int seen_frame_header;</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :   // The expected start_tile (tg_start syntax element) of the next tile group.</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             :   int next_start_tile;</span>
+<span id="L296"><span class="lineNum">     296</span>                 :             : </span>
+<span id="L297"><span class="lineNum">     297</span>                 :             :   // State if the camera frame header is already decoded while</span>
+<span id="L298"><span class="lineNum">     298</span>                 :             :   // large_scale_tile = 1.</span>
+<span id="L299"><span class="lineNum">     299</span>                 :             :   int camera_frame_header_ready;</span>
+<span id="L300"><span class="lineNum">     300</span>                 :             :   size_t frame_header_size;</span>
+<span id="L301"><span class="lineNum">     301</span>                 :             :   DataBuffer obu_size_hdr;</span>
+<span id="L302"><span class="lineNum">     302</span>                 :             :   int output_frame_width_in_tiles_minus_1;</span>
+<span id="L303"><span class="lineNum">     303</span>                 :             :   int output_frame_height_in_tiles_minus_1;</span>
+<span id="L304"><span class="lineNum">     304</span>                 :             :   int tile_count_minus_1;</span>
+<span id="L305"><span class="lineNum">     305</span>                 :             :   uint32_t coded_tile_data_size;</span>
+<span id="L306"><span class="lineNum">     306</span>                 :             :   unsigned int ext_tile_debug;  // for ext-tile software debug &amp; testing</span>
+<span id="L307"><span class="lineNum">     307</span>                 :             : </span>
+<span id="L308"><span class="lineNum">     308</span>                 :             :   // Decoder has 3 modes of operation:</span>
+<span id="L309"><span class="lineNum">     309</span>                 :             :   // (1) Single-threaded decoding.</span>
+<span id="L310"><span class="lineNum">     310</span>                 :             :   // (2) Multi-threaded decoding with each tile decoded in parallel.</span>
+<span id="L311"><span class="lineNum">     311</span>                 :             :   // (3) In addition to (2), each thread decodes 1 superblock row in parallel.</span>
+<span id="L312"><span class="lineNum">     312</span>                 :             :   // row_mt = 1 triggers mode (3) above, while row_mt = 0, will trigger mode (1)</span>
+<span id="L313"><span class="lineNum">     313</span>                 :             :   // or (2) depending on 'max_threads'.</span>
+<span id="L314"><span class="lineNum">     314</span>                 :             :   unsigned int row_mt;</span>
+<span id="L315"><span class="lineNum">     315</span>                 :             : </span>
+<span id="L316"><span class="lineNum">     316</span>                 :             :   EXTERNAL_REFERENCES ext_refs;</span>
+<span id="L317"><span class="lineNum">     317</span>                 :             :   YV12_BUFFER_CONFIG tile_list_outbuf;</span>
+<span id="L318"><span class="lineNum">     318</span>                 :             : </span>
+<span id="L319"><span class="lineNum">     319</span>                 :             :   // Coding block buffer for the current frame.</span>
+<span id="L320"><span class="lineNum">     320</span>                 :             :   // Allocated and used only for multi-threaded decoding with 'row_mt == 0'.</span>
+<span id="L321"><span class="lineNum">     321</span>                 :             :   // See also: similar buffer in 'ThreadData' struct.</span>
+<span id="L322"><span class="lineNum">     322</span>                 :             :   CB_BUFFER *cb_buffer_base;</span>
+<span id="L323"><span class="lineNum">     323</span>                 :             :   // Allocated size of 'cb_buffer_base'. Currently same as the number of</span>
+<span id="L324"><span class="lineNum">     324</span>                 :             :   // superblocks in the coded frame.</span>
+<span id="L325"><span class="lineNum">     325</span>                 :             :   int cb_buffer_alloc_size;</span>
+<span id="L326"><span class="lineNum">     326</span>                 :             : </span>
+<span id="L327"><span class="lineNum">     327</span>                 :             :   int allocated_row_mt_sync_rows;</span>
+<span id="L328"><span class="lineNum">     328</span>                 :             : </span>
+<span id="L329"><span class="lineNum">     329</span>                 :             : #if CONFIG_MULTITHREAD</span>
+<span id="L330"><span class="lineNum">     330</span>                 :             :   pthread_mutex_t *row_mt_mutex_;</span>
+<span id="L331"><span class="lineNum">     331</span>                 :             :   pthread_cond_t *row_mt_cond_;</span>
+<span id="L332"><span class="lineNum">     332</span>                 :             : #endif</span>
+<span id="L333"><span class="lineNum">     333</span>                 :             : </span>
+<span id="L334"><span class="lineNum">     334</span>                 :             :   AV1DecRowMTInfo frame_row_mt_info;</span>
+<span id="L335"><span class="lineNum">     335</span>                 :             :   aom_metadata_array_t *metadata;</span>
+<span id="L336"><span class="lineNum">     336</span>                 :             : </span>
+<span id="L337"><span class="lineNum">     337</span>                 :             :   int context_update_tile_id;</span>
+<span id="L338"><span class="lineNum">     338</span>                 :             :   int skip_loop_filter;</span>
+<span id="L339"><span class="lineNum">     339</span>                 :             :   int skip_film_grain;</span>
+<span id="L340"><span class="lineNum">     340</span>                 :             :   int is_annexb;</span>
+<span id="L341"><span class="lineNum">     341</span>                 :             :   int valid_for_referencing[REF_FRAMES];</span>
+<span id="L342"><span class="lineNum">     342</span>                 :             :   int is_fwd_kf_present;</span>
+<span id="L343"><span class="lineNum">     343</span>                 :             :   int is_arf_frame_present;</span>
+<span id="L344"><span class="lineNum">     344</span>                 :             :   int num_tile_groups;</span>
+<span id="L345"><span class="lineNum">     345</span>                 :             :   aom_s_frame_info sframe_info;</span>
+<span id="L346"><span class="lineNum">     346</span>                 :             : </span>
+<span id="L347"><span class="lineNum">     347</span>                 :             :   /*!</span>
+<span id="L348"><span class="lineNum">     348</span>                 :             :    * Elements part of the sequence header, that are applicable for all the</span>
+<span id="L349"><span class="lineNum">     349</span>                 :             :    * frames in the video.</span>
+<span id="L350"><span class="lineNum">     350</span>                 :             :    */</span>
+<span id="L351"><span class="lineNum">     351</span>                 :             :   SequenceHeader seq_params;</span>
+<span id="L352"><span class="lineNum">     352</span>                 :             : </span>
+<span id="L353"><span class="lineNum">     353</span>                 :             :   /*!</span>
+<span id="L354"><span class="lineNum">     354</span>                 :             :    * If true, buffer removal times are present.</span>
+<span id="L355"><span class="lineNum">     355</span>                 :             :    */</span>
+<span id="L356"><span class="lineNum">     356</span>                 :             :   bool buffer_removal_time_present;</span>
+<span id="L357"><span class="lineNum">     357</span>                 :             : </span>
+<span id="L358"><span class="lineNum">     358</span>                 :             :   /*!</span>
+<span id="L359"><span class="lineNum">     359</span>                 :             :    * Code and details about current error status.</span>
+<span id="L360"><span class="lineNum">     360</span>                 :             :    */</span>
+<span id="L361"><span class="lineNum">     361</span>                 :             :   struct aom_internal_error_info error;</span>
+<span id="L362"><span class="lineNum">     362</span>                 :             : </span>
+<span id="L363"><span class="lineNum">     363</span>                 :             :   /*!</span>
+<span id="L364"><span class="lineNum">     364</span>                 :             :    * Number of temporal layers: may be &gt; 1 for SVC (scalable vector coding).</span>
+<span id="L365"><span class="lineNum">     365</span>                 :             :    */</span>
+<span id="L366"><span class="lineNum">     366</span>                 :             :   unsigned int number_temporal_layers;</span>
+<span id="L367"><span class="lineNum">     367</span>                 :             : </span>
+<span id="L368"><span class="lineNum">     368</span>                 :             :   /*!</span>
+<span id="L369"><span class="lineNum">     369</span>                 :             :    * Number of spatial layers: may be &gt; 1 for SVC (scalable vector coding).</span>
+<span id="L370"><span class="lineNum">     370</span>                 :             :    */</span>
+<span id="L371"><span class="lineNum">     371</span>                 :             :   unsigned int number_spatial_layers;</span>
+<span id="L372"><span class="lineNum">     372</span>                 :             : } AV1Decoder;</span>
+<span id="L373"><span class="lineNum">     373</span>                 :             : </span>
+<span id="L374"><span class="lineNum">     374</span>                 :             : // Returns 0 on success. Sets pbi-&gt;common.error.error_code to a nonzero error</span>
+<span id="L375"><span class="lineNum">     375</span>                 :             : // code and returns a nonzero value on failure.</span>
+<span id="L376"><span class="lineNum">     376</span>                 :             : int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,</span>
+<span id="L377"><span class="lineNum">     377</span>                 :             :                                 const uint8_t **psource);</span>
+<span id="L378"><span class="lineNum">     378</span>                 :             : </span>
+<span id="L379"><span class="lineNum">     379</span>                 :             : // Get the frame at a particular index in the output queue</span>
+<span id="L380"><span class="lineNum">     380</span>                 :             : int av1_get_raw_frame(AV1Decoder *pbi, size_t index, YV12_BUFFER_CONFIG **sd,</span>
+<span id="L381"><span class="lineNum">     381</span>                 :             :                       aom_film_grain_t **grain_params);</span>
+<span id="L382"><span class="lineNum">     382</span>                 :             : </span>
+<span id="L383"><span class="lineNum">     383</span>                 :             : int av1_get_frame_to_show(struct AV1Decoder *pbi, YV12_BUFFER_CONFIG *frame);</span>
+<span id="L384"><span class="lineNum">     384</span>                 :             : </span>
+<span id="L385"><span class="lineNum">     385</span>                 :             : aom_codec_err_t av1_copy_reference_dec(struct AV1Decoder *pbi, int idx,</span>
+<span id="L386"><span class="lineNum">     386</span>                 :             :                                        YV12_BUFFER_CONFIG *sd);</span>
+<span id="L387"><span class="lineNum">     387</span>                 :             : </span>
+<span id="L388"><span class="lineNum">     388</span>                 :             : aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,</span>
+<span id="L389"><span class="lineNum">     389</span>                 :             :                                       int use_external_ref,</span>
+<span id="L390"><span class="lineNum">     390</span>                 :             :                                       YV12_BUFFER_CONFIG *sd);</span>
+<span id="L391"><span class="lineNum">     391</span>                 :             : aom_codec_err_t av1_copy_new_frame_dec(AV1_COMMON *cm,</span>
+<span id="L392"><span class="lineNum">     392</span>                 :             :                                        YV12_BUFFER_CONFIG *new_frame,</span>
+<span id="L393"><span class="lineNum">     393</span>                 :             :                                        YV12_BUFFER_CONFIG *sd);</span>
+<span id="L394"><span class="lineNum">     394</span>                 :             : </span>
+<span id="L395"><span class="lineNum">     395</span>                 :             : struct AV1Decoder *av1_decoder_create(BufferPool *const pool);</span>
+<span id="L396"><span class="lineNum">     396</span>                 :             : </span>
+<span id="L397"><span class="lineNum">     397</span>                 :             : void av1_decoder_remove(struct AV1Decoder *pbi);</span>
+<span id="L398"><span class="lineNum">     398</span>                 :             : void av1_dealloc_dec_jobs(struct AV1DecTileMTData *tile_mt_info);</span>
+<span id="L399"><span class="lineNum">     399</span>                 :             : </span>
+<span id="L400"><span class="lineNum">     400</span>                 :             : void av1_dec_row_mt_dealloc(AV1DecRowMTSync *dec_row_mt_sync);</span>
+<span id="L401"><span class="lineNum">     401</span>                 :             : </span>
+<span id="L402"><span class="lineNum">     402</span>                 :             : void av1_dec_free_cb_buf(AV1Decoder *pbi);</span>
+<span id="L403"><span class="lineNum">     403</span>                 :             : </span>
+<span id="L404"><span class="lineNum">     404</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static inline void decrease_ref_count(RefCntBuffer *const buf,</span></span>
+<span id="L405"><span class="lineNum">     405</span>                 :             :                                       BufferPool *const pool) {</span>
+<span id="L406"><span class="lineNum">     406</span>                 :<span class="tlaUNC">           0 :   if (buf != NULL) {</span></span>
+<span id="L407"><span class="lineNum">     407</span>                 :<span class="tlaUNC">           0 :     --buf-&gt;ref_count;</span></span>
+<span id="L408"><span class="lineNum">     408</span>                 :             :     // Reference counts should never become negative. If this assertion fails,</span>
+<span id="L409"><span class="lineNum">     409</span>                 :             :     // there is a bug in our reference count management.</span>
+<span id="L410"><span class="lineNum">     410</span>                 :             :     assert(buf-&gt;ref_count &gt;= 0);</span>
+<span id="L411"><span class="lineNum">     411</span>                 :             :     // A worker may only get a free framebuffer index when calling get_free_fb.</span>
+<span id="L412"><span class="lineNum">     412</span>                 :             :     // But the raw frame buffer is not set up until we finish decoding header.</span>
+<span id="L413"><span class="lineNum">     413</span>                 :             :     // So if any error happens during decoding header, frame_bufs[idx] will not</span>
+<span id="L414"><span class="lineNum">     414</span>                 :             :     // have a valid raw frame buffer.</span>
+<span id="L415"><span class="lineNum">     415</span>                 :<span class="tlaUNC">           0 :     if (buf-&gt;ref_count == 0 &amp;&amp; buf-&gt;raw_frame_buffer.data) {</span></span>
+<span id="L416"><span class="lineNum">     416</span>                 :<span class="tlaUNC">           0 :       pool-&gt;release_fb_cb(pool-&gt;cb_priv, &amp;buf-&gt;raw_frame_buffer);</span></span>
+<span id="L417"><span class="lineNum">     417</span>                 :<span class="tlaUNC">           0 :       buf-&gt;raw_frame_buffer.data = NULL;</span></span>
+<span id="L418"><span class="lineNum">     418</span>                 :<span class="tlaUNC">           0 :       buf-&gt;raw_frame_buffer.size = 0;</span></span>
+<span id="L419"><span class="lineNum">     419</span>                 :<span class="tlaUNC">           0 :       buf-&gt;raw_frame_buffer.priv = NULL;</span></span>
+<span id="L420"><span class="lineNum">     420</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L421"><span class="lineNum">     421</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L422"><span class="lineNum">     422</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L423"><span class="lineNum">     423</span>                 :             : </span>
+<span id="L424"><span class="lineNum">     424</span>                 :             : #define ACCT_STR __func__</span>
+<span id="L425"><span class="lineNum">     425</span>                 :<span class="tlaUNC">           0 : static inline int av1_read_uniform(aom_reader *r, int n) {</span></span>
+<span id="L426"><span class="lineNum">     426</span>                 :<span class="tlaUNC">           0 :   const int l = get_unsigned_bits(n);</span></span>
+<span id="L427"><span class="lineNum">     427</span>                 :<span class="tlaUNC">           0 :   const int m = (1 &lt;&lt; l) - n;</span></span>
+<span id="L428"><span class="lineNum">     428</span>                 :<span class="tlaUNC">           0 :   const int v = aom_read_literal(r, l - 1, ACCT_STR);</span></span>
+<span id="L429"><span class="lineNum">     429</span>                 :             :   assert(l != 0);</span>
+<span id="L430"><span class="lineNum">     430</span>                 :<span class="tlaUNC">           0 :   if (v &lt; m)</span></span>
+<span id="L431"><span class="lineNum">     431</span>                 :<span class="tlaUNC">           0 :     return v;</span></span>
+<span id="L432"><span class="lineNum">     432</span>                 :             :   else</span>
+<span id="L433"><span class="lineNum">     433</span>                 :<span class="tlaUNC">           0 :     return (v &lt;&lt; 1) - m + aom_read_literal(r, 1, ACCT_STR);</span></span>
+<span id="L434"><span class="lineNum">     434</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L435"><span class="lineNum">     435</span>                 :             : </span>
+<span id="L436"><span class="lineNum">     436</span>                 :             : typedef void (*palette_visitor_fn_t)(MACROBLOCKD *const xd, int plane,</span>
+<span id="L437"><span class="lineNum">     437</span>                 :             :                                      aom_reader *r);</span>
+<span id="L438"><span class="lineNum">     438</span>                 :             : </span>
+<span id="L439"><span class="lineNum">     439</span>                 :             : void av1_visit_palette(AV1Decoder *const pbi, MACROBLOCKD *const xd,</span>
+<span id="L440"><span class="lineNum">     440</span>                 :             :                        aom_reader *r, palette_visitor_fn_t visit);</span>
+<span id="L441"><span class="lineNum">     441</span>                 :             : </span>
+<span id="L442"><span class="lineNum">     442</span>                 :             : typedef void (*block_visitor_fn_t)(AV1Decoder *const pbi, ThreadData *const td,</span>
+<span id="L443"><span class="lineNum">     443</span>                 :             :                                    int mi_row, int mi_col, aom_reader *r,</span>
+<span id="L444"><span class="lineNum">     444</span>                 :             :                                    PARTITION_TYPE partition, BLOCK_SIZE bsize);</span>
+<span id="L445"><span class="lineNum">     445</span>                 :             : </span>
+<span id="L446"><span class="lineNum">     446</span>                 :             : /*!\endcond */</span>
+<span id="L447"><span class="lineNum">     447</span>                 :             : </span>
+<span id="L448"><span class="lineNum">     448</span>                 :             : #ifdef __cplusplus</span>
+<span id="L449"><span class="lineNum">     449</span>                 :             : }  // extern &quot;C&quot;</span>
+<span id="L450"><span class="lineNum">     450</span>                 :             : #endif</span>
+<span id="L451"><span class="lineNum">     451</span>                 :             : </span>
+<span id="L452"><span class="lineNum">     452</span>                 :             : #endif  // AOM_AV1_DECODER_DECODER_H_</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

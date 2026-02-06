@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/common/cdef_block.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/common</a> - cdef_block.c<span style="font-size: 80%;"> (source / <a href="cdef_block.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">255</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">14</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2016, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #include &lt;math.h&gt;</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #include &lt;stdlib.h&gt;</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;config/aom_dsp_rtcd.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;config/av1_rtcd.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : </span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &quot;av1/common/cdef.h&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : /*</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : This is Cdef_Directions (section 7.15.3) with 2 padding entries at the</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : beginning and end of the table. The cdef direction range is [0, 7] and the</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : first index is offset +/-2. This removes the need to constrain the first</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : index to the same range using e.g., &amp; 7.</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : */</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : DECLARE_ALIGNED(16, static const int, cdef_directions_padded[12][2]) = {</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             :   /* Padding: cdef_directions[6] */</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             :   { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE + 0 },</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :   /* Padding: cdef_directions[7] */</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :   { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE - 1 },</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : </span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :   /* Begin cdef_directions */</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :   { -1 * CDEF_BSTRIDE + 1, -2 * CDEF_BSTRIDE + 2 },</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :   { 0 * CDEF_BSTRIDE + 1, -1 * CDEF_BSTRIDE + 2 },</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :   { 0 * CDEF_BSTRIDE + 1, 0 * CDEF_BSTRIDE + 2 },</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :   { 0 * CDEF_BSTRIDE + 1, 1 * CDEF_BSTRIDE + 2 },</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             :   { 1 * CDEF_BSTRIDE + 1, 2 * CDEF_BSTRIDE + 2 },</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :   { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE + 1 },</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :   { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE + 0 },</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :   { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE - 1 },</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :   /* End cdef_directions */</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : </span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :   /* Padding: cdef_directions[0] */</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :   { -1 * CDEF_BSTRIDE + 1, -2 * CDEF_BSTRIDE + 2 },</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :   /* Padding: cdef_directions[1] */</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :   { 0 * CDEF_BSTRIDE + 1, -1 * CDEF_BSTRIDE + 2 },</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : };</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : </span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : const int (*const cdef_directions)[2] = cdef_directions_padded + 2;</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : </span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : /* Detect direction. 0 means 45-degree up-right, 2 is horizontal, and so on.</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :    The search minimizes the weighted variance along all the lines in a</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :    particular direction, i.e. the squared error between the input and a</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :    &quot;predicted&quot; block where each pixel is replaced by the average along a line</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :    in a particular direction. Since each direction have the same sum(x^2) term,</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :    that term is never computed. See Section 2, step 2, of:</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :    http://jmvalin.ca/notes/intra_paint.pdf */</span>
+<span id="L57"><span class="lineNum">      57</span>                 :<span class="tlaUNC tlaBgUNC">           0 : int cdef_find_dir_c(const uint16_t *img, int stride, int32_t *var,</span></span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :                     int coeff_shift) {</span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 :   int i;</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :<span class="tlaUNC">           0 :   int32_t cost[8] = { 0 };</span></span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 :   int partial[8][15] = { { 0 } };</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :<span class="tlaUNC">           0 :   int32_t best_cost = 0;</span></span>
+<span id="L63"><span class="lineNum">      63</span>                 :<span class="tlaUNC">           0 :   int best_dir = 0;</span></span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   /* Instead of dividing by n between 2 and 8, we multiply by 3*5*7*8/n.</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :      The output is then 840 times larger, but we don't care for finding</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :      the max. */</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :   static const int div_table[] = { 0, 840, 420, 280, 210, 168, 140, 120, 105 };</span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; 8; i++) {</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 :     int j;</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 :     for (j = 0; j &lt; 8; j++) {</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :<span class="tlaUNC">           0 :       int x;</span></span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :       /* We subtract 128 here to reduce the maximum range of the squared</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :          partial sums. */</span>
+<span id="L74"><span class="lineNum">      74</span>                 :<span class="tlaUNC">           0 :       x = (img[i * stride + j] &gt;&gt; coeff_shift) - 128;</span></span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 :       partial[0][i + j] += x;</span></span>
+<span id="L76"><span class="lineNum">      76</span>                 :<span class="tlaUNC">           0 :       partial[1][i + j / 2] += x;</span></span>
+<span id="L77"><span class="lineNum">      77</span>                 :<span class="tlaUNC">           0 :       partial[2][i] += x;</span></span>
+<span id="L78"><span class="lineNum">      78</span>                 :<span class="tlaUNC">           0 :       partial[3][3 + i - j / 2] += x;</span></span>
+<span id="L79"><span class="lineNum">      79</span>                 :<span class="tlaUNC">           0 :       partial[4][7 + i - j] += x;</span></span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 :       partial[5][3 - i / 2 + j] += x;</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :<span class="tlaUNC">           0 :       partial[6][j] += x;</span></span>
+<span id="L82"><span class="lineNum">      82</span>                 :<span class="tlaUNC">           0 :       partial[7][i / 2 + j] += x;</span></span>
+<span id="L83"><span class="lineNum">      83</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L84"><span class="lineNum">      84</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; 8; i++) {</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :     cost[2] += partial[2][i] * partial[2][i];</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :<span class="tlaUNC">           0 :     cost[6] += partial[6][i] * partial[6][i];</span></span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :<span class="tlaUNC">           0 :   cost[2] *= div_table[8];</span></span>
+<span id="L90"><span class="lineNum">      90</span>                 :<span class="tlaUNC">           0 :   cost[6] *= div_table[8];</span></span>
+<span id="L91"><span class="lineNum">      91</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; 7; i++) {</span></span>
+<span id="L92"><span class="lineNum">      92</span>                 :<span class="tlaUNC">           0 :     cost[0] += (partial[0][i] * partial[0][i] +</span></span>
+<span id="L93"><span class="lineNum">      93</span>                 :<span class="tlaUNC">           0 :                 partial[0][14 - i] * partial[0][14 - i]) *</span></span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :                div_table[i + 1];</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :     cost[4] += (partial[4][i] * partial[4][i] +</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 :                 partial[4][14 - i] * partial[4][14 - i]) *</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :<span class="tlaUNC">           0 :                div_table[i + 1];</span></span>
+<span id="L98"><span class="lineNum">      98</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L99"><span class="lineNum">      99</span>                 :<span class="tlaUNC">           0 :   cost[0] += partial[0][7] * partial[0][7] * div_table[8];</span></span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC">           0 :   cost[4] += partial[4][7] * partial[4][7] * div_table[8];</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 :   for (i = 1; i &lt; 8; i += 2) {</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 :     int j;</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :     for (j = 0; j &lt; 4 + 1; j++) {</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :<span class="tlaUNC">           0 :       cost[i] += partial[i][3 + j] * partial[i][3 + j];</span></span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :<span class="tlaUNC">           0 :     cost[i] *= div_table[8];</span></span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :     for (j = 0; j &lt; 4 - 1; j++) {</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :<span class="tlaUNC">           0 :       cost[i] += (partial[i][j] * partial[i][j] +</span></span>
+<span id="L109"><span class="lineNum">     109</span>                 :<span class="tlaUNC">           0 :                   partial[i][10 - j] * partial[i][10 - j]) *</span></span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 :                  div_table[2 * j + 2];</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L112"><span class="lineNum">     112</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; 8; i++) {</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :<span class="tlaUNC">           0 :     if (cost[i] &gt; best_cost) {</span></span>
+<span id="L115"><span class="lineNum">     115</span>                 :<span class="tlaUNC">           0 :       best_cost = cost[i];</span></span>
+<span id="L116"><span class="lineNum">     116</span>                 :<span class="tlaUNC">           0 :       best_dir = i;</span></span>
+<span id="L117"><span class="lineNum">     117</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L118"><span class="lineNum">     118</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :   /* Difference between the optimal variance and the variance along the</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :      orthogonal direction. Again, the sum(x^2) terms cancel out. */</span>
+<span id="L121"><span class="lineNum">     121</span>                 :<span class="tlaUNC">           0 :   *var = best_cost - cost[(best_dir + 4) &amp; 7];</span></span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :   /* We'd normally divide by 840, but dividing by 1024 is close enough</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :      for what we're going to do with this. */</span>
+<span id="L124"><span class="lineNum">     124</span>                 :<span class="tlaUNC">           0 :   *var &gt;&gt;= 10;</span></span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaUNC">           0 :   return best_dir;</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : </span>
+<span id="L128"><span class="lineNum">     128</span>                 :<span class="tlaUNC">           0 : void cdef_find_dir_dual_c(const uint16_t *img1, const uint16_t *img2,</span></span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :                           int stride, int32_t *var1, int32_t *var2,</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :                           int coeff_shift, int *out1, int *out2) {</span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 :   *out1 = cdef_find_dir_c(img1, stride, var1, coeff_shift);</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :<span class="tlaUNC">           0 :   *out2 = cdef_find_dir_c(img2, stride, var2, coeff_shift);</span></span>
+<span id="L133"><span class="lineNum">     133</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L134"><span class="lineNum">     134</span>                 :             : </span>
+<span id="L135"><span class="lineNum">     135</span>                 :             : const int cdef_pri_taps[2][2] = { { 4, 2 }, { 3, 3 } };</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : const int cdef_sec_taps[2] = { 2, 1 };</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : </span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : /* Smooth in the direction detected. */</span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 : static void cdef_filter_block_internal(</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :     uint8_t *dst8, uint16_t *dst16, int dstride, const uint16_t *in,</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :     int pri_strength, int sec_strength, int dir, int pri_damping,</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :     int sec_damping, int coeff_shift, int block_width, int block_height,</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :     int enable_primary, int enable_secondary) {</span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :   const int clipping_required = (enable_primary &amp;&amp; enable_secondary);</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :<span class="tlaUNC">           0 :   int i, j, k;</span></span>
+<span id="L146"><span class="lineNum">     146</span>                 :<span class="tlaUNC">           0 :   const int s = CDEF_BSTRIDE;</span></span>
+<span id="L147"><span class="lineNum">     147</span>                 :<span class="tlaUNC">           0 :   const int *pri_taps = cdef_pri_taps[(pri_strength &gt;&gt; coeff_shift) &amp; 1];</span></span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :   const int *sec_taps = cdef_sec_taps;</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; block_height; i++) {</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :<span class="tlaUNC">           0 :     for (j = 0; j &lt; block_width; j++) {</span></span>
+<span id="L151"><span class="lineNum">     151</span>                 :<span class="tlaUNC">           0 :       int16_t sum = 0;</span></span>
+<span id="L152"><span class="lineNum">     152</span>                 :<span class="tlaUNC">           0 :       int16_t y;</span></span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 :       int16_t x = in[i * s + j];</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 :       int max = x;</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :<span class="tlaUNC">           0 :       int min = x;</span></span>
+<span id="L156"><span class="lineNum">     156</span>                 :<span class="tlaUNC">           0 :       for (k = 0; k &lt; 2; k++) {</span></span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :         if (enable_primary) {</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 :           int16_t p0 = in[i * s + j + cdef_directions[dir][k]];</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :<span class="tlaUNC">           0 :           int16_t p1 = in[i * s + j - cdef_directions[dir][k]];</span></span>
+<span id="L160"><span class="lineNum">     160</span>                 :<span class="tlaUNC">           0 :           sum += pri_taps[k] * constrain(p0 - x, pri_strength, pri_damping);</span></span>
+<span id="L161"><span class="lineNum">     161</span>                 :<span class="tlaUNC">           0 :           sum += pri_taps[k] * constrain(p1 - x, pri_strength, pri_damping);</span></span>
+<span id="L162"><span class="lineNum">     162</span>                 :<span class="tlaUNC">           0 :           if (clipping_required) {</span></span>
+<span id="L163"><span class="lineNum">     163</span>                 :<span class="tlaUNC">           0 :             if (p0 != CDEF_VERY_LARGE) max = AOMMAX(p0, max);</span></span>
+<span id="L164"><span class="lineNum">     164</span>                 :<span class="tlaUNC">           0 :             if (p1 != CDEF_VERY_LARGE) max = AOMMAX(p1, max);</span></span>
+<span id="L165"><span class="lineNum">     165</span>                 :<span class="tlaUNC">           0 :             min = AOMMIN(p0, min);</span></span>
+<span id="L166"><span class="lineNum">     166</span>                 :<span class="tlaUNC">           0 :             min = AOMMIN(p1, min);</span></span>
+<span id="L167"><span class="lineNum">     167</span>                 :<span class="tlaUNC">           0 :           }</span></span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 :         if (enable_secondary) {</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :<span class="tlaUNC">           0 :           int16_t s0 = in[i * s + j + cdef_directions[dir + 2][k]];</span></span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :           int16_t s1 = in[i * s + j - cdef_directions[dir + 2][k]];</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :<span class="tlaUNC">           0 :           int16_t s2 = in[i * s + j + cdef_directions[dir - 2][k]];</span></span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :           int16_t s3 = in[i * s + j - cdef_directions[dir - 2][k]];</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :           if (clipping_required) {</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 :             if (s0 != CDEF_VERY_LARGE) max = AOMMAX(s0, max);</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :<span class="tlaUNC">           0 :             if (s1 != CDEF_VERY_LARGE) max = AOMMAX(s1, max);</span></span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 :             if (s2 != CDEF_VERY_LARGE) max = AOMMAX(s2, max);</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :<span class="tlaUNC">           0 :             if (s3 != CDEF_VERY_LARGE) max = AOMMAX(s3, max);</span></span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :             min = AOMMIN(s0, min);</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :             min = AOMMIN(s1, min);</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :<span class="tlaUNC">           0 :             min = AOMMIN(s2, min);</span></span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 :             min = AOMMIN(s3, min);</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :<span class="tlaUNC">           0 :           }</span></span>
+<span id="L184"><span class="lineNum">     184</span>                 :<span class="tlaUNC">           0 :           sum += sec_taps[k] * constrain(s0 - x, sec_strength, sec_damping);</span></span>
+<span id="L185"><span class="lineNum">     185</span>                 :<span class="tlaUNC">           0 :           sum += sec_taps[k] * constrain(s1 - x, sec_strength, sec_damping);</span></span>
+<span id="L186"><span class="lineNum">     186</span>                 :<span class="tlaUNC">           0 :           sum += sec_taps[k] * constrain(s2 - x, sec_strength, sec_damping);</span></span>
+<span id="L187"><span class="lineNum">     187</span>                 :<span class="tlaUNC">           0 :           sum += sec_taps[k] * constrain(s3 - x, sec_strength, sec_damping);</span></span>
+<span id="L188"><span class="lineNum">     188</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 :       y = ((int16_t)x + ((8 + sum - (sum &lt; 0)) &gt;&gt; 4));</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :<span class="tlaUNC">           0 :       if (clipping_required) {</span></span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 :         y = clamp(y, min, max);</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L194"><span class="lineNum">     194</span>                 :             : </span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :       if (dst8)</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :<span class="tlaUNC">           0 :         dst8[i * dstride + j] = (uint8_t)y;</span></span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :       else</span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 :         dst16[i * dstride + j] = (uint16_t)y;</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L200"><span class="lineNum">     200</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L201"><span class="lineNum">     201</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L202"><span class="lineNum">     202</span>                 :             : </span>
+<span id="L203"><span class="lineNum">     203</span>                 :<span class="tlaUNC">           0 : void cdef_filter_8_0_c(void *dst8, int dstride, const uint16_t *in,</span></span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :                        int pri_strength, int sec_strength, int dir,</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :                        int pri_damping, int sec_damping, int coeff_shift,</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :                        int block_width, int block_height) {</span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 :   cdef_filter_block_internal((uint8_t *)dst8, NULL, dstride, in, pri_strength,</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 :                              sec_strength, dir, pri_damping, sec_damping,</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :                              coeff_shift, block_width, block_height,</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :                              /*enable_primary=*/1, /*enable_secondary=*/1);</span>
+<span id="L211"><span class="lineNum">     211</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L212"><span class="lineNum">     212</span>                 :             : </span>
+<span id="L213"><span class="lineNum">     213</span>                 :<span class="tlaUNC">           0 : void cdef_filter_8_1_c(void *dst8, int dstride, const uint16_t *in,</span></span>
+<span id="L214"><span class="lineNum">     214</span>                 :             :                        int pri_strength, int sec_strength, int dir,</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             :                        int pri_damping, int sec_damping, int coeff_shift,</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :                        int block_width, int block_height) {</span>
+<span id="L217"><span class="lineNum">     217</span>                 :<span class="tlaUNC">           0 :   cdef_filter_block_internal((uint8_t *)dst8, NULL, dstride, in, pri_strength,</span></span>
+<span id="L218"><span class="lineNum">     218</span>                 :<span class="tlaUNC">           0 :                              sec_strength, dir, pri_damping, sec_damping,</span></span>
+<span id="L219"><span class="lineNum">     219</span>                 :<span class="tlaUNC">           0 :                              coeff_shift, block_width, block_height,</span></span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :                              /*enable_primary=*/1, /*enable_secondary=*/0);</span>
+<span id="L221"><span class="lineNum">     221</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L222"><span class="lineNum">     222</span>                 :             : </span>
+<span id="L223"><span class="lineNum">     223</span>                 :<span class="tlaUNC">           0 : void cdef_filter_8_2_c(void *dst8, int dstride, const uint16_t *in,</span></span>
+<span id="L224"><span class="lineNum">     224</span>                 :             :                        int pri_strength, int sec_strength, int dir,</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :                        int pri_damping, int sec_damping, int coeff_shift,</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :                        int block_width, int block_height) {</span>
+<span id="L227"><span class="lineNum">     227</span>                 :<span class="tlaUNC">           0 :   cdef_filter_block_internal((uint8_t *)dst8, NULL, dstride, in, pri_strength,</span></span>
+<span id="L228"><span class="lineNum">     228</span>                 :<span class="tlaUNC">           0 :                              sec_strength, dir, pri_damping, sec_damping,</span></span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :                              coeff_shift, block_width, block_height,</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :             :                              /*enable_primary=*/0, /*enable_secondary=*/1);</span>
+<span id="L231"><span class="lineNum">     231</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L232"><span class="lineNum">     232</span>                 :             : </span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 : void cdef_filter_8_3_c(void *dst8, int dstride, const uint16_t *in,</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :             :                        int pri_strength, int sec_strength, int dir,</span>
+<span id="L235"><span class="lineNum">     235</span>                 :             :                        int pri_damping, int sec_damping, int coeff_shift,</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             :                        int block_width, int block_height) {</span>
+<span id="L237"><span class="lineNum">     237</span>                 :<span class="tlaUNC">           0 :   cdef_filter_block_internal((uint8_t *)dst8, NULL, dstride, in, pri_strength,</span></span>
+<span id="L238"><span class="lineNum">     238</span>                 :<span class="tlaUNC">           0 :                              sec_strength, dir, pri_damping, sec_damping,</span></span>
+<span id="L239"><span class="lineNum">     239</span>                 :<span class="tlaUNC">           0 :                              coeff_shift, block_width, block_height,</span></span>
+<span id="L240"><span class="lineNum">     240</span>                 :             :                              /*enable_primary=*/0, /*enable_secondary=*/0);</span>
+<span id="L241"><span class="lineNum">     241</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L242"><span class="lineNum">     242</span>                 :             : </span>
+<span id="L243"><span class="lineNum">     243</span>                 :<span class="tlaUNC">           0 : void cdef_filter_16_0_c(void *dst16, int dstride, const uint16_t *in,</span></span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :                         int pri_strength, int sec_strength, int dir,</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :                         int pri_damping, int sec_damping, int coeff_shift,</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             :                         int block_width, int block_height) {</span>
+<span id="L247"><span class="lineNum">     247</span>                 :<span class="tlaUNC">           0 :   cdef_filter_block_internal(NULL, (uint16_t *)dst16, dstride, in, pri_strength,</span></span>
+<span id="L248"><span class="lineNum">     248</span>                 :<span class="tlaUNC">           0 :                              sec_strength, dir, pri_damping, sec_damping,</span></span>
+<span id="L249"><span class="lineNum">     249</span>                 :<span class="tlaUNC">           0 :                              coeff_shift, block_width, block_height,</span></span>
+<span id="L250"><span class="lineNum">     250</span>                 :             :                              /*enable_primary=*/1, /*enable_secondary=*/1);</span>
+<span id="L251"><span class="lineNum">     251</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L252"><span class="lineNum">     252</span>                 :             : </span>
+<span id="L253"><span class="lineNum">     253</span>                 :<span class="tlaUNC">           0 : void cdef_filter_16_1_c(void *dst16, int dstride, const uint16_t *in,</span></span>
+<span id="L254"><span class="lineNum">     254</span>                 :             :                         int pri_strength, int sec_strength, int dir,</span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :                         int pri_damping, int sec_damping, int coeff_shift,</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :                         int block_width, int block_height) {</span>
+<span id="L257"><span class="lineNum">     257</span>                 :<span class="tlaUNC">           0 :   cdef_filter_block_internal(NULL, (uint16_t *)dst16, dstride, in, pri_strength,</span></span>
+<span id="L258"><span class="lineNum">     258</span>                 :<span class="tlaUNC">           0 :                              sec_strength, dir, pri_damping, sec_damping,</span></span>
+<span id="L259"><span class="lineNum">     259</span>                 :<span class="tlaUNC">           0 :                              coeff_shift, block_width, block_height,</span></span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :                              /*enable_primary=*/1, /*enable_secondary=*/0);</span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :             : </span>
+<span id="L263"><span class="lineNum">     263</span>                 :<span class="tlaUNC">           0 : void cdef_filter_16_2_c(void *dst16, int dstride, const uint16_t *in,</span></span>
+<span id="L264"><span class="lineNum">     264</span>                 :             :                         int pri_strength, int sec_strength, int dir,</span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :                         int pri_damping, int sec_damping, int coeff_shift,</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             :                         int block_width, int block_height) {</span>
+<span id="L267"><span class="lineNum">     267</span>                 :<span class="tlaUNC">           0 :   cdef_filter_block_internal(NULL, (uint16_t *)dst16, dstride, in, pri_strength,</span></span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 :                              sec_strength, dir, pri_damping, sec_damping,</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :<span class="tlaUNC">           0 :                              coeff_shift, block_width, block_height,</span></span>
+<span id="L270"><span class="lineNum">     270</span>                 :             :                              /*enable_primary=*/0, /*enable_secondary=*/1);</span>
+<span id="L271"><span class="lineNum">     271</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L272"><span class="lineNum">     272</span>                 :             : </span>
+<span id="L273"><span class="lineNum">     273</span>                 :<span class="tlaUNC">           0 : void cdef_filter_16_3_c(void *dst16, int dstride, const uint16_t *in,</span></span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :                         int pri_strength, int sec_strength, int dir,</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             :                         int pri_damping, int sec_damping, int coeff_shift,</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :                         int block_width, int block_height) {</span>
+<span id="L277"><span class="lineNum">     277</span>                 :<span class="tlaUNC">           0 :   cdef_filter_block_internal(NULL, (uint16_t *)dst16, dstride, in, pri_strength,</span></span>
+<span id="L278"><span class="lineNum">     278</span>                 :<span class="tlaUNC">           0 :                              sec_strength, dir, pri_damping, sec_damping,</span></span>
+<span id="L279"><span class="lineNum">     279</span>                 :<span class="tlaUNC">           0 :                              coeff_shift, block_width, block_height,</span></span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :                              /*enable_primary=*/0, /*enable_secondary=*/0);</span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :             : </span>
+<span id="L283"><span class="lineNum">     283</span>                 :             : /* Compute the primary filter strength for an 8x8 block based on the</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             :    directional variance difference. A high variance difference means</span>
+<span id="L285"><span class="lineNum">     285</span>                 :             :    that we have a highly directional pattern (e.g. a high contrast</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :    edge), so we can apply more deringing. A low variance means that we</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             :    either have a low contrast edge, or a non-directional texture, so</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :    we want to be careful not to blur. */</span>
+<span id="L289"><span class="lineNum">     289</span>                 :<span class="tlaUNC">           0 : static inline int adjust_strength(int strength, int32_t var) {</span></span>
+<span id="L290"><span class="lineNum">     290</span>                 :<span class="tlaUNC">           0 :   const int i = var &gt;&gt; 6 ? AOMMIN(get_msb(var &gt;&gt; 6), 12) : 0;</span></span>
+<span id="L291"><span class="lineNum">     291</span>                 :             :   /* We use the variance of 8x8 blocks to adjust the strength. */</span>
+<span id="L292"><span class="lineNum">     292</span>                 :<span class="tlaUNC">           0 :   return var ? (strength * (4 + i) + 8) &gt;&gt; 4 : 0;</span></span>
+<span id="L293"><span class="lineNum">     293</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L294"><span class="lineNum">     294</span>                 :             : </span>
+<span id="L295"><span class="lineNum">     295</span>                 :<span class="tlaUNC">           0 : static inline void aom_cdef_find_dir(const uint16_t *in, cdef_list *dlist,</span></span>
+<span id="L296"><span class="lineNum">     296</span>                 :             :                                      int var[CDEF_NBLOCKS][CDEF_NBLOCKS],</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             :                                      int cdef_count, int coeff_shift,</span>
+<span id="L298"><span class="lineNum">     298</span>                 :             :                                      int dir[CDEF_NBLOCKS][CDEF_NBLOCKS]) {</span>
+<span id="L299"><span class="lineNum">     299</span>                 :<span class="tlaUNC">           0 :   int bi;</span></span>
+<span id="L300"><span class="lineNum">     300</span>                 :             : </span>
+<span id="L301"><span class="lineNum">     301</span>                 :             :   // Find direction of two 8x8 blocks together.</span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :   for (bi = 0; bi &lt; cdef_count - 1; bi += 2) {</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :<span class="tlaUNC">           0 :     const int by = dlist[bi].by;</span></span>
+<span id="L304"><span class="lineNum">     304</span>                 :<span class="tlaUNC">           0 :     const int bx = dlist[bi].bx;</span></span>
+<span id="L305"><span class="lineNum">     305</span>                 :<span class="tlaUNC">           0 :     const int by2 = dlist[bi + 1].by;</span></span>
+<span id="L306"><span class="lineNum">     306</span>                 :<span class="tlaUNC">           0 :     const int bx2 = dlist[bi + 1].bx;</span></span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 :     const int pos1 = 8 * by * CDEF_BSTRIDE + 8 * bx;</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :<span class="tlaUNC">           0 :     const int pos2 = 8 * by2 * CDEF_BSTRIDE + 8 * bx2;</span></span>
+<span id="L309"><span class="lineNum">     309</span>                 :<span class="tlaUNC">           0 :     cdef_find_dir_dual(&amp;in[pos1], &amp;in[pos2], CDEF_BSTRIDE, &amp;var[by][bx],</span></span>
+<span id="L310"><span class="lineNum">     310</span>                 :<span class="tlaUNC">           0 :                        &amp;var[by2][bx2], coeff_shift, &amp;dir[by][bx],</span></span>
+<span id="L311"><span class="lineNum">     311</span>                 :<span class="tlaUNC">           0 :                        &amp;dir[by2][bx2]);</span></span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :             : </span>
+<span id="L314"><span class="lineNum">     314</span>                 :             :   // Process remaining 8x8 blocks here. One 8x8 at a time.</span>
+<span id="L315"><span class="lineNum">     315</span>                 :<span class="tlaUNC">           0 :   if (cdef_count % 2) {</span></span>
+<span id="L316"><span class="lineNum">     316</span>                 :<span class="tlaUNC">           0 :     const int by = dlist[bi].by;</span></span>
+<span id="L317"><span class="lineNum">     317</span>                 :<span class="tlaUNC">           0 :     const int bx = dlist[bi].bx;</span></span>
+<span id="L318"><span class="lineNum">     318</span>                 :<span class="tlaUNC">           0 :     dir[by][bx] = cdef_find_dir(&amp;in[8 * by * CDEF_BSTRIDE + 8 * bx],</span></span>
+<span id="L319"><span class="lineNum">     319</span>                 :<span class="tlaUNC">           0 :                                 CDEF_BSTRIDE, &amp;var[by][bx], coeff_shift);</span></span>
+<span id="L320"><span class="lineNum">     320</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :             : </span>
+<span id="L323"><span class="lineNum">     323</span>                 :<span class="tlaUNC">           0 : void av1_cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride,</span></span>
+<span id="L324"><span class="lineNum">     324</span>                 :             :                         const uint16_t *in, int xdec, int ydec,</span>
+<span id="L325"><span class="lineNum">     325</span>                 :             :                         int dir[CDEF_NBLOCKS][CDEF_NBLOCKS], int *dirinit,</span>
+<span id="L326"><span class="lineNum">     326</span>                 :             :                         int var[CDEF_NBLOCKS][CDEF_NBLOCKS], int pli,</span>
+<span id="L327"><span class="lineNum">     327</span>                 :             :                         cdef_list *dlist, int cdef_count, int level,</span>
+<span id="L328"><span class="lineNum">     328</span>                 :             :                         int sec_strength, int damping, int coeff_shift) {</span>
+<span id="L329"><span class="lineNum">     329</span>                 :<span class="tlaUNC">           0 :   int bi;</span></span>
+<span id="L330"><span class="lineNum">     330</span>                 :<span class="tlaUNC">           0 :   int bx;</span></span>
+<span id="L331"><span class="lineNum">     331</span>                 :<span class="tlaUNC">           0 :   int by;</span></span>
+<span id="L332"><span class="lineNum">     332</span>                 :<span class="tlaUNC">           0 :   const int pri_strength = level &lt;&lt; coeff_shift;</span></span>
+<span id="L333"><span class="lineNum">     333</span>                 :<span class="tlaUNC">           0 :   sec_strength &lt;&lt;= coeff_shift;</span></span>
+<span id="L334"><span class="lineNum">     334</span>                 :<span class="tlaUNC">           0 :   damping += coeff_shift - (pli != AOM_PLANE_Y);</span></span>
+<span id="L335"><span class="lineNum">     335</span>                 :<span class="tlaUNC">           0 :   const int bw_log2 = 3 - xdec;</span></span>
+<span id="L336"><span class="lineNum">     336</span>                 :<span class="tlaUNC">           0 :   const int bh_log2 = 3 - ydec;</span></span>
+<span id="L337"><span class="lineNum">     337</span>                 :<span class="tlaUNC">           0 :   if (dirinit &amp;&amp; pri_strength == 0 &amp;&amp; sec_strength == 0) {</span></span>
+<span id="L338"><span class="lineNum">     338</span>                 :             :     // If we're here, both primary and secondary strengths are 0, and</span>
+<span id="L339"><span class="lineNum">     339</span>                 :             :     // we still haven't written anything to y[] yet, so we just copy</span>
+<span id="L340"><span class="lineNum">     340</span>                 :             :     // the input to y[]. This is necessary only for av1_cdef_search()</span>
+<span id="L341"><span class="lineNum">     341</span>                 :             :     // and only av1_cdef_search() sets dirinit.</span>
+<span id="L342"><span class="lineNum">     342</span>                 :<span class="tlaUNC">           0 :     for (bi = 0; bi &lt; cdef_count; bi++) {</span></span>
+<span id="L343"><span class="lineNum">     343</span>                 :<span class="tlaUNC">           0 :       by = dlist[bi].by;</span></span>
+<span id="L344"><span class="lineNum">     344</span>                 :<span class="tlaUNC">           0 :       bx = dlist[bi].bx;</span></span>
+<span id="L345"><span class="lineNum">     345</span>                 :             :       // TODO(stemidts/jmvalin): SIMD optimisations</span>
+<span id="L346"><span class="lineNum">     346</span>                 :<span class="tlaUNC">           0 :       for (int iy = 0; iy &lt; 1 &lt;&lt; bh_log2; iy++) {</span></span>
+<span id="L347"><span class="lineNum">     347</span>                 :<span class="tlaUNC">           0 :         memcpy(&amp;dst16[(bi &lt;&lt; (bw_log2 + bh_log2)) + (iy &lt;&lt; bw_log2)],</span></span>
+<span id="L348"><span class="lineNum">     348</span>                 :<span class="tlaUNC">           0 :                &amp;in[((by &lt;&lt; bh_log2) + iy) * CDEF_BSTRIDE + (bx &lt;&lt; bw_log2)],</span></span>
+<span id="L349"><span class="lineNum">     349</span>                 :<span class="tlaUNC">           0 :                ((size_t)1 &lt;&lt; bw_log2) * sizeof(*dst16));</span></span>
+<span id="L350"><span class="lineNum">     350</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L351"><span class="lineNum">     351</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L352"><span class="lineNum">     352</span>                 :<span class="tlaUNC">           0 :     return;</span></span>
+<span id="L353"><span class="lineNum">     353</span>                 :             :   }</span>
+<span id="L354"><span class="lineNum">     354</span>                 :             : </span>
+<span id="L355"><span class="lineNum">     355</span>                 :<span class="tlaUNC">           0 :   if (pli == 0) {</span></span>
+<span id="L356"><span class="lineNum">     356</span>                 :<span class="tlaUNC">           0 :     if (!dirinit || !*dirinit) {</span></span>
+<span id="L357"><span class="lineNum">     357</span>                 :<span class="tlaUNC">           0 :       aom_cdef_find_dir(in, dlist, var, cdef_count, coeff_shift, dir);</span></span>
+<span id="L358"><span class="lineNum">     358</span>                 :<span class="tlaUNC">           0 :       if (dirinit) *dirinit = 1;</span></span>
+<span id="L359"><span class="lineNum">     359</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L360"><span class="lineNum">     360</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L361"><span class="lineNum">     361</span>                 :<span class="tlaUNC">           0 :   if (pli == 1 &amp;&amp; xdec != ydec) {</span></span>
+<span id="L362"><span class="lineNum">     362</span>                 :<span class="tlaUNC">           0 :     for (bi = 0; bi &lt; cdef_count; bi++) {</span></span>
+<span id="L363"><span class="lineNum">     363</span>                 :             :       static const int conv422[8] = { 7, 0, 2, 4, 5, 6, 6, 6 };</span>
+<span id="L364"><span class="lineNum">     364</span>                 :             :       static const int conv440[8] = { 1, 2, 2, 2, 3, 4, 6, 0 };</span>
+<span id="L365"><span class="lineNum">     365</span>                 :<span class="tlaUNC">           0 :       by = dlist[bi].by;</span></span>
+<span id="L366"><span class="lineNum">     366</span>                 :<span class="tlaUNC">           0 :       bx = dlist[bi].bx;</span></span>
+<span id="L367"><span class="lineNum">     367</span>                 :<span class="tlaUNC">           0 :       dir[by][bx] = (xdec ? conv422 : conv440)[dir[by][bx]];</span></span>
+<span id="L368"><span class="lineNum">     368</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L369"><span class="lineNum">     369</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L370"><span class="lineNum">     370</span>                 :             : </span>
+<span id="L371"><span class="lineNum">     371</span>                 :<span class="tlaUNC">           0 :   if (dst8) {</span></span>
+<span id="L372"><span class="lineNum">     372</span>                 :<span class="tlaUNC">           0 :     const int block_width = 8 &gt;&gt; xdec;</span></span>
+<span id="L373"><span class="lineNum">     373</span>                 :<span class="tlaUNC">           0 :     const int block_height = 8 &gt;&gt; ydec;</span></span>
+<span id="L374"><span class="lineNum">     374</span>                 :             :     /*</span>
+<span id="L375"><span class="lineNum">     375</span>                 :             :      * strength_index == 0 : enable_primary = 1, enable_secondary = 1</span>
+<span id="L376"><span class="lineNum">     376</span>                 :             :      * strength_index == 1 : enable_primary = 1, enable_secondary = 0</span>
+<span id="L377"><span class="lineNum">     377</span>                 :             :      * strength_index == 2 : enable_primary = 0, enable_secondary = 1</span>
+<span id="L378"><span class="lineNum">     378</span>                 :             :      * strength_index == 3 : enable_primary = 0, enable_secondary = 0</span>
+<span id="L379"><span class="lineNum">     379</span>                 :             :      */</span>
+<span id="L380"><span class="lineNum">     380</span>                 :<span class="tlaUNC">           0 :     const cdef_filter_block_func cdef_filter_fn[4] = {</span></span>
+<span id="L381"><span class="lineNum">     381</span>                 :<span class="tlaUNC">           0 :       cdef_filter_8_0, cdef_filter_8_1, cdef_filter_8_2, cdef_filter_8_3</span></span>
+<span id="L382"><span class="lineNum">     382</span>                 :             :     };</span>
+<span id="L383"><span class="lineNum">     383</span>                 :             : </span>
+<span id="L384"><span class="lineNum">     384</span>                 :<span class="tlaUNC">           0 :     for (bi = 0; bi &lt; cdef_count; bi++) {</span></span>
+<span id="L385"><span class="lineNum">     385</span>                 :<span class="tlaUNC">           0 :       by = dlist[bi].by;</span></span>
+<span id="L386"><span class="lineNum">     386</span>                 :<span class="tlaUNC">           0 :       bx = dlist[bi].bx;</span></span>
+<span id="L387"><span class="lineNum">     387</span>                 :<span class="tlaUNC">           0 :       const int t =</span></span>
+<span id="L388"><span class="lineNum">     388</span>                 :<span class="tlaUNC">           0 :           (pli ? pri_strength : adjust_strength(pri_strength, var[by][bx]));</span></span>
+<span id="L389"><span class="lineNum">     389</span>                 :<span class="tlaUNC">           0 :       const int strength_index = (sec_strength == 0) | ((t == 0) &lt;&lt; 1);</span></span>
+<span id="L390"><span class="lineNum">     390</span>                 :             : </span>
+<span id="L391"><span class="lineNum">     391</span>                 :<span class="tlaUNC">           0 :       cdef_filter_fn[strength_index](</span></span>
+<span id="L392"><span class="lineNum">     392</span>                 :<span class="tlaUNC">           0 :           &amp;dst8[(by &lt;&lt; bh_log2) * dstride + (bx &lt;&lt; bw_log2)], dstride,</span></span>
+<span id="L393"><span class="lineNum">     393</span>                 :<span class="tlaUNC">           0 :           &amp;in[(by * CDEF_BSTRIDE &lt;&lt; bh_log2) + (bx &lt;&lt; bw_log2)], t,</span></span>
+<span id="L394"><span class="lineNum">     394</span>                 :<span class="tlaUNC">           0 :           sec_strength, pri_strength ? dir[by][bx] : 0, damping, damping,</span></span>
+<span id="L395"><span class="lineNum">     395</span>                 :<span class="tlaUNC">           0 :           coeff_shift, block_width, block_height);</span></span>
+<span id="L396"><span class="lineNum">     396</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L397"><span class="lineNum">     397</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L398"><span class="lineNum">     398</span>                 :<span class="tlaUNC">           0 :     const int block_width = 8 &gt;&gt; xdec;</span></span>
+<span id="L399"><span class="lineNum">     399</span>                 :<span class="tlaUNC">           0 :     const int block_height = 8 &gt;&gt; ydec;</span></span>
+<span id="L400"><span class="lineNum">     400</span>                 :             :     /*</span>
+<span id="L401"><span class="lineNum">     401</span>                 :             :      * strength_index == 0 : enable_primary = 1, enable_secondary = 1</span>
+<span id="L402"><span class="lineNum">     402</span>                 :             :      * strength_index == 1 : enable_primary = 1, enable_secondary = 0</span>
+<span id="L403"><span class="lineNum">     403</span>                 :             :      * strength_index == 2 : enable_primary = 0, enable_secondary = 1</span>
+<span id="L404"><span class="lineNum">     404</span>                 :             :      * strength_index == 3 : enable_primary = 0, enable_secondary = 0</span>
+<span id="L405"><span class="lineNum">     405</span>                 :             :      */</span>
+<span id="L406"><span class="lineNum">     406</span>                 :<span class="tlaUNC">           0 :     const cdef_filter_block_func cdef_filter_fn[4] = {</span></span>
+<span id="L407"><span class="lineNum">     407</span>                 :<span class="tlaUNC">           0 :       cdef_filter_16_0, cdef_filter_16_1, cdef_filter_16_2, cdef_filter_16_3</span></span>
+<span id="L408"><span class="lineNum">     408</span>                 :             :     };</span>
+<span id="L409"><span class="lineNum">     409</span>                 :             : </span>
+<span id="L410"><span class="lineNum">     410</span>                 :<span class="tlaUNC">           0 :     for (bi = 0; bi &lt; cdef_count; bi++) {</span></span>
+<span id="L411"><span class="lineNum">     411</span>                 :<span class="tlaUNC">           0 :       by = dlist[bi].by;</span></span>
+<span id="L412"><span class="lineNum">     412</span>                 :<span class="tlaUNC">           0 :       bx = dlist[bi].bx;</span></span>
+<span id="L413"><span class="lineNum">     413</span>                 :<span class="tlaUNC">           0 :       const int t =</span></span>
+<span id="L414"><span class="lineNum">     414</span>                 :<span class="tlaUNC">           0 :           (pli ? pri_strength : adjust_strength(pri_strength, var[by][bx]));</span></span>
+<span id="L415"><span class="lineNum">     415</span>                 :<span class="tlaUNC">           0 :       const int strength_index = (sec_strength == 0) | ((t == 0) &lt;&lt; 1);</span></span>
+<span id="L416"><span class="lineNum">     416</span>                 :             : </span>
+<span id="L417"><span class="lineNum">     417</span>                 :<span class="tlaUNC">           0 :       cdef_filter_fn[strength_index](</span></span>
+<span id="L418"><span class="lineNum">     418</span>                 :<span class="tlaUNC">           0 :           &amp;dst16[dirinit ? bi &lt;&lt; (bw_log2 + bh_log2)</span></span>
+<span id="L419"><span class="lineNum">     419</span>                 :<span class="tlaUNC">           0 :                          : (by &lt;&lt; bh_log2) * dstride + (bx &lt;&lt; bw_log2)],</span></span>
+<span id="L420"><span class="lineNum">     420</span>                 :<span class="tlaUNC">           0 :           dirinit ? 1 &lt;&lt; bw_log2 : dstride,</span></span>
+<span id="L421"><span class="lineNum">     421</span>                 :<span class="tlaUNC">           0 :           &amp;in[(by * CDEF_BSTRIDE &lt;&lt; bh_log2) + (bx &lt;&lt; bw_log2)], t,</span></span>
+<span id="L422"><span class="lineNum">     422</span>                 :<span class="tlaUNC">           0 :           sec_strength, pri_strength ? dir[by][bx] : 0, damping, damping,</span></span>
+<span id="L423"><span class="lineNum">     423</span>                 :<span class="tlaUNC">           0 :           coeff_shift, block_width, block_height);</span></span>
+<span id="L424"><span class="lineNum">     424</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L425"><span class="lineNum">     425</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L426"><span class="lineNum">     426</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libwebp-1.3.2/src/enc/picture_enc.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libwebp-1.3.2/src/enc</a> - picture_enc.c<span style="font-size: 80%;"> (source / <a href="picture_enc.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">179</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // Copyright 2011 Google Inc. All Rights Reserved.</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : //</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : // Use of this source code is governed by a BSD-style license</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : // that can be found in the COPYING file in the root of the source</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : // tree. An additional intellectual property rights grant can be found</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : // in the file PATENTS. All contributing project authors may</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : // be found in the AUTHORS file in the root of the source tree.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : // WebPPicture class basis</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : //</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : // Author: Skal (pascal.massimino@gmail.com)</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #include &lt;assert.h&gt;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &lt;stdlib.h&gt;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;src/enc/vp8i_enc.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &quot;src/dsp/dsp.h&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &quot;src/utils/utils.h&quot;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : </span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : // WebPPicture</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : </span>
+<span id="L25"><span class="lineNum">      25</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static int DummyWriter(const uint8_t* data, size_t data_size,</span></span>
+<span id="L26"><span class="lineNum">      26</span>                 :             :                        const WebPPicture* const picture) {</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             :   // The following are to prevent 'unused variable' error message.</span>
+<span id="L28"><span class="lineNum">      28</span>                 :<span class="tlaUNC">           0 :   (void)data;</span></span>
+<span id="L29"><span class="lineNum">      29</span>                 :<span class="tlaUNC">           0 :   (void)data_size;</span></span>
+<span id="L30"><span class="lineNum">      30</span>                 :<span class="tlaUNC">           0 :   (void)picture;</span></span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : }</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : </span>
+<span id="L34"><span class="lineNum">      34</span>                 :<span class="tlaUNC">           0 : int WebPPictureInitInternal(WebPPicture* picture, int version) {</span></span>
+<span id="L35"><span class="lineNum">      35</span>                 :<span class="tlaUNC">           0 :   if (WEBP_ABI_IS_INCOMPATIBLE(version, WEBP_ENCODER_ABI_VERSION)) {</span></span>
+<span id="L36"><span class="lineNum">      36</span>                 :<span class="tlaUNC">           0 :     return 0;   // caller/system version mismatch!</span></span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :   }</span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 :   if (picture != NULL) {</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :<span class="tlaUNC">           0 :     memset(picture, 0, sizeof(*picture));</span></span>
+<span id="L40"><span class="lineNum">      40</span>                 :<span class="tlaUNC">           0 :     picture-&gt;writer = DummyWriter;</span></span>
+<span id="L41"><span class="lineNum">      41</span>                 :<span class="tlaUNC">           0 :     WebPEncodingSetError(picture, VP8_ENC_OK);</span></span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : </span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : </span>
+<span id="L48"><span class="lineNum">      48</span>                 :<span class="tlaUNC">           0 : int WebPValidatePicture(const WebPPicture* const picture) {</span></span>
+<span id="L49"><span class="lineNum">      49</span>                 :<span class="tlaUNC">           0 :   if (picture == NULL) return 0;</span></span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 :   if (picture-&gt;width &lt;= 0 || picture-&gt;height &lt;= 0) {</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :<span class="tlaUNC">           0 :     return WebPEncodingSetError(picture, VP8_ENC_ERROR_BAD_DIMENSION);</span></span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   }</span>
+<span id="L53"><span class="lineNum">      53</span>                 :<span class="tlaUNC">           0 :   if (picture-&gt;width &lt;= 0 || picture-&gt;width / 4 &gt; INT_MAX / 4 ||</span></span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 :       picture-&gt;height &lt;= 0 || picture-&gt;height / 4 &gt; INT_MAX / 4) {</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :<span class="tlaUNC">           0 :     return WebPEncodingSetError(picture, VP8_ENC_ERROR_BAD_DIMENSION);</span></span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :   }</span>
+<span id="L57"><span class="lineNum">      57</span>                 :<span class="tlaUNC">           0 :   if (picture-&gt;colorspace != WEBP_YUV420 &amp;&amp;</span></span>
+<span id="L58"><span class="lineNum">      58</span>                 :<span class="tlaUNC">           0 :       picture-&gt;colorspace != WEBP_YUV420A) {</span></span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 :     return WebPEncodingSetError(picture, VP8_ENC_ERROR_INVALID_CONFIGURATION);</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :   }</span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L63"><span class="lineNum">      63</span>                 :             : </span>
+<span id="L64"><span class="lineNum">      64</span>                 :<span class="tlaUNC">           0 : static void WebPPictureResetBufferARGB(WebPPicture* const picture) {</span></span>
+<span id="L65"><span class="lineNum">      65</span>                 :<span class="tlaUNC">           0 :   picture-&gt;memory_argb_ = NULL;</span></span>
+<span id="L66"><span class="lineNum">      66</span>                 :<span class="tlaUNC">           0 :   picture-&gt;argb = NULL;</span></span>
+<span id="L67"><span class="lineNum">      67</span>                 :<span class="tlaUNC">           0 :   picture-&gt;argb_stride = 0;</span></span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :             : </span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 : static void WebPPictureResetBufferYUVA(WebPPicture* const picture) {</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :<span class="tlaUNC">           0 :   picture-&gt;memory_ = NULL;</span></span>
+<span id="L72"><span class="lineNum">      72</span>                 :<span class="tlaUNC">           0 :   picture-&gt;y = picture-&gt;u = picture-&gt;v = picture-&gt;a = NULL;</span></span>
+<span id="L73"><span class="lineNum">      73</span>                 :<span class="tlaUNC">           0 :   picture-&gt;y_stride = picture-&gt;uv_stride = 0;</span></span>
+<span id="L74"><span class="lineNum">      74</span>                 :<span class="tlaUNC">           0 :   picture-&gt;a_stride = 0;</span></span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : </span>
+<span id="L77"><span class="lineNum">      77</span>                 :<span class="tlaUNC">           0 : void WebPPictureResetBuffers(WebPPicture* const picture) {</span></span>
+<span id="L78"><span class="lineNum">      78</span>                 :<span class="tlaUNC">           0 :   WebPPictureResetBufferARGB(picture);</span></span>
+<span id="L79"><span class="lineNum">      79</span>                 :<span class="tlaUNC">           0 :   WebPPictureResetBufferYUVA(picture);</span></span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :             : </span>
+<span id="L82"><span class="lineNum">      82</span>                 :<span class="tlaUNC">           0 : int WebPPictureAllocARGB(WebPPicture* const picture) {</span></span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   void* memory;</span>
+<span id="L84"><span class="lineNum">      84</span>                 :<span class="tlaUNC">           0 :   const int width = picture-&gt;width;</span></span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :   const int height = picture-&gt;height;</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :   const uint64_t argb_size = (uint64_t)width * height;</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : </span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :   if (!WebPValidatePicture(picture)) return 0;</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :             : </span>
+<span id="L90"><span class="lineNum">      90</span>                 :<span class="tlaUNC">           0 :   WebPSafeFree(picture-&gt;memory_argb_);</span></span>
+<span id="L91"><span class="lineNum">      91</span>                 :<span class="tlaUNC">           0 :   WebPPictureResetBufferARGB(picture);</span></span>
+<span id="L92"><span class="lineNum">      92</span>                 :             : </span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :   // allocate a new buffer.</span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :   memory = WebPSafeMalloc(argb_size + WEBP_ALIGN_CST, sizeof(*picture-&gt;argb));</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :   if (memory == NULL) {</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 :     return WebPEncodingSetError(picture, VP8_ENC_ERROR_OUT_OF_MEMORY);</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :   }</span>
+<span id="L98"><span class="lineNum">      98</span>                 :<span class="tlaUNC">           0 :   picture-&gt;memory_argb_ = memory;</span></span>
+<span id="L99"><span class="lineNum">      99</span>                 :<span class="tlaUNC">           0 :   picture-&gt;argb = (uint32_t*)WEBP_ALIGN(memory);</span></span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC">           0 :   picture-&gt;argb_stride = width;</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :             : </span>
+<span id="L104"><span class="lineNum">     104</span>                 :<span class="tlaUNC">           0 : int WebPPictureAllocYUVA(WebPPicture* const picture) {</span></span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :   const int has_alpha = (int)picture-&gt;colorspace &amp; WEBP_CSP_ALPHA_BIT;</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :<span class="tlaUNC">           0 :   const int width = picture-&gt;width;</span></span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :   const int height = picture-&gt;height;</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :<span class="tlaUNC">           0 :   const int y_stride = width;</span></span>
+<span id="L109"><span class="lineNum">     109</span>                 :<span class="tlaUNC">           0 :   const int uv_width = (int)(((int64_t)width + 1) &gt;&gt; 1);</span></span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 :   const int uv_height = (int)(((int64_t)height + 1) &gt;&gt; 1);</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :<span class="tlaUNC">           0 :   const int uv_stride = uv_width;</span></span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :   int a_width, a_stride;</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :   uint64_t y_size, uv_size, a_size, total_size;</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :   uint8_t* mem;</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : </span>
+<span id="L116"><span class="lineNum">     116</span>                 :<span class="tlaUNC">           0 :   if (!WebPValidatePicture(picture)) return 0;</span></span>
+<span id="L117"><span class="lineNum">     117</span>                 :             : </span>
+<span id="L118"><span class="lineNum">     118</span>                 :<span class="tlaUNC">           0 :   WebPSafeFree(picture-&gt;memory_);</span></span>
+<span id="L119"><span class="lineNum">     119</span>                 :<span class="tlaUNC">           0 :   WebPPictureResetBufferYUVA(picture);</span></span>
+<span id="L120"><span class="lineNum">     120</span>                 :             : </span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :   // alpha</span>
+<span id="L122"><span class="lineNum">     122</span>                 :<span class="tlaUNC">           0 :   a_width = has_alpha ? width : 0;</span></span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaUNC">           0 :   a_stride = a_width;</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :<span class="tlaUNC">           0 :   y_size = (uint64_t)y_stride * height;</span></span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaUNC">           0 :   uv_size = (uint64_t)uv_stride * uv_height;</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :<span class="tlaUNC">           0 :   a_size =  (uint64_t)a_stride * height;</span></span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : </span>
+<span id="L128"><span class="lineNum">     128</span>                 :<span class="tlaUNC">           0 :   total_size = y_size + a_size + 2 * uv_size;</span></span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : </span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :   // Security and validation checks</span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 :   if (width &lt;= 0 || height &lt;= 0 ||           // luma/alpha param error</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :<span class="tlaUNC">           0 :       uv_width &lt;= 0 || uv_height &lt;= 0) {     // u/v param error</span></span>
+<span id="L133"><span class="lineNum">     133</span>                 :<span class="tlaUNC">           0 :     return WebPEncodingSetError(picture, VP8_ENC_ERROR_BAD_DIMENSION);</span></span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :   }</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :   // allocate a new buffer.</span>
+<span id="L136"><span class="lineNum">     136</span>                 :<span class="tlaUNC">           0 :   mem = (uint8_t*)WebPSafeMalloc(total_size, sizeof(*mem));</span></span>
+<span id="L137"><span class="lineNum">     137</span>                 :<span class="tlaUNC">           0 :   if (mem == NULL) {</span></span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 :     return WebPEncodingSetError(picture, VP8_ENC_ERROR_OUT_OF_MEMORY);</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :   }</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : </span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   // From now on, we're in the clear, we can no longer fail...</span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :   picture-&gt;memory_ = (void*)mem;</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :<span class="tlaUNC">           0 :   picture-&gt;y_stride  = y_stride;</span></span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :   picture-&gt;uv_stride = uv_stride;</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :<span class="tlaUNC">           0 :   picture-&gt;a_stride  = a_stride;</span></span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : </span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :   // TODO(skal): we could align the y/u/v planes and adjust stride.</span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :   picture-&gt;y = mem;</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :   mem += y_size;</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :             : </span>
+<span id="L151"><span class="lineNum">     151</span>                 :<span class="tlaUNC">           0 :   picture-&gt;u = mem;</span></span>
+<span id="L152"><span class="lineNum">     152</span>                 :<span class="tlaUNC">           0 :   mem += uv_size;</span></span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 :   picture-&gt;v = mem;</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 :   mem += uv_size;</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :             : </span>
+<span id="L156"><span class="lineNum">     156</span>                 :<span class="tlaUNC">           0 :   if (a_size &gt; 0) {</span></span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :     picture-&gt;a = mem;</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 :     mem += a_size;</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L160"><span class="lineNum">     160</span>                 :<span class="tlaUNC">           0 :   (void)mem;  // makes the static analyzer happy</span></span>
+<span id="L161"><span class="lineNum">     161</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L162"><span class="lineNum">     162</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : </span>
+<span id="L164"><span class="lineNum">     164</span>                 :<span class="tlaUNC">           0 : int WebPPictureAlloc(WebPPicture* picture) {</span></span>
+<span id="L165"><span class="lineNum">     165</span>                 :<span class="tlaUNC">           0 :   if (picture != NULL) {</span></span>
+<span id="L166"><span class="lineNum">     166</span>                 :<span class="tlaUNC">           0 :     WebPPictureFree(picture);   // erase previous buffer</span></span>
+<span id="L167"><span class="lineNum">     167</span>                 :             : </span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 :     if (!picture-&gt;use_argb) {</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 :       return WebPPictureAllocYUVA(picture);</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :     } else {</span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :       return WebPPictureAllocARGB(picture);</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :             :     }</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             :   }</span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : </span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 : void WebPPictureFree(WebPPicture* picture) {</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :<span class="tlaUNC">           0 :   if (picture != NULL) {</span></span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(picture-&gt;memory_);</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(picture-&gt;memory_argb_);</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :<span class="tlaUNC">           0 :     WebPPictureResetBuffers(picture);</span></span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : </span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             : // WebPMemoryWriter: Write-to-memory</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             : </span>
+<span id="L188"><span class="lineNum">     188</span>                 :<span class="tlaUNC">           0 : void WebPMemoryWriterInit(WebPMemoryWriter* writer) {</span></span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :   writer-&gt;mem = NULL;</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 :   writer-&gt;size = 0;</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :<span class="tlaUNC">           0 :   writer-&gt;max_size = 0;</span></span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : </span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 : int WebPMemoryWrite(const uint8_t* data, size_t data_size,</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :                     const WebPPicture* picture) {</span>
+<span id="L196"><span class="lineNum">     196</span>                 :<span class="tlaUNC">           0 :   WebPMemoryWriter* const w = (WebPMemoryWriter*)picture-&gt;custom_ptr;</span></span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :   uint64_t next_size;</span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 :   if (w == NULL) {</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :   }</span>
+<span id="L201"><span class="lineNum">     201</span>                 :<span class="tlaUNC">           0 :   next_size = (uint64_t)w-&gt;size + data_size;</span></span>
+<span id="L202"><span class="lineNum">     202</span>                 :<span class="tlaUNC">           0 :   if (next_size &gt; w-&gt;max_size) {</span></span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :     uint8_t* new_mem;</span>
+<span id="L204"><span class="lineNum">     204</span>                 :<span class="tlaUNC">           0 :     uint64_t next_max_size = 2ULL * w-&gt;max_size;</span></span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :     if (next_max_size &lt; next_size) next_max_size = next_size;</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :<span class="tlaUNC">           0 :     if (next_max_size &lt; 8192ULL) next_max_size = 8192ULL;</span></span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 :     new_mem = (uint8_t*)WebPSafeMalloc(next_max_size, 1);</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 :     if (new_mem == NULL) {</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :       return 0;</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :     }</span>
+<span id="L211"><span class="lineNum">     211</span>                 :<span class="tlaUNC">           0 :     if (w-&gt;size &gt; 0) {</span></span>
+<span id="L212"><span class="lineNum">     212</span>                 :<span class="tlaUNC">           0 :       memcpy(new_mem, w-&gt;mem, w-&gt;size);</span></span>
+<span id="L213"><span class="lineNum">     213</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L214"><span class="lineNum">     214</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(w-&gt;mem);</span></span>
+<span id="L215"><span class="lineNum">     215</span>                 :<span class="tlaUNC">           0 :     w-&gt;mem = new_mem;</span></span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :     // down-cast is ok, thanks to WebPSafeMalloc</span>
+<span id="L217"><span class="lineNum">     217</span>                 :<span class="tlaUNC">           0 :     w-&gt;max_size = (size_t)next_max_size;</span></span>
+<span id="L218"><span class="lineNum">     218</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L219"><span class="lineNum">     219</span>                 :<span class="tlaUNC">           0 :   if (data_size &gt; 0) {</span></span>
+<span id="L220"><span class="lineNum">     220</span>                 :<span class="tlaUNC">           0 :     memcpy(w-&gt;mem + w-&gt;size, data, data_size);</span></span>
+<span id="L221"><span class="lineNum">     221</span>                 :<span class="tlaUNC">           0 :     w-&gt;size += data_size;</span></span>
+<span id="L222"><span class="lineNum">     222</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L223"><span class="lineNum">     223</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L224"><span class="lineNum">     224</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L225"><span class="lineNum">     225</span>                 :             : </span>
+<span id="L226"><span class="lineNum">     226</span>                 :<span class="tlaUNC">           0 : void WebPMemoryWriterClear(WebPMemoryWriter* writer) {</span></span>
+<span id="L227"><span class="lineNum">     227</span>                 :<span class="tlaUNC">           0 :   if (writer != NULL) {</span></span>
+<span id="L228"><span class="lineNum">     228</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(writer-&gt;mem);</span></span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :     writer-&gt;mem = NULL;</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 :     writer-&gt;size = 0;</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :<span class="tlaUNC">           0 :     writer-&gt;max_size = 0;</span></span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :             : </span>
+<span id="L235"><span class="lineNum">     235</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             : // Simplest high-level calls:</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             : </span>
+<span id="L238"><span class="lineNum">     238</span>                 :             : typedef int (*Importer)(WebPPicture* const, const uint8_t* const, int);</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             : </span>
+<span id="L240"><span class="lineNum">     240</span>                 :<span class="tlaUNC">           0 : static size_t Encode(const uint8_t* rgba, int width, int height, int stride,</span></span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :                      Importer import, float quality_factor, int lossless,</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :                      uint8_t** output) {</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             :   WebPPicture pic;</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :   WebPConfig config;</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :   WebPMemoryWriter wrt;</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             :   int ok;</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             : </span>
+<span id="L248"><span class="lineNum">     248</span>                 :<span class="tlaUNC">           0 :   if (output == NULL) return 0;</span></span>
+<span id="L249"><span class="lineNum">     249</span>                 :             : </span>
+<span id="L250"><span class="lineNum">     250</span>                 :<span class="tlaUNC">           0 :   if (!WebPConfigPreset(&amp;config, WEBP_PRESET_DEFAULT, quality_factor) ||</span></span>
+<span id="L251"><span class="lineNum">     251</span>                 :<span class="tlaUNC">           0 :       !WebPPictureInit(&amp;pic)) {</span></span>
+<span id="L252"><span class="lineNum">     252</span>                 :<span class="tlaUNC">           0 :     return 0;  // shouldn't happen, except if system installation is broken</span></span>
+<span id="L253"><span class="lineNum">     253</span>                 :             :   }</span>
+<span id="L254"><span class="lineNum">     254</span>                 :             : </span>
+<span id="L255"><span class="lineNum">     255</span>                 :<span class="tlaUNC">           0 :   config.lossless = !!lossless;</span></span>
+<span id="L256"><span class="lineNum">     256</span>                 :<span class="tlaUNC">           0 :   pic.use_argb = !!lossless;</span></span>
+<span id="L257"><span class="lineNum">     257</span>                 :<span class="tlaUNC">           0 :   pic.width = width;</span></span>
+<span id="L258"><span class="lineNum">     258</span>                 :<span class="tlaUNC">           0 :   pic.height = height;</span></span>
+<span id="L259"><span class="lineNum">     259</span>                 :<span class="tlaUNC">           0 :   pic.writer = WebPMemoryWrite;</span></span>
+<span id="L260"><span class="lineNum">     260</span>                 :<span class="tlaUNC">           0 :   pic.custom_ptr = &amp;wrt;</span></span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 :   WebPMemoryWriterInit(&amp;wrt);</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :             : </span>
+<span id="L263"><span class="lineNum">     263</span>                 :<span class="tlaUNC">           0 :   ok = import(&amp;pic, rgba, stride) &amp;&amp; WebPEncode(&amp;config, &amp;pic);</span></span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 :   WebPPictureFree(&amp;pic);</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :<span class="tlaUNC">           0 :   if (!ok) {</span></span>
+<span id="L266"><span class="lineNum">     266</span>                 :<span class="tlaUNC">           0 :     WebPMemoryWriterClear(&amp;wrt);</span></span>
+<span id="L267"><span class="lineNum">     267</span>                 :<span class="tlaUNC">           0 :     *output = NULL;</span></span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :             :   }</span>
+<span id="L270"><span class="lineNum">     270</span>                 :<span class="tlaUNC">           0 :   *output = wrt.mem;</span></span>
+<span id="L271"><span class="lineNum">     271</span>                 :<span class="tlaUNC">           0 :   return wrt.size;</span></span>
+<span id="L272"><span class="lineNum">     272</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L273"><span class="lineNum">     273</span>                 :             : </span>
+<span id="L274"><span class="lineNum">     274</span>                 :             : #define ENCODE_FUNC(NAME, IMPORTER)                                     \</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             : size_t NAME(const uint8_t* in, int w, int h, int bps, float q,          \</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :             uint8_t** out) {                                            \</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             :   return Encode(in, w, h, bps, IMPORTER, q, 0, out);                    \</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             : }</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             : </span>
+<span id="L280"><span class="lineNum">     280</span>                 :<span class="tlaUNC">           0 : ENCODE_FUNC(WebPEncodeRGB, WebPPictureImportRGB)</span></span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 : ENCODE_FUNC(WebPEncodeRGBA, WebPPictureImportRGBA)</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :             : #if !defined(WEBP_REDUCE_CSP)</span>
+<span id="L283"><span class="lineNum">     283</span>                 :<span class="tlaUNC">           0 : ENCODE_FUNC(WebPEncodeBGR, WebPPictureImportBGR)</span></span>
+<span id="L284"><span class="lineNum">     284</span>                 :<span class="tlaUNC">           0 : ENCODE_FUNC(WebPEncodeBGRA, WebPPictureImportBGRA)</span></span>
+<span id="L285"><span class="lineNum">     285</span>                 :             : #endif  // WEBP_REDUCE_CSP</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             : </span>
+<span id="L287"><span class="lineNum">     287</span>                 :             : #undef ENCODE_FUNC</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             : </span>
+<span id="L289"><span class="lineNum">     289</span>                 :             : #define LOSSLESS_DEFAULT_QUALITY 70.</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             : #define LOSSLESS_ENCODE_FUNC(NAME, IMPORTER)                                 \</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             : size_t NAME(const uint8_t* in, int w, int h, int bps, uint8_t** out) {       \</span>
+<span id="L292"><span class="lineNum">     292</span>                 :             :   return Encode(in, w, h, bps, IMPORTER, LOSSLESS_DEFAULT_QUALITY, 1, out);  \</span>
+<span id="L293"><span class="lineNum">     293</span>                 :             : }</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             : </span>
+<span id="L295"><span class="lineNum">     295</span>                 :<span class="tlaUNC">           0 : LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessRGB, WebPPictureImportRGB)</span></span>
+<span id="L296"><span class="lineNum">     296</span>                 :<span class="tlaUNC">           0 : LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessRGBA, WebPPictureImportRGBA)</span></span>
+<span id="L297"><span class="lineNum">     297</span>                 :             : #if !defined(WEBP_REDUCE_CSP)</span>
+<span id="L298"><span class="lineNum">     298</span>                 :<span class="tlaUNC">           0 : LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessBGR, WebPPictureImportBGR)</span></span>
+<span id="L299"><span class="lineNum">     299</span>                 :<span class="tlaUNC">           0 : LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessBGRA, WebPPictureImportBGRA)</span></span>
+<span id="L300"><span class="lineNum">     300</span>                 :             : #endif  // WEBP_REDUCE_CSP</span>
+<span id="L301"><span class="lineNum">     301</span>                 :             : </span>
+<span id="L302"><span class="lineNum">     302</span>                 :             : #undef LOSSLESS_ENCODE_FUNC</span>
+<span id="L303"><span class="lineNum">     303</span>                 :             : </span>
+<span id="L304"><span class="lineNum">     304</span>                 :             : //------------------------------------------------------------------------------</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

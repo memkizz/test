@@ -1,0 +1,583 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/common/reconinter.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/common</a> - reconinter.h<span style="font-size: 80%;"> (source / <a href="reconinter.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">185</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2016, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #ifndef AOM_AV1_COMMON_RECONINTER_H_</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #define AOM_AV1_COMMON_RECONINTER_H_</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;av1/common/av1_common_int.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;av1/common/convolve.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;av1/common/filter.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &quot;av1/common/warped_motion.h&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &quot;aom/aom_integer.h&quot;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : </span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : // Work out how many pixels off the edge of a reference frame we're allowed</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : // to go when forming an inter prediction.</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : // The outermost row/col of each referernce frame is extended by</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : // (AOM_BORDER_IN_PIXELS &gt;&gt; subsampling) pixels, but we need to keep</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : // at least AOM_INTERP_EXTEND pixels within that to account for filtering.</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : //</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : // We have to break this up into two macros to keep both clang-format and</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : // tools/lint-hunks.py happy.</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : #define AOM_LEFT_TOP_MARGIN_PX(subsampling) \</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :   ((AOM_BORDER_IN_PIXELS &gt;&gt; subsampling) - AOM_INTERP_EXTEND)</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             : #define AOM_LEFT_TOP_MARGIN_SCALED(subsampling) \</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :   (AOM_LEFT_TOP_MARGIN_PX(subsampling) &lt;&lt; SCALE_SUBPEL_BITS)</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : </span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : #ifdef __cplusplus</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : extern &quot;C&quot; {</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : #endif</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : </span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : #define MAX_WEDGE_TYPES 16</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : </span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : #define MAX_WEDGE_SIZE_LOG2 5  // 32x32</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : #define MAX_WEDGE_SIZE (1 &lt;&lt; MAX_WEDGE_SIZE_LOG2)</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : #define MAX_WEDGE_SQUARE (MAX_WEDGE_SIZE * MAX_WEDGE_SIZE)</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : </span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : #define WEDGE_WEIGHT_BITS 6</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : </span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : #define WEDGE_NONE -1</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : </span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : // Angles are with respect to horizontal anti-clockwise</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : enum {</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :   WEDGE_HORIZONTAL = 0,</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :   WEDGE_VERTICAL = 1,</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   WEDGE_OBLIQUE27 = 2,</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :   WEDGE_OBLIQUE63 = 3,</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :   WEDGE_OBLIQUE117 = 4,</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :   WEDGE_OBLIQUE153 = 5,</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :   WEDGE_DIRECTIONS</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             : } UENUM1BYTE(WedgeDirectionType);</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : </span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : // 3-tuple: {direction, x_offset, y_offset}</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : typedef struct {</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :   WedgeDirectionType direction;</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   int x_offset;</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   int y_offset;</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             : } wedge_code_type;</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             : </span>
+<span id="L66"><span class="lineNum">      66</span>                 :             : typedef uint8_t *wedge_masks_type[MAX_WEDGE_TYPES];</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : </span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : typedef struct {</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :   int wedge_types;</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :   const wedge_code_type *codebook;</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   uint8_t *signflip;</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   wedge_masks_type *masks;</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : } wedge_params_type;</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             : </span>
+<span id="L75"><span class="lineNum">      75</span>                 :             : extern const wedge_params_type av1_wedge_params_lookup[BLOCK_SIZES_ALL];</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : </span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : typedef struct SubpelParams {</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   int xs;</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :   int ys;</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :   int subpel_x;</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :   int subpel_y;</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   int pos_x;</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   int pos_y;</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             : } SubpelParams;</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : </span>
+<span id="L86"><span class="lineNum">      86</span>                 :             : struct build_prediction_ctxt {</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :   const AV1_COMMON *cm;</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :   uint8_t **tmp_buf;</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :   int *tmp_width;</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :   int *tmp_height;</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :   int *tmp_stride;</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :   int mb_to_far_edge;</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :   void *dcb;  // Decoder-only coding block.</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             : };</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             : </span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : typedef enum InterPredMode {</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :   TRANSLATION_PRED,</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :   WARP_PRED,</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             : } InterPredMode;</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : </span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : typedef enum InterCompMode {</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :   UNIFORM_SINGLE,</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :   UNIFORM_COMP,</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :   MASK_COMP,</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : } InterCompMode;</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             : </span>
+<span id="L107"><span class="lineNum">     107</span>                 :             : typedef struct InterPredParams {</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :   InterPredMode mode;</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :   InterCompMode comp_mode;</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   WarpedMotionParams warp_params;</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :   ConvolveParams conv_params;</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :   const InterpFilterParams *interp_filter_params[2];</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :   int block_width;</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :   int block_height;</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :   int pix_row;</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :   int pix_col;</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :   struct buf_2d ref_frame_buf;</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :   int subsampling_x;</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :   int subsampling_y;</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :   const struct scale_factors *scale_factors;</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :   int bit_depth;</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :   int use_hbd_buf;</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :   INTERINTER_COMPOUND_DATA mask_comp;</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :   BLOCK_SIZE sb_type;</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :   int is_intrabc;</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :   int top;</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :   int left;</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : } InterPredParams;</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : </span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : // Initialize sub-pel params required for inter prediction.</span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static inline void init_subpel_params(const MV *const src_mv,</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :                                       InterPredParams *const inter_pred_params,</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :                                       SubpelParams *subpel_params, int width,</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :                                       int height) {</span>
+<span id="L135"><span class="lineNum">     135</span>                 :<span class="tlaUNC">           0 :   const struct scale_factors *sf = inter_pred_params-&gt;scale_factors;</span></span>
+<span id="L136"><span class="lineNum">     136</span>                 :<span class="tlaUNC">           0 :   int ssx = inter_pred_params-&gt;subsampling_x;</span></span>
+<span id="L137"><span class="lineNum">     137</span>                 :<span class="tlaUNC">           0 :   int ssy = inter_pred_params-&gt;subsampling_y;</span></span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 :   int orig_pos_y = inter_pred_params-&gt;pix_row &lt;&lt; SUBPEL_BITS;</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :   orig_pos_y += src_mv-&gt;row * (1 &lt;&lt; (1 - ssy));</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :<span class="tlaUNC">           0 :   int orig_pos_x = inter_pred_params-&gt;pix_col &lt;&lt; SUBPEL_BITS;</span></span>
+<span id="L141"><span class="lineNum">     141</span>                 :<span class="tlaUNC">           0 :   orig_pos_x += src_mv-&gt;col * (1 &lt;&lt; (1 - ssx));</span></span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :   const int is_scaled = av1_is_scaled(sf);</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :<span class="tlaUNC">           0 :   int pos_x, pos_y;</span></span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :   if (LIKELY(!is_scaled)) {</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :<span class="tlaUNC">           0 :     pos_y = av1_unscaled_value(orig_pos_y, sf);</span></span>
+<span id="L146"><span class="lineNum">     146</span>                 :<span class="tlaUNC">           0 :     pos_x = av1_unscaled_value(orig_pos_x, sf);</span></span>
+<span id="L147"><span class="lineNum">     147</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :     pos_y = av1_scaled_y(orig_pos_y, sf);</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :     pos_x = av1_scaled_x(orig_pos_x, sf);</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :   }</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : </span>
+<span id="L152"><span class="lineNum">     152</span>                 :<span class="tlaUNC">           0 :   pos_x += SCALE_EXTRA_OFF;</span></span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 :   pos_y += SCALE_EXTRA_OFF;</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :             : </span>
+<span id="L155"><span class="lineNum">     155</span>                 :<span class="tlaUNC">           0 :   const int bottom = (height + AOM_INTERP_EXTEND) &lt;&lt; SCALE_SUBPEL_BITS;</span></span>
+<span id="L156"><span class="lineNum">     156</span>                 :<span class="tlaUNC">           0 :   const int right = (width + AOM_INTERP_EXTEND) &lt;&lt; SCALE_SUBPEL_BITS;</span></span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :   pos_y = clamp(pos_y, inter_pred_params-&gt;top, bottom);</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 :   pos_x = clamp(pos_x, inter_pred_params-&gt;left, right);</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :<span class="tlaUNC">           0 :   subpel_params-&gt;pos_x = pos_x;</span></span>
+<span id="L161"><span class="lineNum">     161</span>                 :<span class="tlaUNC">           0 :   subpel_params-&gt;pos_y = pos_y;</span></span>
+<span id="L162"><span class="lineNum">     162</span>                 :<span class="tlaUNC">           0 :   subpel_params-&gt;subpel_x = pos_x &amp; SCALE_SUBPEL_MASK;</span></span>
+<span id="L163"><span class="lineNum">     163</span>                 :<span class="tlaUNC">           0 :   subpel_params-&gt;subpel_y = pos_y &amp; SCALE_SUBPEL_MASK;</span></span>
+<span id="L164"><span class="lineNum">     164</span>                 :<span class="tlaUNC">           0 :   subpel_params-&gt;xs = sf-&gt;x_step_q4;</span></span>
+<span id="L165"><span class="lineNum">     165</span>                 :<span class="tlaUNC">           0 :   subpel_params-&gt;ys = sf-&gt;y_step_q4;</span></span>
+<span id="L166"><span class="lineNum">     166</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L167"><span class="lineNum">     167</span>                 :             : </span>
+<span id="L168"><span class="lineNum">     168</span>                 :             : // Initialize interp filter required for inter prediction.</span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 : static inline void init_interp_filter_params(</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :     const InterpFilterParams *interp_filter_params[2],</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             :     const InterpFilters *filter, int block_width, int block_height,</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             :     int is_intrabc) {</span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :   if (UNLIKELY(is_intrabc)) {</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :     interp_filter_params[0] = &amp;av1_intrabc_filter_params;</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 :     interp_filter_params[1] = &amp;av1_intrabc_filter_params;</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 :     interp_filter_params[0] = av1_get_interp_filter_params_with_block_size(</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :<span class="tlaUNC">           0 :         (InterpFilter)filter-&gt;x_filter, block_width);</span></span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :     interp_filter_params[1] = av1_get_interp_filter_params_with_block_size(</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :         (InterpFilter)filter-&gt;y_filter, block_height);</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :   }</span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : </span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : // Initialize parameters required for inter prediction at mode level.</span>
+<span id="L185"><span class="lineNum">     185</span>                 :<span class="tlaUNC">           0 : static inline void init_inter_mode_params(</span></span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :     const MV *const src_mv, InterPredParams *const inter_pred_params,</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :     SubpelParams *subpel_params, const struct scale_factors *sf, int width,</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             :     int height) {</span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;scale_factors = sf;</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 :   init_subpel_params(src_mv, inter_pred_params, subpel_params, width, height);</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : </span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : // Initialize parameters required for inter prediction at block level.</span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 : static inline void init_inter_block_params(InterPredParams *inter_pred_params,</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :                                            int block_width, int block_height,</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :                                            int pix_row, int pix_col,</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :                                            int subsampling_x, int subsampling_y,</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :                                            int bit_depth, int use_hbd_buf,</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :                                            int is_intrabc) {</span>
+<span id="L200"><span class="lineNum">     200</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;block_width = block_width;</span></span>
+<span id="L201"><span class="lineNum">     201</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;block_height = block_height;</span></span>
+<span id="L202"><span class="lineNum">     202</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;pix_row = pix_row;</span></span>
+<span id="L203"><span class="lineNum">     203</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;pix_col = pix_col;</span></span>
+<span id="L204"><span class="lineNum">     204</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;subsampling_x = subsampling_x;</span></span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;subsampling_y = subsampling_y;</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;bit_depth = bit_depth;</span></span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;use_hbd_buf = use_hbd_buf;</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;is_intrabc = is_intrabc;</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;mode = TRANSLATION_PRED;</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;comp_mode = UNIFORM_SINGLE;</span></span>
+<span id="L211"><span class="lineNum">     211</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;top = -AOM_LEFT_TOP_MARGIN_SCALED(subsampling_y);</span></span>
+<span id="L212"><span class="lineNum">     212</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;left = -AOM_LEFT_TOP_MARGIN_SCALED(subsampling_x);</span></span>
+<span id="L213"><span class="lineNum">     213</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L214"><span class="lineNum">     214</span>                 :             : </span>
+<span id="L215"><span class="lineNum">     215</span>                 :             : // Initialize params required for inter prediction.</span>
+<span id="L216"><span class="lineNum">     216</span>                 :<span class="tlaUNC">           0 : static inline void av1_init_inter_params(</span></span>
+<span id="L217"><span class="lineNum">     217</span>                 :             :     InterPredParams *inter_pred_params, int block_width, int block_height,</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :     int pix_row, int pix_col, int subsampling_x, int subsampling_y,</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :     int bit_depth, int use_hbd_buf, int is_intrabc,</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :     const struct scale_factors *sf, const struct buf_2d *ref_buf,</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             :     int_interpfilters interp_filters) {</span>
+<span id="L222"><span class="lineNum">     222</span>                 :<span class="tlaUNC">           0 :   init_inter_block_params(inter_pred_params, block_width, block_height, pix_row,</span></span>
+<span id="L223"><span class="lineNum">     223</span>                 :<span class="tlaUNC">           0 :                           pix_col, subsampling_x, subsampling_y, bit_depth,</span></span>
+<span id="L224"><span class="lineNum">     224</span>                 :<span class="tlaUNC">           0 :                           use_hbd_buf, is_intrabc);</span></span>
+<span id="L225"><span class="lineNum">     225</span>                 :<span class="tlaUNC">           0 :   init_interp_filter_params(inter_pred_params-&gt;interp_filter_params,</span></span>
+<span id="L226"><span class="lineNum">     226</span>                 :<span class="tlaUNC">           0 :                             &amp;interp_filters.as_filters, block_width,</span></span>
+<span id="L227"><span class="lineNum">     227</span>                 :<span class="tlaUNC">           0 :                             block_height, is_intrabc);</span></span>
+<span id="L228"><span class="lineNum">     228</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;scale_factors = sf;</span></span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;ref_frame_buf = *ref_buf;</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :             : </span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 : static inline void av1_init_comp_mode(InterPredParams *inter_pred_params) {</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 :   inter_pred_params-&gt;comp_mode = UNIFORM_COMP;</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L235"><span class="lineNum">     235</span>                 :             : </span>
+<span id="L236"><span class="lineNum">     236</span>                 :             : void av1_init_warp_params(InterPredParams *inter_pred_params,</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             :                           const WarpTypesAllowed *warp_types, int ref,</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :                           const MACROBLOCKD *xd, const MB_MODE_INFO *mi);</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             : </span>
+<span id="L240"><span class="lineNum">     240</span>                 :<span class="tlaUNC">           0 : static inline int has_scale(int xs, int ys) {</span></span>
+<span id="L241"><span class="lineNum">     241</span>                 :<span class="tlaUNC">           0 :   return xs != SCALE_SUBPEL_SHIFTS || ys != SCALE_SUBPEL_SHIFTS;</span></span>
+<span id="L242"><span class="lineNum">     242</span>                 :             : }</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             : </span>
+<span id="L244"><span class="lineNum">     244</span>                 :<span class="tlaUNC">           0 : static inline void revert_scale_extra_bits(SubpelParams *sp) {</span></span>
+<span id="L245"><span class="lineNum">     245</span>                 :<span class="tlaUNC">           0 :   sp-&gt;subpel_x &gt;&gt;= SCALE_EXTRA_BITS;</span></span>
+<span id="L246"><span class="lineNum">     246</span>                 :<span class="tlaUNC">           0 :   sp-&gt;subpel_y &gt;&gt;= SCALE_EXTRA_BITS;</span></span>
+<span id="L247"><span class="lineNum">     247</span>                 :<span class="tlaUNC">           0 :   sp-&gt;xs &gt;&gt;= SCALE_EXTRA_BITS;</span></span>
+<span id="L248"><span class="lineNum">     248</span>                 :<span class="tlaUNC">           0 :   sp-&gt;ys &gt;&gt;= SCALE_EXTRA_BITS;</span></span>
+<span id="L249"><span class="lineNum">     249</span>                 :             :   assert(sp-&gt;subpel_x &lt; SUBPEL_SHIFTS);</span>
+<span id="L250"><span class="lineNum">     250</span>                 :             :   assert(sp-&gt;subpel_y &lt; SUBPEL_SHIFTS);</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :   assert(sp-&gt;xs &lt;= SUBPEL_SHIFTS);</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             :   assert(sp-&gt;ys &lt;= SUBPEL_SHIFTS);</span>
+<span id="L253"><span class="lineNum">     253</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L254"><span class="lineNum">     254</span>                 :             : </span>
+<span id="L255"><span class="lineNum">     255</span>                 :<span class="tlaUNC">           0 : static inline void inter_predictor(</span></span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             :     const SubpelParams *subpel_params, int w, int h,</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             :     ConvolveParams *conv_params, const InterpFilterParams *interp_filters[2]) {</span>
+<span id="L259"><span class="lineNum">     259</span>                 :             :   assert(conv_params-&gt;do_average == 0 || conv_params-&gt;do_average == 1);</span>
+<span id="L260"><span class="lineNum">     260</span>                 :<span class="tlaUNC">           0 :   const int is_scaled = has_scale(subpel_params-&gt;xs, subpel_params-&gt;ys);</span></span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 :   if (is_scaled) {</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :<span class="tlaUNC">           0 :     av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,</span></span>
+<span id="L263"><span class="lineNum">     263</span>                 :<span class="tlaUNC">           0 :                            interp_filters, subpel_params-&gt;subpel_x,</span></span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 :                            subpel_params-&gt;xs, subpel_params-&gt;subpel_y,</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :<span class="tlaUNC">           0 :                            subpel_params-&gt;ys, 1, conv_params);</span></span>
+<span id="L266"><span class="lineNum">     266</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L267"><span class="lineNum">     267</span>                 :<span class="tlaUNC">           0 :     SubpelParams sp = *subpel_params;</span></span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 :     revert_scale_extra_bits(&amp;sp);</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :<span class="tlaUNC">           0 :     av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,</span></span>
+<span id="L270"><span class="lineNum">     270</span>                 :<span class="tlaUNC">           0 :                            interp_filters, sp.subpel_x, sp.xs, sp.subpel_y,</span></span>
+<span id="L271"><span class="lineNum">     271</span>                 :<span class="tlaUNC">           0 :                            sp.ys, 0, conv_params);</span></span>
+<span id="L272"><span class="lineNum">     272</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L273"><span class="lineNum">     273</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L274"><span class="lineNum">     274</span>                 :             : </span>
+<span id="L275"><span class="lineNum">     275</span>                 :<span class="tlaUNC">           0 : static inline void highbd_inter_predictor(</span></span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             :     const SubpelParams *subpel_params, int w, int h,</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :     ConvolveParams *conv_params, const InterpFilterParams *interp_filters[2],</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             :     int bd) {</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :   assert(conv_params-&gt;do_average == 0 || conv_params-&gt;do_average == 1);</span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 :   const int is_scaled = has_scale(subpel_params-&gt;xs, subpel_params-&gt;ys);</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :<span class="tlaUNC">           0 :   if (is_scaled) {</span></span>
+<span id="L283"><span class="lineNum">     283</span>                 :<span class="tlaUNC">           0 :     av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,</span></span>
+<span id="L284"><span class="lineNum">     284</span>                 :<span class="tlaUNC">           0 :                                   interp_filters, subpel_params-&gt;subpel_x,</span></span>
+<span id="L285"><span class="lineNum">     285</span>                 :<span class="tlaUNC">           0 :                                   subpel_params-&gt;xs, subpel_params-&gt;subpel_y,</span></span>
+<span id="L286"><span class="lineNum">     286</span>                 :<span class="tlaUNC">           0 :                                   subpel_params-&gt;ys, 1, conv_params, bd);</span></span>
+<span id="L287"><span class="lineNum">     287</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L288"><span class="lineNum">     288</span>                 :<span class="tlaUNC">           0 :     SubpelParams sp = *subpel_params;</span></span>
+<span id="L289"><span class="lineNum">     289</span>                 :<span class="tlaUNC">           0 :     revert_scale_extra_bits(&amp;sp);</span></span>
+<span id="L290"><span class="lineNum">     290</span>                 :<span class="tlaUNC">           0 :     av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,</span></span>
+<span id="L291"><span class="lineNum">     291</span>                 :<span class="tlaUNC">           0 :                                   interp_filters, sp.subpel_x, sp.xs,</span></span>
+<span id="L292"><span class="lineNum">     292</span>                 :<span class="tlaUNC">           0 :                                   sp.subpel_y, sp.ys, 0, conv_params, bd);</span></span>
+<span id="L293"><span class="lineNum">     293</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L294"><span class="lineNum">     294</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L295"><span class="lineNum">     295</span>                 :             : </span>
+<span id="L296"><span class="lineNum">     296</span>                 :             : int av1_skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize,</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             :                                const struct macroblockd_plane *pd, int dir);</span>
+<span id="L298"><span class="lineNum">     298</span>                 :             : </span>
+<span id="L299"><span class="lineNum">     299</span>                 :<span class="tlaUNC">           0 : static inline int is_interinter_compound_used(COMPOUND_TYPE type,</span></span>
+<span id="L300"><span class="lineNum">     300</span>                 :             :                                               BLOCK_SIZE sb_type) {</span>
+<span id="L301"><span class="lineNum">     301</span>                 :<span class="tlaUNC">           0 :   const int comp_allowed = is_comp_ref_allowed(sb_type);</span></span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :   switch (type) {</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :             :     case COMPOUND_AVERAGE:</span>
+<span id="L304"><span class="lineNum">     304</span>                 :             :     case COMPOUND_DISTWTD:</span>
+<span id="L305"><span class="lineNum">     305</span>                 :<span class="tlaUNC">           0 :     case COMPOUND_DIFFWTD: return comp_allowed;</span></span>
+<span id="L306"><span class="lineNum">     306</span>                 :             :     case COMPOUND_WEDGE:</span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 :       return comp_allowed &amp;&amp; av1_wedge_params_lookup[sb_type].wedge_types &gt; 0;</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :<span class="tlaUNC">           0 :     default: assert(0); return 0;</span></span>
+<span id="L309"><span class="lineNum">     309</span>                 :             :   }</span>
+<span id="L310"><span class="lineNum">     310</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L311"><span class="lineNum">     311</span>                 :             : </span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 : static inline int is_any_masked_compound_used(BLOCK_SIZE sb_type) {</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :<span class="tlaUNC">           0 :   COMPOUND_TYPE comp_type;</span></span>
+<span id="L314"><span class="lineNum">     314</span>                 :<span class="tlaUNC">           0 :   int i;</span></span>
+<span id="L315"><span class="lineNum">     315</span>                 :<span class="tlaUNC">           0 :   if (!is_comp_ref_allowed(sb_type)) return 0;</span></span>
+<span id="L316"><span class="lineNum">     316</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; COMPOUND_TYPES; i++) {</span></span>
+<span id="L317"><span class="lineNum">     317</span>                 :<span class="tlaUNC">           0 :     comp_type = (COMPOUND_TYPE)i;</span></span>
+<span id="L318"><span class="lineNum">     318</span>                 :<span class="tlaUNC">           0 :     if (is_masked_compound_type(comp_type) &amp;&amp;</span></span>
+<span id="L319"><span class="lineNum">     319</span>                 :<span class="tlaUNC">           0 :         is_interinter_compound_used(comp_type, sb_type))</span></span>
+<span id="L320"><span class="lineNum">     320</span>                 :<span class="tlaUNC">           0 :       return 1;</span></span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :<span class="tlaUNC">           0 :   return 0;</span></span>
+<span id="L323"><span class="lineNum">     323</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L324"><span class="lineNum">     324</span>                 :             : </span>
+<span id="L325"><span class="lineNum">     325</span>                 :<span class="tlaUNC">           0 : static inline int get_wedge_types_lookup(BLOCK_SIZE sb_type) {</span></span>
+<span id="L326"><span class="lineNum">     326</span>                 :<span class="tlaUNC">           0 :   return av1_wedge_params_lookup[sb_type].wedge_types;</span></span>
+<span id="L327"><span class="lineNum">     327</span>                 :             : }</span>
+<span id="L328"><span class="lineNum">     328</span>                 :             : </span>
+<span id="L329"><span class="lineNum">     329</span>                 :<span class="tlaUNC">           0 : static inline int av1_is_wedge_used(BLOCK_SIZE sb_type) {</span></span>
+<span id="L330"><span class="lineNum">     330</span>                 :<span class="tlaUNC">           0 :   return av1_wedge_params_lookup[sb_type].wedge_types &gt; 0;</span></span>
+<span id="L331"><span class="lineNum">     331</span>                 :             : }</span>
+<span id="L332"><span class="lineNum">     332</span>                 :             : </span>
+<span id="L333"><span class="lineNum">     333</span>                 :             : void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,</span>
+<span id="L334"><span class="lineNum">     334</span>                 :             :                               int dst_stride,</span>
+<span id="L335"><span class="lineNum">     335</span>                 :             :                               InterPredParams *inter_pred_params,</span>
+<span id="L336"><span class="lineNum">     336</span>                 :             :                               const SubpelParams *subpel_params);</span>
+<span id="L337"><span class="lineNum">     337</span>                 :             : void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,</span>
+<span id="L338"><span class="lineNum">     338</span>                 :             :                                      uint8_t *dst, int dst_stride,</span>
+<span id="L339"><span class="lineNum">     339</span>                 :             :                                      InterPredParams *inter_pred_params,</span>
+<span id="L340"><span class="lineNum">     340</span>                 :             :                                      const SubpelParams *subpel_params);</span>
+<span id="L341"><span class="lineNum">     341</span>                 :             : </span>
+<span id="L342"><span class="lineNum">     342</span>                 :             : // TODO(jkoleszar): yet another mv clamping function :-(</span>
+<span id="L343"><span class="lineNum">     343</span>                 :<span class="tlaUNC">           0 : static inline MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,</span></span>
+<span id="L344"><span class="lineNum">     344</span>                 :             :                                            const MV *src_mv, int bw, int bh,</span>
+<span id="L345"><span class="lineNum">     345</span>                 :             :                                            int ss_x, int ss_y) {</span>
+<span id="L346"><span class="lineNum">     346</span>                 :             :   // If the MV points so far into the UMV border that no visible pixels</span>
+<span id="L347"><span class="lineNum">     347</span>                 :             :   // are used for reconstruction, the subpel part of the MV can be</span>
+<span id="L348"><span class="lineNum">     348</span>                 :             :   // discarded and the MV limited to 16 pixels with equivalent results.</span>
+<span id="L349"><span class="lineNum">     349</span>                 :<span class="tlaUNC">           0 :   const int spel_left = (AOM_INTERP_EXTEND + bw) &lt;&lt; SUBPEL_BITS;</span></span>
+<span id="L350"><span class="lineNum">     350</span>                 :<span class="tlaUNC">           0 :   const int spel_right = spel_left - SUBPEL_SHIFTS;</span></span>
+<span id="L351"><span class="lineNum">     351</span>                 :<span class="tlaUNC">           0 :   const int spel_top = (AOM_INTERP_EXTEND + bh) &lt;&lt; SUBPEL_BITS;</span></span>
+<span id="L352"><span class="lineNum">     352</span>                 :<span class="tlaUNC">           0 :   const int spel_bottom = spel_top - SUBPEL_SHIFTS;</span></span>
+<span id="L353"><span class="lineNum">     353</span>                 :<span class="tlaUNC">           0 :   MV clamped_mv = { (int16_t)(src_mv-&gt;row * (1 &lt;&lt; (1 - ss_y))),</span></span>
+<span id="L354"><span class="lineNum">     354</span>                 :<span class="tlaUNC">           0 :                     (int16_t)(src_mv-&gt;col * (1 &lt;&lt; (1 - ss_x))) };</span></span>
+<span id="L355"><span class="lineNum">     355</span>                 :             :   assert(ss_x &lt;= 1);</span>
+<span id="L356"><span class="lineNum">     356</span>                 :             :   assert(ss_y &lt;= 1);</span>
+<span id="L357"><span class="lineNum">     357</span>                 :<span class="tlaUNC">           0 :   const SubpelMvLimits mv_limits = {</span></span>
+<span id="L358"><span class="lineNum">     358</span>                 :<span class="tlaUNC">           0 :     xd-&gt;mb_to_left_edge * (1 &lt;&lt; (1 - ss_x)) - spel_left,</span></span>
+<span id="L359"><span class="lineNum">     359</span>                 :<span class="tlaUNC">           0 :     xd-&gt;mb_to_right_edge * (1 &lt;&lt; (1 - ss_x)) + spel_right,</span></span>
+<span id="L360"><span class="lineNum">     360</span>                 :<span class="tlaUNC">           0 :     xd-&gt;mb_to_top_edge * (1 &lt;&lt; (1 - ss_y)) - spel_top,</span></span>
+<span id="L361"><span class="lineNum">     361</span>                 :<span class="tlaUNC">           0 :     xd-&gt;mb_to_bottom_edge * (1 &lt;&lt; (1 - ss_y)) + spel_bottom</span></span>
+<span id="L362"><span class="lineNum">     362</span>                 :             :   };</span>
+<span id="L363"><span class="lineNum">     363</span>                 :             : </span>
+<span id="L364"><span class="lineNum">     364</span>                 :<span class="tlaUNC">           0 :   clamp_mv(&amp;clamped_mv, &amp;mv_limits);</span></span>
+<span id="L365"><span class="lineNum">     365</span>                 :             : </span>
+<span id="L366"><span class="lineNum">     366</span>                 :             :   return clamped_mv;</span>
+<span id="L367"><span class="lineNum">     367</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L368"><span class="lineNum">     368</span>                 :             : </span>
+<span id="L369"><span class="lineNum">     369</span>                 :<span class="tlaUNC">           0 : static inline int64_t scaled_buffer_offset(int x_offset, int y_offset,</span></span>
+<span id="L370"><span class="lineNum">     370</span>                 :             :                                            int stride,</span>
+<span id="L371"><span class="lineNum">     371</span>                 :             :                                            const struct scale_factors *sf) {</span>
+<span id="L372"><span class="lineNum">     372</span>                 :<span class="tlaUNC">           0 :   int x, y;</span></span>
+<span id="L373"><span class="lineNum">     373</span>                 :<span class="tlaUNC">           0 :   if (!sf) {</span></span>
+<span id="L374"><span class="lineNum">     374</span>                 :<span class="tlaUNC">           0 :     x = x_offset;</span></span>
+<span id="L375"><span class="lineNum">     375</span>                 :<span class="tlaUNC">           0 :     y = y_offset;</span></span>
+<span id="L376"><span class="lineNum">     376</span>                 :<span class="tlaUNC">           0 :   } else if (av1_is_scaled(sf)) {</span></span>
+<span id="L377"><span class="lineNum">     377</span>                 :<span class="tlaUNC">           0 :     x = av1_scaled_x(x_offset, sf) &gt;&gt; SCALE_EXTRA_BITS;</span></span>
+<span id="L378"><span class="lineNum">     378</span>                 :<span class="tlaUNC">           0 :     y = av1_scaled_y(y_offset, sf) &gt;&gt; SCALE_EXTRA_BITS;</span></span>
+<span id="L379"><span class="lineNum">     379</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L380"><span class="lineNum">     380</span>                 :<span class="tlaUNC">           0 :     x = av1_unscaled_value(x_offset, sf) &gt;&gt; SCALE_EXTRA_BITS;</span></span>
+<span id="L381"><span class="lineNum">     381</span>                 :<span class="tlaUNC">           0 :     y = av1_unscaled_value(y_offset, sf) &gt;&gt; SCALE_EXTRA_BITS;</span></span>
+<span id="L382"><span class="lineNum">     382</span>                 :             :   }</span>
+<span id="L383"><span class="lineNum">     383</span>                 :<span class="tlaUNC">           0 :   return (int64_t)y * stride + x;</span></span>
+<span id="L384"><span class="lineNum">     384</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L385"><span class="lineNum">     385</span>                 :             : </span>
+<span id="L386"><span class="lineNum">     386</span>                 :<span class="tlaUNC">           0 : static inline void setup_pred_plane(struct buf_2d *dst, BLOCK_SIZE bsize,</span></span>
+<span id="L387"><span class="lineNum">     387</span>                 :             :                                     uint8_t *src, int width, int height,</span>
+<span id="L388"><span class="lineNum">     388</span>                 :             :                                     int stride, int mi_row, int mi_col,</span>
+<span id="L389"><span class="lineNum">     389</span>                 :             :                                     const struct scale_factors *scale,</span>
+<span id="L390"><span class="lineNum">     390</span>                 :             :                                     int subsampling_x, int subsampling_y) {</span>
+<span id="L391"><span class="lineNum">     391</span>                 :             :   // Offset the buffer pointer</span>
+<span id="L392"><span class="lineNum">     392</span>                 :<span class="tlaUNC">           0 :   if (subsampling_y &amp;&amp; (mi_row &amp; 0x01) &amp;&amp; (mi_size_high[bsize] == 1))</span></span>
+<span id="L393"><span class="lineNum">     393</span>                 :<span class="tlaUNC">           0 :     mi_row -= 1;</span></span>
+<span id="L394"><span class="lineNum">     394</span>                 :<span class="tlaUNC">           0 :   if (subsampling_x &amp;&amp; (mi_col &amp; 0x01) &amp;&amp; (mi_size_wide[bsize] == 1))</span></span>
+<span id="L395"><span class="lineNum">     395</span>                 :<span class="tlaUNC">           0 :     mi_col -= 1;</span></span>
+<span id="L396"><span class="lineNum">     396</span>                 :             : </span>
+<span id="L397"><span class="lineNum">     397</span>                 :<span class="tlaUNC">           0 :   const int x = (MI_SIZE * mi_col) &gt;&gt; subsampling_x;</span></span>
+<span id="L398"><span class="lineNum">     398</span>                 :<span class="tlaUNC">           0 :   const int y = (MI_SIZE * mi_row) &gt;&gt; subsampling_y;</span></span>
+<span id="L399"><span class="lineNum">     399</span>                 :<span class="tlaUNC">           0 :   dst-&gt;buf = src + scaled_buffer_offset(x, y, stride, scale);</span></span>
+<span id="L400"><span class="lineNum">     400</span>                 :<span class="tlaUNC">           0 :   dst-&gt;buf0 = src;</span></span>
+<span id="L401"><span class="lineNum">     401</span>                 :<span class="tlaUNC">           0 :   dst-&gt;width = width;</span></span>
+<span id="L402"><span class="lineNum">     402</span>                 :<span class="tlaUNC">           0 :   dst-&gt;height = height;</span></span>
+<span id="L403"><span class="lineNum">     403</span>                 :<span class="tlaUNC">           0 :   dst-&gt;stride = stride;</span></span>
+<span id="L404"><span class="lineNum">     404</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L405"><span class="lineNum">     405</span>                 :             : </span>
+<span id="L406"><span class="lineNum">     406</span>                 :             : void av1_setup_dst_planes(struct macroblockd_plane *planes, BLOCK_SIZE bsize,</span>
+<span id="L407"><span class="lineNum">     407</span>                 :             :                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,</span>
+<span id="L408"><span class="lineNum">     408</span>                 :             :                           const int plane_start, const int plane_end);</span>
+<span id="L409"><span class="lineNum">     409</span>                 :             : </span>
+<span id="L410"><span class="lineNum">     410</span>                 :             : void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,</span>
+<span id="L411"><span class="lineNum">     411</span>                 :             :                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,</span>
+<span id="L412"><span class="lineNum">     412</span>                 :             :                           const struct scale_factors *sf, const int num_planes);</span>
+<span id="L413"><span class="lineNum">     413</span>                 :             : </span>
+<span id="L414"><span class="lineNum">     414</span>                 :<span class="tlaUNC">           0 : static inline void set_default_interp_filters(</span></span>
+<span id="L415"><span class="lineNum">     415</span>                 :             :     MB_MODE_INFO *const mbmi, InterpFilter frame_interp_filter) {</span>
+<span id="L416"><span class="lineNum">     416</span>                 :<span class="tlaUNC">           0 :   mbmi-&gt;interp_filters =</span></span>
+<span id="L417"><span class="lineNum">     417</span>                 :<span class="tlaUNC">           0 :       av1_broadcast_interp_filter(av1_unswitchable_filter(frame_interp_filter));</span></span>
+<span id="L418"><span class="lineNum">     418</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L419"><span class="lineNum">     419</span>                 :             : </span>
+<span id="L420"><span class="lineNum">     420</span>                 :<span class="tlaUNC">           0 : static inline int av1_is_interp_needed(const MACROBLOCKD *const xd) {</span></span>
+<span id="L421"><span class="lineNum">     421</span>                 :<span class="tlaUNC">           0 :   const MB_MODE_INFO *const mbmi = xd-&gt;mi[0];</span></span>
+<span id="L422"><span class="lineNum">     422</span>                 :<span class="tlaUNC">           0 :   if (mbmi-&gt;skip_mode) return 0;</span></span>
+<span id="L423"><span class="lineNum">     423</span>                 :<span class="tlaUNC">           0 :   if (mbmi-&gt;motion_mode == WARPED_CAUSAL) return 0;</span></span>
+<span id="L424"><span class="lineNum">     424</span>                 :<span class="tlaUNC">           0 :   if (is_nontrans_global_motion(xd, xd-&gt;mi[0])) return 0;</span></span>
+<span id="L425"><span class="lineNum">     425</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L426"><span class="lineNum">     426</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L427"><span class="lineNum">     427</span>                 :             : </span>
+<span id="L428"><span class="lineNum">     428</span>                 :             : // Sets up buffers 'dst_buf1' and 'dst_buf2' from relevant buffers in 'xd' for</span>
+<span id="L429"><span class="lineNum">     429</span>                 :             : // subsequent use in OBMC prediction.</span>
+<span id="L430"><span class="lineNum">     430</span>                 :             : void av1_setup_obmc_dst_bufs(MACROBLOCKD *xd, uint8_t **dst_buf1,</span>
+<span id="L431"><span class="lineNum">     431</span>                 :             :                              uint8_t **dst_buf2);</span>
+<span id="L432"><span class="lineNum">     432</span>                 :             : </span>
+<span id="L433"><span class="lineNum">     433</span>                 :             : void av1_setup_build_prediction_by_above_pred(</span>
+<span id="L434"><span class="lineNum">     434</span>                 :             :     MACROBLOCKD *xd, int rel_mi_col, uint8_t above_mi_width,</span>
+<span id="L435"><span class="lineNum">     435</span>                 :             :     MB_MODE_INFO *above_mbmi, struct build_prediction_ctxt *ctxt,</span>
+<span id="L436"><span class="lineNum">     436</span>                 :             :     const int num_planes);</span>
+<span id="L437"><span class="lineNum">     437</span>                 :             : void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,</span>
+<span id="L438"><span class="lineNum">     438</span>                 :             :                                              uint8_t left_mi_height,</span>
+<span id="L439"><span class="lineNum">     439</span>                 :             :                                              MB_MODE_INFO *left_mbmi,</span>
+<span id="L440"><span class="lineNum">     440</span>                 :             :                                              struct build_prediction_ctxt *ctxt,</span>
+<span id="L441"><span class="lineNum">     441</span>                 :             :                                              const int num_planes);</span>
+<span id="L442"><span class="lineNum">     442</span>                 :             : void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,</span>
+<span id="L443"><span class="lineNum">     443</span>                 :             :                                      uint8_t *above[MAX_MB_PLANE],</span>
+<span id="L444"><span class="lineNum">     444</span>                 :             :                                      int above_stride[MAX_MB_PLANE],</span>
+<span id="L445"><span class="lineNum">     445</span>                 :             :                                      uint8_t *left[MAX_MB_PLANE],</span>
+<span id="L446"><span class="lineNum">     446</span>                 :             :                                      int left_stride[MAX_MB_PLANE]);</span>
+<span id="L447"><span class="lineNum">     447</span>                 :             : </span>
+<span id="L448"><span class="lineNum">     448</span>                 :             : const uint8_t *av1_get_obmc_mask(int length);</span>
+<span id="L449"><span class="lineNum">     449</span>                 :             : void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd);</span>
+<span id="L450"><span class="lineNum">     450</span>                 :             : </span>
+<span id="L451"><span class="lineNum">     451</span>                 :             : #define MASK_MASTER_SIZE ((MAX_WEDGE_SIZE) &lt;&lt; 1)</span>
+<span id="L452"><span class="lineNum">     452</span>                 :             : #define MASK_MASTER_STRIDE (MASK_MASTER_SIZE)</span>
+<span id="L453"><span class="lineNum">     453</span>                 :             : </span>
+<span id="L454"><span class="lineNum">     454</span>                 :             : void av1_init_wedge_masks(void);</span>
+<span id="L455"><span class="lineNum">     455</span>                 :             : </span>
+<span id="L456"><span class="lineNum">     456</span>                 :<span class="tlaUNC">           0 : static inline const uint8_t *av1_get_contiguous_soft_mask(int8_t wedge_index,</span></span>
+<span id="L457"><span class="lineNum">     457</span>                 :             :                                                           int8_t wedge_sign,</span>
+<span id="L458"><span class="lineNum">     458</span>                 :             :                                                           BLOCK_SIZE sb_type) {</span>
+<span id="L459"><span class="lineNum">     459</span>                 :<span class="tlaUNC">           0 :   return av1_wedge_params_lookup[sb_type].masks[wedge_sign][wedge_index];</span></span>
+<span id="L460"><span class="lineNum">     460</span>                 :             : }</span>
+<span id="L461"><span class="lineNum">     461</span>                 :             : </span>
+<span id="L462"><span class="lineNum">     462</span>                 :             : void av1_dist_wtd_comp_weight_assign(const AV1_COMMON *cm,</span>
+<span id="L463"><span class="lineNum">     463</span>                 :             :                                      const MB_MODE_INFO *mbmi, int *fwd_offset,</span>
+<span id="L464"><span class="lineNum">     464</span>                 :             :                                      int *bck_offset,</span>
+<span id="L465"><span class="lineNum">     465</span>                 :             :                                      int *use_dist_wtd_comp_avg,</span>
+<span id="L466"><span class="lineNum">     466</span>                 :             :                                      int is_compound);</span>
+<span id="L467"><span class="lineNum">     467</span>                 :             : </span>
+<span id="L468"><span class="lineNum">     468</span>                 :             : const uint8_t *av1_get_compound_type_mask(</span>
+<span id="L469"><span class="lineNum">     469</span>                 :             :     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type);</span>
+<span id="L470"><span class="lineNum">     470</span>                 :             : </span>
+<span id="L471"><span class="lineNum">     471</span>                 :             : // build interintra_predictors for one plane</span>
+<span id="L472"><span class="lineNum">     472</span>                 :             : void av1_build_interintra_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,</span>
+<span id="L473"><span class="lineNum">     473</span>                 :             :                                     uint8_t *pred, int stride,</span>
+<span id="L474"><span class="lineNum">     474</span>                 :             :                                     const BUFFER_SET *ctx, int plane,</span>
+<span id="L475"><span class="lineNum">     475</span>                 :             :                                     BLOCK_SIZE bsize);</span>
+<span id="L476"><span class="lineNum">     476</span>                 :             : </span>
+<span id="L477"><span class="lineNum">     477</span>                 :             : void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,</span>
+<span id="L478"><span class="lineNum">     478</span>                 :             :                                                MACROBLOCKD *xd,</span>
+<span id="L479"><span class="lineNum">     479</span>                 :             :                                                BLOCK_SIZE bsize, int plane,</span>
+<span id="L480"><span class="lineNum">     480</span>                 :             :                                                const BUFFER_SET *ctx,</span>
+<span id="L481"><span class="lineNum">     481</span>                 :             :                                                uint8_t *dst, int dst_stride);</span>
+<span id="L482"><span class="lineNum">     482</span>                 :             : </span>
+<span id="L483"><span class="lineNum">     483</span>                 :             : void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,</span>
+<span id="L484"><span class="lineNum">     484</span>                 :             :                             const uint8_t *inter_pred, int inter_stride,</span>
+<span id="L485"><span class="lineNum">     485</span>                 :             :                             const uint8_t *intra_pred, int intra_stride);</span>
+<span id="L486"><span class="lineNum">     486</span>                 :             : </span>
+<span id="L487"><span class="lineNum">     487</span>                 :             : #ifdef __cplusplus</span>
+<span id="L488"><span class="lineNum">     488</span>                 :             : }  // extern &quot;C&quot;</span>
+<span id="L489"><span class="lineNum">     489</span>                 :             : #endif</span>
+<span id="L490"><span class="lineNum">     490</span>                 :             : </span>
+<span id="L491"><span class="lineNum">     491</span>                 :             : #endif  // AOM_AV1_COMMON_RECONINTER_H_</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

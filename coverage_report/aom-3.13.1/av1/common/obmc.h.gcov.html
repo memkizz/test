@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/common/obmc.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/common</a> - obmc.h<span style="font-size: 80%;"> (source / <a href="obmc.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">50</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2017, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #ifndef AOM_AV1_COMMON_OBMC_H_</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #define AOM_AV1_COMMON_OBMC_H_</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : typedef void (*overlappable_nb_visitor_t)(MACROBLOCKD *xd, int rel_mi_row,</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             :                                           int rel_mi_col, uint8_t op_mi_size,</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             :                                           int dir, MB_MODE_INFO *nb_mi,</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             :                                           void *fun_ctxt, const int num_planes);</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : </span>
+<span id="L20"><span class="lineNum">      20</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static inline void foreach_overlappable_nb_above(const AV1_COMMON *cm,</span></span>
+<span id="L21"><span class="lineNum">      21</span>                 :             :                                                  MACROBLOCKD *xd, int nb_max,</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             :                                                  overlappable_nb_visitor_t fun,</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             :                                                  void *fun_ctxt) {</span>
+<span id="L24"><span class="lineNum">      24</span>                 :<span class="tlaUNC">           0 :   if (!xd-&gt;up_available) return;</span></span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : </span>
+<span id="L26"><span class="lineNum">      26</span>                 :<span class="tlaUNC">           0 :   const int num_planes = av1_num_planes(cm);</span></span>
+<span id="L27"><span class="lineNum">      27</span>                 :<span class="tlaUNC">           0 :   int nb_count = 0;</span></span>
+<span id="L28"><span class="lineNum">      28</span>                 :<span class="tlaUNC">           0 :   const int mi_col = xd-&gt;mi_col;</span></span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :   // prev_row_mi points into the mi array, starting at the beginning of the</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :   // previous row.</span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC">           0 :   MB_MODE_INFO **prev_row_mi = xd-&gt;mi - mi_col - 1 * xd-&gt;mi_stride;</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :   const int end_col = AOMMIN(mi_col + xd-&gt;width, cm-&gt;mi_params.mi_cols);</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :<span class="tlaUNC">           0 :   uint8_t mi_step;</span></span>
+<span id="L34"><span class="lineNum">      34</span>                 :<span class="tlaUNC">           0 :   for (int above_mi_col = mi_col; above_mi_col &lt; end_col &amp;&amp; nb_count &lt; nb_max;</span></span>
+<span id="L35"><span class="lineNum">      35</span>                 :<span class="tlaUNC">           0 :        above_mi_col += mi_step) {</span></span>
+<span id="L36"><span class="lineNum">      36</span>                 :<span class="tlaUNC">           0 :     MB_MODE_INFO **above_mi = prev_row_mi + above_mi_col;</span></span>
+<span id="L37"><span class="lineNum">      37</span>                 :<span class="tlaUNC">           0 :     mi_step =</span></span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 :         AOMMIN(mi_size_wide[above_mi[0]-&gt;bsize], mi_size_wide[BLOCK_64X64]);</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :     // If we're considering a block with width 4, it should be treated as</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :     // half of a pair of blocks with chroma information in the second. Move</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :     // above_mi_col back to the start of the pair if needed, set above_mbmi</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :     // to point at the block with chroma information, and set mi_step to 2 to</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :     // step over the entire pair at the end of the iteration.</span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 :     if (mi_step == 1) {</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :<span class="tlaUNC">           0 :       above_mi_col &amp;= ~1;</span></span>
+<span id="L46"><span class="lineNum">      46</span>                 :<span class="tlaUNC">           0 :       above_mi = prev_row_mi + above_mi_col + 1;</span></span>
+<span id="L47"><span class="lineNum">      47</span>                 :<span class="tlaUNC">           0 :       mi_step = 2;</span></span>
+<span id="L48"><span class="lineNum">      48</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L49"><span class="lineNum">      49</span>                 :<span class="tlaUNC">           0 :     if (is_neighbor_overlappable(*above_mi)) {</span></span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 :       ++nb_count;</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :<span class="tlaUNC">           0 :       fun(xd, 0, above_mi_col - mi_col, AOMMIN(xd-&gt;width, mi_step), 0,</span></span>
+<span id="L52"><span class="lineNum">      52</span>                 :<span class="tlaUNC">           0 :           *above_mi, fun_ctxt, num_planes);</span></span>
+<span id="L53"><span class="lineNum">      53</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : </span>
+<span id="L57"><span class="lineNum">      57</span>                 :<span class="tlaUNC">           0 : static inline void foreach_overlappable_nb_left(const AV1_COMMON *cm,</span></span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :                                                 MACROBLOCKD *xd, int nb_max,</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :                                                 overlappable_nb_visitor_t fun,</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :                                                 void *fun_ctxt) {</span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 :   if (!xd-&gt;left_available) return;</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :             : </span>
+<span id="L63"><span class="lineNum">      63</span>                 :<span class="tlaUNC">           0 :   const int num_planes = av1_num_planes(cm);</span></span>
+<span id="L64"><span class="lineNum">      64</span>                 :<span class="tlaUNC">           0 :   int nb_count = 0;</span></span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   // prev_col_mi points into the mi array, starting at the top of the</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   // previous column</span>
+<span id="L67"><span class="lineNum">      67</span>                 :<span class="tlaUNC">           0 :   const int mi_row = xd-&gt;mi_row;</span></span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 :   MB_MODE_INFO **prev_col_mi = xd-&gt;mi - 1 - mi_row * xd-&gt;mi_stride;</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 :   const int end_row = AOMMIN(mi_row + xd-&gt;height, cm-&gt;mi_params.mi_rows);</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 :   uint8_t mi_step;</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :<span class="tlaUNC">           0 :   for (int left_mi_row = mi_row; left_mi_row &lt; end_row &amp;&amp; nb_count &lt; nb_max;</span></span>
+<span id="L72"><span class="lineNum">      72</span>                 :<span class="tlaUNC">           0 :        left_mi_row += mi_step) {</span></span>
+<span id="L73"><span class="lineNum">      73</span>                 :<span class="tlaUNC">           0 :     MB_MODE_INFO **left_mi = prev_col_mi + left_mi_row * xd-&gt;mi_stride;</span></span>
+<span id="L74"><span class="lineNum">      74</span>                 :<span class="tlaUNC">           0 :     mi_step =</span></span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 :         AOMMIN(mi_size_high[left_mi[0]-&gt;bsize], mi_size_high[BLOCK_64X64]);</span></span>
+<span id="L76"><span class="lineNum">      76</span>                 :<span class="tlaUNC">           0 :     if (mi_step == 1) {</span></span>
+<span id="L77"><span class="lineNum">      77</span>                 :<span class="tlaUNC">           0 :       left_mi_row &amp;= ~1;</span></span>
+<span id="L78"><span class="lineNum">      78</span>                 :<span class="tlaUNC">           0 :       left_mi = prev_col_mi + (left_mi_row + 1) * xd-&gt;mi_stride;</span></span>
+<span id="L79"><span class="lineNum">      79</span>                 :<span class="tlaUNC">           0 :       mi_step = 2;</span></span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :<span class="tlaUNC">           0 :     if (is_neighbor_overlappable(*left_mi)) {</span></span>
+<span id="L82"><span class="lineNum">      82</span>                 :<span class="tlaUNC">           0 :       ++nb_count;</span></span>
+<span id="L83"><span class="lineNum">      83</span>                 :<span class="tlaUNC">           0 :       fun(xd, left_mi_row - mi_row, 0, AOMMIN(xd-&gt;height, mi_step), 1, *left_mi,</span></span>
+<span id="L84"><span class="lineNum">      84</span>                 :<span class="tlaUNC">           0 :           fun_ctxt, num_planes);</span></span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : </span>
+<span id="L89"><span class="lineNum">      89</span>                 :             : #endif  // AOM_AV1_COMMON_OBMC_H_</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

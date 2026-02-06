@@ -1,0 +1,444 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - xz-5.8.1/src/liblzma/lz/lz_encoder.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">xz-5.8.1/src/liblzma/lz</a> - lz_encoder.h<span style="font-size: 80%;"> (source / <a href="lz_encoder.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // SPDX-License-Identifier: 0BSD</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : </span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : ///////////////////////////////////////////////////////////////////////////////</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : //</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : /// \file       lz_encoder.h</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : /// \brief      LZ in window and match finder API</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : ///</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : //  Authors:    Igor Pavlov</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //              Lasse Collin</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : //</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : ///////////////////////////////////////////////////////////////////////////////</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : </span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #ifndef LZMA_LZ_ENCODER_H</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #define LZMA_LZ_ENCODER_H</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : </span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;common.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : </span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : </span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : // For now, the dictionary size is limited to 1.5 GiB. This may grow</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : // in the future if needed, but it needs a little more work than just</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : // changing this check.</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #define IS_ENC_DICT_SIZE_VALID(size) \</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             :         ((size) &gt;= LZMA_DICT_SIZE_MIN \</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             :                 &amp;&amp; (size) &lt;= (UINT32_C(1) &lt;&lt; 30) + (UINT32_C(1) &lt;&lt; 29))</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : </span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : </span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : /// A table of these is used by the LZ-based encoder to hold</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : /// the length-distance pairs found by the match finder.</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : typedef struct {</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :         uint32_t len;</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :         uint32_t dist;</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : } lzma_match;</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : </span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : </span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : typedef struct lzma_mf_s lzma_mf;</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : struct lzma_mf_s {</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :         ///////////////</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :         // In Window //</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :         ///////////////</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : </span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :         /// Pointer to buffer with data to be compressed</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :         uint8_t *buffer;</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : </span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :         /// Total size of the allocated buffer (that is, including all</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :         /// the extra space)</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :         uint32_t size;</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : </span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :         /// Number of bytes that must be kept available in our input history.</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :         /// That is, once keep_size_before bytes have been processed,</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :         /// buffer[read_pos - keep_size_before] is the oldest byte that</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :         /// must be available for reading.</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :         uint32_t keep_size_before;</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : </span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :         /// Number of bytes that must be kept in buffer after read_pos.</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :         /// That is, read_pos &lt;= write_pos - keep_size_after as long as</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :         /// action is LZMA_RUN; when action != LZMA_RUN, read_pos is allowed</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :         /// to reach write_pos so that the last bytes get encoded too.</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :         uint32_t keep_size_after;</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : </span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :         /// Match finders store locations of matches using 32-bit integers.</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :         /// To avoid adjusting several megabytes of integers every time the</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :         /// input window is moved with move_window, we only adjust the</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :         /// offset of the buffer. Thus, buffer[value_in_hash_table - offset]</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :         /// is the byte pointed by value_in_hash_table.</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :         uint32_t offset;</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             : </span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :         /// buffer[read_pos] is the next byte to run through the match</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :         /// finder. This is incremented in the match finder once the byte</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :         /// has been processed.</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :         uint32_t read_pos;</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             : </span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :         /// Number of bytes that have been ran through the match finder, but</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :         /// which haven't been encoded by the LZ-based encoder yet.</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :         uint32_t read_ahead;</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             : </span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :         /// As long as read_pos is less than read_limit, there is enough</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :         /// input available in buffer for at least one encoding loop.</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :         ///</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :         /// Because of the stateful API, read_limit may and will get greater</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :         /// than read_pos quite often. This is taken into account when</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :         /// calculating the value for keep_size_after.</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :         uint32_t read_limit;</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             : </span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :         /// buffer[write_pos] is the first byte that doesn't contain valid</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :         /// uncompressed data; that is, the next input byte will be copied</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :         /// to buffer[write_pos].</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :         uint32_t write_pos;</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : </span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :         /// Number of bytes not hashed before read_pos. This is needed to</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :         /// restart the match finder after LZMA_SYNC_FLUSH.</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :         uint32_t pending;</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             : </span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :         //////////////////</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :         // Match Finder //</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :         //////////////////</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : </span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :         /// Find matches. Returns the number of distance-length pairs written</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :         /// to the matches array. This is called only via lzma_mf_find().</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :         uint32_t (*find)(lzma_mf *mf, lzma_match *matches);</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : </span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :         /// Skips num bytes. This is like find() but doesn't make the</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :         /// distance-length pairs available, thus being a little faster.</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :         /// This is called only via mf_skip().</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :         void (*skip)(lzma_mf *mf, uint32_t num);</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : </span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :         uint32_t *hash;</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :         uint32_t *son;</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :         uint32_t cyclic_pos;</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :         uint32_t cyclic_size; // Must be dictionary size + 1.</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :         uint32_t hash_mask;</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : </span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :         /// Maximum number of loops in the match finder</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :         uint32_t depth;</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : </span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :         /// Maximum length of a match that the match finder will try to find.</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :         uint32_t nice_len;</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             : </span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :         /// Maximum length of a match supported by the LZ-based encoder.</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :         /// If the longest match found by the match finder is nice_len,</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :         /// mf_find() tries to expand it up to match_len_max bytes.</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :         uint32_t match_len_max;</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             : </span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :         /// When running out of input, binary tree match finders need to know</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :         /// if it is due to flushing or finishing. The action is used also</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :         /// by the LZ-based encoders themselves.</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :         lzma_action action;</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : </span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :         /// Number of elements in hash[]</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :         uint32_t hash_count;</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : </span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :         /// Number of elements in son[]</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :         uint32_t sons_count;</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             : };</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             : </span>
+<span id="L135"><span class="lineNum">     135</span>                 :             : </span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : typedef struct {</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :         /// Extra amount of data to keep available before the &quot;actual&quot;</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :         /// dictionary.</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :         size_t before_size;</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : </span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :         /// Size of the history buffer</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :         size_t dict_size;</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             : </span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :         /// Extra amount of data to keep available after the &quot;actual&quot;</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :         /// dictionary.</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             :         size_t after_size;</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : </span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :         /// Maximum length of a match that the LZ-based encoder can accept.</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :         /// This is used to extend matches of length nice_len to the</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :         /// maximum possible length.</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :         size_t match_len_max;</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             : </span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :         /// Match finder will search matches up to this length.</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :         /// This must be less than or equal to match_len_max.</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :         size_t nice_len;</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             : </span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :         /// Type of the match finder to use</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :         lzma_match_finder match_finder;</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :         /// Maximum search depth</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :         uint32_t depth;</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             : </span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :         /// Initial dictionary for the match finder to search.</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :         const uint8_t *preset_dict;</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             : </span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :         /// If the preset dictionary is NULL, this value is ignored.</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             :         /// Otherwise this member must indicate the preset dictionary's</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             :         /// buffer size. If this size is larger than dict_size, then only</span>
+<span id="L169"><span class="lineNum">     169</span>                 :             :         /// the dict_size sized tail of the preset_dict will be used.</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :         uint32_t preset_dict_size;</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             : </span>
+<span id="L172"><span class="lineNum">     172</span>                 :             : } lzma_lz_options;</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             : </span>
+<span id="L174"><span class="lineNum">     174</span>                 :             : </span>
+<span id="L175"><span class="lineNum">     175</span>                 :             : // The total usable buffer space at any moment outside the match finder:</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : // before_size + dict_size + after_size + match_len_max</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             : //</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             : // In reality, there's some extra space allocated to prevent the number of</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : // memmove() calls reasonable. The bigger the dict_size is, the bigger</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             : // this extra buffer will be since with bigger dictionaries memmove() would</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             : // also take longer.</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : //</span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : // A single encoder loop in the LZ-based encoder may call the match finder</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : // (mf_find() or mf_skip()) at most after_size times. In other words,</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : // a single encoder loop may increment lzma_mf.read_pos at most after_size</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             : // times. Since matches are looked up to</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             : // lzma_mf.buffer[lzma_mf.read_pos + match_len_max - 1], the total</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : // amount of extra buffer needed after dict_size becomes</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             : // after_size + match_len_max.</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             : //</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             : // before_size has two uses. The first one is to keep literals available</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : // in cases when the LZ-based encoder has made some read ahead.</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : // TODO: Maybe this could be changed by making the LZ-based encoders to</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             : // store the actual literals as they do with length-distance pairs.</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             : //</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             : // Algorithms such as LZMA2 first try to compress a chunk, and then check</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             : // if the encoded result is smaller than the uncompressed one. If the chunk</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             : // was incompressible, it is better to store it in uncompressed form in</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             : // the output stream. To do this, the whole uncompressed chunk has to be</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             : // still available in the history buffer. before_size achieves that.</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             : </span>
+<span id="L202"><span class="lineNum">     202</span>                 :             : </span>
+<span id="L203"><span class="lineNum">     203</span>                 :             : typedef struct {</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :         /// Data specific to the LZ-based encoder</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :         void *coder;</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             : </span>
+<span id="L207"><span class="lineNum">     207</span>                 :             :         /// Function to encode from *dict to out[]</span>
+<span id="L208"><span class="lineNum">     208</span>                 :             :         lzma_ret (*code)(void *coder,</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             :                         lzma_mf *restrict mf, uint8_t *restrict out,</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :                         size_t *restrict out_pos, size_t out_size);</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             : </span>
+<span id="L212"><span class="lineNum">     212</span>                 :             :         /// Free allocated resources</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :         void (*end)(void *coder, const lzma_allocator *allocator);</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             : </span>
+<span id="L215"><span class="lineNum">     215</span>                 :             :         /// Update the options in the middle of the encoding.</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :         lzma_ret (*options_update)(void *coder, const lzma_filter *filter);</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             : </span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :         /// Set maximum allowed output size</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :         lzma_ret (*set_out_limit)(void *coder, uint64_t *uncomp_size,</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :                         uint64_t out_limit);</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             : </span>
+<span id="L222"><span class="lineNum">     222</span>                 :             : } lzma_lz_encoder;</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             : </span>
+<span id="L224"><span class="lineNum">     224</span>                 :             : </span>
+<span id="L225"><span class="lineNum">     225</span>                 :             : // Basic steps:</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             : //  1. Input gets copied into the dictionary.</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             : //  2. Data in dictionary gets run through the match finder byte by byte.</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             : //  3. The literals and matches are encoded using e.g. LZMA.</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             : //</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             : // The bytes that have been ran through the match finder, but not encoded yet,</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             : // are called 'read ahead'.</span>
+<span id="L232"><span class="lineNum">     232</span>                 :             : </span>
+<span id="L233"><span class="lineNum">     233</span>                 :             : </span>
+<span id="L234"><span class="lineNum">     234</span>                 :             : /// Get how many bytes the match finder hashes in its initial step.</span>
+<span id="L235"><span class="lineNum">     235</span>                 :             : /// This is also the minimum nice_len value with the match finder.</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             : static inline uint32_t</span>
+<span id="L237"><span class="lineNum">     237</span>                 :<span class="tlaUNC tlaBgUNC">           0 : mf_get_hash_bytes(lzma_match_finder match_finder)</span></span>
+<span id="L238"><span class="lineNum">     238</span>                 :             : {</span>
+<span id="L239"><span class="lineNum">     239</span>                 :<span class="tlaUNC">           0 :         return (uint32_t)match_finder &amp; 0x0F;</span></span>
+<span id="L240"><span class="lineNum">     240</span>                 :             : }</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             : </span>
+<span id="L242"><span class="lineNum">     242</span>                 :             : </span>
+<span id="L243"><span class="lineNum">     243</span>                 :             : /// Get pointer to the first byte not ran through the match finder</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             : static inline const uint8_t *</span>
+<span id="L245"><span class="lineNum">     245</span>                 :<span class="tlaUNC">           0 : mf_ptr(const lzma_mf *mf)</span></span>
+<span id="L246"><span class="lineNum">     246</span>                 :             : {</span>
+<span id="L247"><span class="lineNum">     247</span>                 :<span class="tlaUNC">           0 :         return mf-&gt;buffer + mf-&gt;read_pos;</span></span>
+<span id="L248"><span class="lineNum">     248</span>                 :             : }</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             : </span>
+<span id="L250"><span class="lineNum">     250</span>                 :             : </span>
+<span id="L251"><span class="lineNum">     251</span>                 :             : /// Get the number of bytes that haven't been ran through the match finder yet.</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             : static inline uint32_t</span>
+<span id="L253"><span class="lineNum">     253</span>                 :<span class="tlaUNC">           0 : mf_avail(const lzma_mf *mf)</span></span>
+<span id="L254"><span class="lineNum">     254</span>                 :             : {</span>
+<span id="L255"><span class="lineNum">     255</span>                 :<span class="tlaUNC">           0 :         return mf-&gt;write_pos - mf-&gt;read_pos;</span></span>
+<span id="L256"><span class="lineNum">     256</span>                 :             : }</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             : </span>
+<span id="L258"><span class="lineNum">     258</span>                 :             : </span>
+<span id="L259"><span class="lineNum">     259</span>                 :             : /// Get the number of bytes that haven't been encoded yet (some of these</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             : /// bytes may have been ran through the match finder though).</span>
+<span id="L261"><span class="lineNum">     261</span>                 :             : static inline uint32_t</span>
+<span id="L262"><span class="lineNum">     262</span>                 :<span class="tlaUNC">           0 : mf_unencoded(const lzma_mf *mf)</span></span>
+<span id="L263"><span class="lineNum">     263</span>                 :             : {</span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 :         return mf-&gt;write_pos - mf-&gt;read_pos + mf-&gt;read_ahead;</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :             : }</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             : </span>
+<span id="L267"><span class="lineNum">     267</span>                 :             : </span>
+<span id="L268"><span class="lineNum">     268</span>                 :             : /// Calculate the absolute offset from the beginning of the most recent</span>
+<span id="L269"><span class="lineNum">     269</span>                 :             : /// dictionary reset. Only the lowest four bits are important, so there's no</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             : /// problem that we don't know the 64-bit size of the data encoded so far.</span>
+<span id="L271"><span class="lineNum">     271</span>                 :             : ///</span>
+<span id="L272"><span class="lineNum">     272</span>                 :             : /// NOTE: When moving the input window, we need to do it so that the lowest</span>
+<span id="L273"><span class="lineNum">     273</span>                 :             : /// bits of dict-&gt;read_pos are not modified to keep this macro working</span>
+<span id="L274"><span class="lineNum">     274</span>                 :             : /// as intended.</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             : static inline uint32_t</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             : mf_position(const lzma_mf *mf)</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             : {</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :         return mf-&gt;read_pos - mf-&gt;read_ahead;</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             : }</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             : </span>
+<span id="L281"><span class="lineNum">     281</span>                 :             : </span>
+<span id="L282"><span class="lineNum">     282</span>                 :             : /// Since everything else begins with mf_, use it also for lzma_mf_find().</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             : #define mf_find lzma_mf_find</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             : </span>
+<span id="L285"><span class="lineNum">     285</span>                 :             : </span>
+<span id="L286"><span class="lineNum">     286</span>                 :             : /// Skip the given number of bytes. This is used when a good match was found.</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             : /// For example, if mf_find() finds a match of 200 bytes long, the first byte</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             : /// of that match was already consumed by mf_find(), and the rest 199 bytes</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             : /// have to be skipped with mf_skip(mf, 199).</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             : static inline void</span>
+<span id="L291"><span class="lineNum">     291</span>                 :<span class="tlaUNC">           0 : mf_skip(lzma_mf *mf, uint32_t amount)</span></span>
+<span id="L292"><span class="lineNum">     292</span>                 :             : {</span>
+<span id="L293"><span class="lineNum">     293</span>                 :<span class="tlaUNC">           0 :         if (amount != 0) {</span></span>
+<span id="L294"><span class="lineNum">     294</span>                 :<span class="tlaUNC">           0 :                 mf-&gt;skip(mf, amount);</span></span>
+<span id="L295"><span class="lineNum">     295</span>                 :<span class="tlaUNC">           0 :                 mf-&gt;read_ahead += amount;</span></span>
+<span id="L296"><span class="lineNum">     296</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L297"><span class="lineNum">     297</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L298"><span class="lineNum">     298</span>                 :             : </span>
+<span id="L299"><span class="lineNum">     299</span>                 :             : </span>
+<span id="L300"><span class="lineNum">     300</span>                 :             : /// Copies at most *left number of bytes from the history buffer</span>
+<span id="L301"><span class="lineNum">     301</span>                 :             : /// to out[]. This is needed by LZMA2 to encode uncompressed chunks.</span>
+<span id="L302"><span class="lineNum">     302</span>                 :             : static inline void</span>
+<span id="L303"><span class="lineNum">     303</span>                 :<span class="tlaUNC">           0 : mf_read(lzma_mf *mf, uint8_t *out, size_t *out_pos, size_t out_size,</span></span>
+<span id="L304"><span class="lineNum">     304</span>                 :             :                 size_t *left)</span>
+<span id="L305"><span class="lineNum">     305</span>                 :             : {</span>
+<span id="L306"><span class="lineNum">     306</span>                 :<span class="tlaUNC">           0 :         const size_t out_avail = out_size - *out_pos;</span></span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 :         const size_t copy_size = my_min(out_avail, *left);</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :             : </span>
+<span id="L309"><span class="lineNum">     309</span>                 :             :         assert(mf-&gt;read_ahead == 0);</span>
+<span id="L310"><span class="lineNum">     310</span>                 :             :         assert(mf-&gt;read_pos &gt;= *left);</span>
+<span id="L311"><span class="lineNum">     311</span>                 :             : </span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 :         memcpy(out + *out_pos, mf-&gt;buffer + mf-&gt;read_pos - *left,</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :<span class="tlaUNC">           0 :                         copy_size);</span></span>
+<span id="L314"><span class="lineNum">     314</span>                 :             : </span>
+<span id="L315"><span class="lineNum">     315</span>                 :<span class="tlaUNC">           0 :         *out_pos += copy_size;</span></span>
+<span id="L316"><span class="lineNum">     316</span>                 :<span class="tlaUNC">           0 :         *left -= copy_size;</span></span>
+<span id="L317"><span class="lineNum">     317</span>                 :<span class="tlaUNC">           0 :         return;</span></span>
+<span id="L318"><span class="lineNum">     318</span>                 :             : }</span>
+<span id="L319"><span class="lineNum">     319</span>                 :             : </span>
+<span id="L320"><span class="lineNum">     320</span>                 :             : </span>
+<span id="L321"><span class="lineNum">     321</span>                 :             : extern lzma_ret lzma_lz_encoder_init(</span>
+<span id="L322"><span class="lineNum">     322</span>                 :             :                 lzma_next_coder *next, const lzma_allocator *allocator,</span>
+<span id="L323"><span class="lineNum">     323</span>                 :             :                 const lzma_filter_info *filters,</span>
+<span id="L324"><span class="lineNum">     324</span>                 :             :                 lzma_ret (*lz_init)(lzma_lz_encoder *lz,</span>
+<span id="L325"><span class="lineNum">     325</span>                 :             :                         const lzma_allocator *allocator,</span>
+<span id="L326"><span class="lineNum">     326</span>                 :             :                         lzma_vli id, const void *options,</span>
+<span id="L327"><span class="lineNum">     327</span>                 :             :                         lzma_lz_options *lz_options));</span>
+<span id="L328"><span class="lineNum">     328</span>                 :             : </span>
+<span id="L329"><span class="lineNum">     329</span>                 :             : </span>
+<span id="L330"><span class="lineNum">     330</span>                 :             : extern uint64_t lzma_lz_encoder_memusage(const lzma_lz_options *lz_options);</span>
+<span id="L331"><span class="lineNum">     331</span>                 :             : </span>
+<span id="L332"><span class="lineNum">     332</span>                 :             : </span>
+<span id="L333"><span class="lineNum">     333</span>                 :             : // These are only for LZ encoder's internal use.</span>
+<span id="L334"><span class="lineNum">     334</span>                 :             : extern uint32_t lzma_mf_find(</span>
+<span id="L335"><span class="lineNum">     335</span>                 :             :                 lzma_mf *mf, uint32_t *count, lzma_match *matches);</span>
+<span id="L336"><span class="lineNum">     336</span>                 :             : </span>
+<span id="L337"><span class="lineNum">     337</span>                 :             : extern uint32_t lzma_mf_hc3_find(lzma_mf *dict, lzma_match *matches);</span>
+<span id="L338"><span class="lineNum">     338</span>                 :             : extern void lzma_mf_hc3_skip(lzma_mf *dict, uint32_t amount);</span>
+<span id="L339"><span class="lineNum">     339</span>                 :             : </span>
+<span id="L340"><span class="lineNum">     340</span>                 :             : extern uint32_t lzma_mf_hc4_find(lzma_mf *dict, lzma_match *matches);</span>
+<span id="L341"><span class="lineNum">     341</span>                 :             : extern void lzma_mf_hc4_skip(lzma_mf *dict, uint32_t amount);</span>
+<span id="L342"><span class="lineNum">     342</span>                 :             : </span>
+<span id="L343"><span class="lineNum">     343</span>                 :             : extern uint32_t lzma_mf_bt2_find(lzma_mf *dict, lzma_match *matches);</span>
+<span id="L344"><span class="lineNum">     344</span>                 :             : extern void lzma_mf_bt2_skip(lzma_mf *dict, uint32_t amount);</span>
+<span id="L345"><span class="lineNum">     345</span>                 :             : </span>
+<span id="L346"><span class="lineNum">     346</span>                 :             : extern uint32_t lzma_mf_bt3_find(lzma_mf *dict, lzma_match *matches);</span>
+<span id="L347"><span class="lineNum">     347</span>                 :             : extern void lzma_mf_bt3_skip(lzma_mf *dict, uint32_t amount);</span>
+<span id="L348"><span class="lineNum">     348</span>                 :             : </span>
+<span id="L349"><span class="lineNum">     349</span>                 :             : extern uint32_t lzma_mf_bt4_find(lzma_mf *dict, lzma_match *matches);</span>
+<span id="L350"><span class="lineNum">     350</span>                 :             : extern void lzma_mf_bt4_skip(lzma_mf *dict, uint32_t amount);</span>
+<span id="L351"><span class="lineNum">     351</span>                 :             : </span>
+<span id="L352"><span class="lineNum">     352</span>                 :             : #endif</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

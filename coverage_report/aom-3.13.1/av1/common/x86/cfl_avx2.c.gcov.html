@@ -1,0 +1,587 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/common/x86/cfl_avx2.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/common/x86</a> - cfl_avx2.c<span style="font-size: 80%;"> (source / <a href="cfl_avx2.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">215</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">58</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2017, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : #include &lt;immintrin.h&gt;</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : </span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #include &quot;config/av1_rtcd.h&quot;</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;av1/common/cfl.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;av1/common/x86/cfl_simd.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : </span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #define CFL_GET_SUBSAMPLE_FUNCTION_AVX2(sub, bd)                               \</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             :   CFL_SUBSAMPLE(avx2, sub, bd, 32, 32)                                         \</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             :   CFL_SUBSAMPLE(avx2, sub, bd, 32, 16)                                         \</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             :   CFL_SUBSAMPLE(avx2, sub, bd, 32, 8)                                          \</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             :   cfl_subsample_##bd##_fn cfl_get_luma_subsampling_##sub##_##bd##_avx2(        \</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             :       TX_SIZE tx_size) {                                                       \</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             :     static const cfl_subsample_##bd##_fn subfn_##sub[TX_SIZES_ALL] = {         \</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             :       cfl_subsample_##bd##_##sub##_4x4_ssse3,   /* 4x4 */                      \</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             :       cfl_subsample_##bd##_##sub##_8x8_ssse3,   /* 8x8 */                      \</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :       cfl_subsample_##bd##_##sub##_16x16_ssse3, /* 16x16 */                    \</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :       cfl_subsample_##bd##_##sub##_32x32_avx2,  /* 32x32 */                    \</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :       NULL,                                     /* 64x64 (invalid CFL size) */ \</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :       cfl_subsample_##bd##_##sub##_4x8_ssse3,   /* 4x8 */                      \</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :       cfl_subsample_##bd##_##sub##_8x4_ssse3,   /* 8x4 */                      \</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :       cfl_subsample_##bd##_##sub##_8x16_ssse3,  /* 8x16 */                     \</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :       cfl_subsample_##bd##_##sub##_16x8_ssse3,  /* 16x8 */                     \</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :       cfl_subsample_##bd##_##sub##_16x32_ssse3, /* 16x32 */                    \</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             :       cfl_subsample_##bd##_##sub##_32x16_avx2,  /* 32x16 */                    \</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :       NULL,                                     /* 32x64 (invalid CFL size) */ \</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :       NULL,                                     /* 64x32 (invalid CFL size) */ \</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :       cfl_subsample_##bd##_##sub##_4x16_ssse3,  /* 4x16  */                    \</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :       cfl_subsample_##bd##_##sub##_16x4_ssse3,  /* 16x4  */                    \</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :       cfl_subsample_##bd##_##sub##_8x32_ssse3,  /* 8x32  */                    \</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :       cfl_subsample_##bd##_##sub##_32x8_avx2,   /* 32x8  */                    \</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :       NULL,                                     /* 16x64 (invalid CFL size) */ \</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :       NULL,                                     /* 64x16 (invalid CFL size) */ \</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :     };                                                                         \</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :     return subfn_##sub[tx_size];                                               \</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :   }</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : </span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : /**</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :  * Adds 4 pixels (in a 2x2 grid) and multiplies them by 2. Resulting in a more</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :  * precise version of a box filter 4:2:0 pixel subsampling in Q3.</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :  *</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :  * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :  * active area is specified using width and height.</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :  *</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :  * Note: We don't need to worry about going over the active area, as long as we</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :  * stay inside the CfL prediction buffer.</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :  *</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :  * Note: For 4:2:0 luma subsampling, the width will never be greater than 16.</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :  */</span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static void cfl_luma_subsampling_420_lbd_avx2(const uint8_t *input,</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :                                               int input_stride,</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :                                               uint16_t *pred_buf_q3, int width,</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :                                               int height) {</span>
+<span id="L65"><span class="lineNum">      65</span>                 :<span class="tlaUNC">           0 :   (void)width;                               // Forever 32</span></span>
+<span id="L66"><span class="lineNum">      66</span>                 :<span class="tlaUNC">           0 :   const __m256i twos = _mm256_set1_epi8(2);  // Thirty two twos</span></span>
+<span id="L67"><span class="lineNum">      67</span>                 :<span class="tlaUNC">           0 :   const int luma_stride = input_stride &lt;&lt; 1;</span></span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 :   __m256i *row = (__m256i *)pred_buf_q3;</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 :   const __m256i *row_end = row + (height &gt;&gt; 1) * CFL_BUF_LINE_I256;</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :<span class="tlaUNC">           0 :     __m256i top = _mm256_loadu_si256((__m256i *)input);</span></span>
+<span id="L72"><span class="lineNum">      72</span>                 :<span class="tlaUNC">           0 :     __m256i bot = _mm256_loadu_si256((__m256i *)(input + input_stride));</span></span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : </span>
+<span id="L74"><span class="lineNum">      74</span>                 :<span class="tlaUNC">           0 :     __m256i top_16x16 = _mm256_maddubs_epi16(top, twos);</span></span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 :     __m256i bot_16x16 = _mm256_maddubs_epi16(bot, twos);</span></span>
+<span id="L76"><span class="lineNum">      76</span>                 :<span class="tlaUNC">           0 :     __m256i sum_16x16 = _mm256_add_epi16(top_16x16, bot_16x16);</span></span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : </span>
+<span id="L78"><span class="lineNum">      78</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256(row, sum_16x16);</span></span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : </span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 :     input += luma_stride;</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :<span class="tlaUNC">           0 :   } while ((row += CFL_BUF_LINE_I256) &lt; row_end);</span></span>
+<span id="L82"><span class="lineNum">      82</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L83"><span class="lineNum">      83</span>                 :             : </span>
+<span id="L84"><span class="lineNum">      84</span>                 :<span class="tlaUNC">           0 : CFL_GET_SUBSAMPLE_FUNCTION_AVX2(420, lbd)</span></span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : </span>
+<span id="L86"><span class="lineNum">      86</span>                 :             : /**</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :  * Adds 2 pixels (in a 2x1 grid) and multiplies them by 4. Resulting in a more</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :  * precise version of a box filter 4:2:2 pixel subsampling in Q3.</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :  *</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :  * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :  * active area is specified using width and height.</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :  *</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :  * Note: We don't need to worry about going over the active area, as long as we</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :  * stay inside the CfL prediction buffer.</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :  */</span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 : static void cfl_luma_subsampling_422_lbd_avx2(const uint8_t *input,</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :                                               int input_stride,</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :                                               uint16_t *pred_buf_q3, int width,</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :                                               int height) {</span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC">           0 :   (void)width;                                // Forever 32</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 :   const __m256i fours = _mm256_set1_epi8(4);  // Thirty two fours</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 :   __m256i *row = (__m256i *)pred_buf_q3;</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :   const __m256i *row_end = row + height * CFL_BUF_LINE_I256;</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :     __m256i top = _mm256_loadu_si256((__m256i *)input);</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :<span class="tlaUNC">           0 :     __m256i top_16x16 = _mm256_maddubs_epi16(top, fours);</span></span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256(row, top_16x16);</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :<span class="tlaUNC">           0 :     input += input_stride;</span></span>
+<span id="L109"><span class="lineNum">     109</span>                 :<span class="tlaUNC">           0 :   } while ((row += CFL_BUF_LINE_I256) &lt; row_end);</span></span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : </span>
+<span id="L112"><span class="lineNum">     112</span>                 :<span class="tlaUNC">           0 : CFL_GET_SUBSAMPLE_FUNCTION_AVX2(422, lbd)</span></span>
+<span id="L113"><span class="lineNum">     113</span>                 :             : </span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : /**</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :  * Multiplies the pixels by 8 (scaling in Q3). The AVX2 subsampling is only</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :  * performed on block of width 32.</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :  *</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :  * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :  * active area is specified using width and height.</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :  *</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :  * Note: We don't need to worry about going over the active area, as long as we</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :  * stay inside the CfL prediction buffer.</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :  */</span>
+<span id="L124"><span class="lineNum">     124</span>                 :<span class="tlaUNC">           0 : static void cfl_luma_subsampling_444_lbd_avx2(const uint8_t *input,</span></span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :                                               int input_stride,</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :                                               uint16_t *pred_buf_q3, int width,</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :                                               int height) {</span>
+<span id="L128"><span class="lineNum">     128</span>                 :<span class="tlaUNC">           0 :   (void)width;  // Forever 32</span></span>
+<span id="L129"><span class="lineNum">     129</span>                 :<span class="tlaUNC">           0 :   __m256i *row = (__m256i *)pred_buf_q3;</span></span>
+<span id="L130"><span class="lineNum">     130</span>                 :<span class="tlaUNC">           0 :   const __m256i *row_end = row + height * CFL_BUF_LINE_I256;</span></span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 :   const __m256i zeros = _mm256_setzero_si256();</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L133"><span class="lineNum">     133</span>                 :<span class="tlaUNC">           0 :     __m256i top = _mm256_loadu_si256((__m256i *)input);</span></span>
+<span id="L134"><span class="lineNum">     134</span>                 :<span class="tlaUNC">           0 :     top = _mm256_permute4x64_epi64(top, _MM_SHUFFLE(3, 1, 2, 0));</span></span>
+<span id="L135"><span class="lineNum">     135</span>                 :             : </span>
+<span id="L136"><span class="lineNum">     136</span>                 :<span class="tlaUNC">           0 :     __m256i row_lo = _mm256_unpacklo_epi8(top, zeros);</span></span>
+<span id="L137"><span class="lineNum">     137</span>                 :<span class="tlaUNC">           0 :     row_lo = _mm256_slli_epi16(row_lo, 3);</span></span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 :     __m256i row_hi = _mm256_unpackhi_epi8(top, zeros);</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :     row_hi = _mm256_slli_epi16(row_hi, 3);</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : </span>
+<span id="L141"><span class="lineNum">     141</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256(row, row_lo);</span></span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256(row + 1, row_hi);</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :             : </span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :     input += input_stride;</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :<span class="tlaUNC">           0 :   } while ((row += CFL_BUF_LINE_I256) &lt; row_end);</span></span>
+<span id="L146"><span class="lineNum">     146</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : </span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 : CFL_GET_SUBSAMPLE_FUNCTION_AVX2(444, lbd)</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :             : </span>
+<span id="L150"><span class="lineNum">     150</span>                 :             : #if CONFIG_AV1_HIGHBITDEPTH</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : /**</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :  * Adds 4 pixels (in a 2x2 grid) and multiplies them by 2. Resulting in a more</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :  * precise version of a box filter 4:2:0 pixel subsampling in Q3.</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :  *</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :  * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :  * active area is specified using width and height.</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :  *</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :  * Note: We don't need to worry about going over the active area, as long as we</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             :  * stay inside the CfL prediction buffer.</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :  *</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :  * Note: For 4:2:0 luma subsampling, the width will never be greater than 16.</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :  */</span>
+<span id="L163"><span class="lineNum">     163</span>                 :<span class="tlaUNC">           0 : static void cfl_luma_subsampling_420_hbd_avx2(const uint16_t *input,</span></span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :                                               int input_stride,</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :                                               uint16_t *pred_buf_q3, int width,</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :                                               int height) {</span>
+<span id="L167"><span class="lineNum">     167</span>                 :<span class="tlaUNC">           0 :   (void)width;  // Forever 32</span></span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 :   const int luma_stride = input_stride &lt;&lt; 1;</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 :   __m256i *row = (__m256i *)pred_buf_q3;</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :<span class="tlaUNC">           0 :   const __m256i *row_end = row + (height &gt;&gt; 1) * CFL_BUF_LINE_I256;</span></span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :<span class="tlaUNC">           0 :     __m256i top = _mm256_loadu_si256((__m256i *)input);</span></span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :     __m256i bot = _mm256_loadu_si256((__m256i *)(input + input_stride));</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :     __m256i sum = _mm256_add_epi16(top, bot);</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :             : </span>
+<span id="L176"><span class="lineNum">     176</span>                 :<span class="tlaUNC">           0 :     __m256i top_1 = _mm256_loadu_si256((__m256i *)(input + 16));</span></span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 :     __m256i bot_1 = _mm256_loadu_si256((__m256i *)(input + 16 + input_stride));</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :<span class="tlaUNC">           0 :     __m256i sum_1 = _mm256_add_epi16(top_1, bot_1);</span></span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : </span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :     __m256i hsum = _mm256_hadd_epi16(sum, sum_1);</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :<span class="tlaUNC">           0 :     hsum = _mm256_permute4x64_epi64(hsum, _MM_SHUFFLE(3, 1, 2, 0));</span></span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 :     hsum = _mm256_add_epi16(hsum, hsum);</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : </span>
+<span id="L184"><span class="lineNum">     184</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256(row, hsum);</span></span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : </span>
+<span id="L186"><span class="lineNum">     186</span>                 :<span class="tlaUNC">           0 :     input += luma_stride;</span></span>
+<span id="L187"><span class="lineNum">     187</span>                 :<span class="tlaUNC">           0 :   } while ((row += CFL_BUF_LINE_I256) &lt; row_end);</span></span>
+<span id="L188"><span class="lineNum">     188</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L189"><span class="lineNum">     189</span>                 :             : </span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 : CFL_GET_SUBSAMPLE_FUNCTION_AVX2(420, hbd)</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :             : </span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : /**</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             :  * Adds 2 pixels (in a 2x1 grid) and multiplies them by 4. Resulting in a more</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             :  * precise version of a box filter 4:2:2 pixel subsampling in Q3.</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :  *</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :  * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :  * active area is specified using width and height.</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :  *</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :  * Note: We don't need to worry about going over the active area, as long as we</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :  * stay inside the CfL prediction buffer.</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :  *</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             :  */</span>
+<span id="L203"><span class="lineNum">     203</span>                 :<span class="tlaUNC">           0 : static void cfl_luma_subsampling_422_hbd_avx2(const uint16_t *input,</span></span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :                                               int input_stride,</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :                                               uint16_t *pred_buf_q3, int width,</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :                                               int height) {</span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 :   (void)width;  // Forever 32</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 :   __m256i *row = (__m256i *)pred_buf_q3;</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :   const __m256i *row_end = row + height * CFL_BUF_LINE_I256;</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L211"><span class="lineNum">     211</span>                 :<span class="tlaUNC">           0 :     __m256i top = _mm256_loadu_si256((__m256i *)input);</span></span>
+<span id="L212"><span class="lineNum">     212</span>                 :<span class="tlaUNC">           0 :     __m256i top_1 = _mm256_loadu_si256((__m256i *)(input + 16));</span></span>
+<span id="L213"><span class="lineNum">     213</span>                 :<span class="tlaUNC">           0 :     __m256i hsum = _mm256_hadd_epi16(top, top_1);</span></span>
+<span id="L214"><span class="lineNum">     214</span>                 :<span class="tlaUNC">           0 :     hsum = _mm256_permute4x64_epi64(hsum, _MM_SHUFFLE(3, 1, 2, 0));</span></span>
+<span id="L215"><span class="lineNum">     215</span>                 :<span class="tlaUNC">           0 :     hsum = _mm256_slli_epi16(hsum, 2);</span></span>
+<span id="L216"><span class="lineNum">     216</span>                 :             : </span>
+<span id="L217"><span class="lineNum">     217</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256(row, hsum);</span></span>
+<span id="L218"><span class="lineNum">     218</span>                 :             : </span>
+<span id="L219"><span class="lineNum">     219</span>                 :<span class="tlaUNC">           0 :     input += input_stride;</span></span>
+<span id="L220"><span class="lineNum">     220</span>                 :<span class="tlaUNC">           0 :   } while ((row += CFL_BUF_LINE_I256) &lt; row_end);</span></span>
+<span id="L221"><span class="lineNum">     221</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L222"><span class="lineNum">     222</span>                 :             : </span>
+<span id="L223"><span class="lineNum">     223</span>                 :<span class="tlaUNC">           0 : CFL_GET_SUBSAMPLE_FUNCTION_AVX2(422, hbd)</span></span>
+<span id="L224"><span class="lineNum">     224</span>                 :             : </span>
+<span id="L225"><span class="lineNum">     225</span>                 :<span class="tlaUNC">           0 : static void cfl_luma_subsampling_444_hbd_avx2(const uint16_t *input,</span></span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :                                               int input_stride,</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             :                                               uint16_t *pred_buf_q3, int width,</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :                                               int height) {</span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :   (void)width;  // Forever 32</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 :   __m256i *row = (__m256i *)pred_buf_q3;</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :<span class="tlaUNC">           0 :   const __m256i *row_end = row + height * CFL_BUF_LINE_I256;</span></span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 :     __m256i top = _mm256_loadu_si256((__m256i *)input);</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :<span class="tlaUNC">           0 :     __m256i top_1 = _mm256_loadu_si256((__m256i *)(input + 16));</span></span>
+<span id="L235"><span class="lineNum">     235</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256(row, _mm256_slli_epi16(top, 3));</span></span>
+<span id="L236"><span class="lineNum">     236</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256(row + 1, _mm256_slli_epi16(top_1, 3));</span></span>
+<span id="L237"><span class="lineNum">     237</span>                 :<span class="tlaUNC">           0 :     input += input_stride;</span></span>
+<span id="L238"><span class="lineNum">     238</span>                 :<span class="tlaUNC">           0 :   } while ((row += CFL_BUF_LINE_I256) &lt; row_end);</span></span>
+<span id="L239"><span class="lineNum">     239</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L240"><span class="lineNum">     240</span>                 :             : </span>
+<span id="L241"><span class="lineNum">     241</span>                 :<span class="tlaUNC">           0 : CFL_GET_SUBSAMPLE_FUNCTION_AVX2(444, hbd)</span></span>
+<span id="L242"><span class="lineNum">     242</span>                 :             : #endif  // CONFIG_AV1_HIGHBITDEPTH</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             : </span>
+<span id="L244"><span class="lineNum">     244</span>                 :<span class="tlaUNC">           0 : static inline __m256i predict_unclipped(const __m256i *input, __m256i alpha_q12,</span></span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :                                         __m256i alpha_sign, __m256i dc_q0) {</span>
+<span id="L246"><span class="lineNum">     246</span>                 :<span class="tlaUNC">           0 :   __m256i ac_q3 = _mm256_loadu_si256(input);</span></span>
+<span id="L247"><span class="lineNum">     247</span>                 :<span class="tlaUNC">           0 :   __m256i ac_sign = _mm256_sign_epi16(alpha_sign, ac_q3);</span></span>
+<span id="L248"><span class="lineNum">     248</span>                 :<span class="tlaUNC">           0 :   __m256i scaled_luma_q0 =</span></span>
+<span id="L249"><span class="lineNum">     249</span>                 :<span class="tlaUNC">           0 :       _mm256_mulhrs_epi16(_mm256_abs_epi16(ac_q3), alpha_q12);</span></span>
+<span id="L250"><span class="lineNum">     250</span>                 :<span class="tlaUNC">           0 :   scaled_luma_q0 = _mm256_sign_epi16(scaled_luma_q0, ac_sign);</span></span>
+<span id="L251"><span class="lineNum">     251</span>                 :<span class="tlaUNC">           0 :   return _mm256_add_epi16(scaled_luma_q0, dc_q0);</span></span>
+<span id="L252"><span class="lineNum">     252</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L253"><span class="lineNum">     253</span>                 :             : </span>
+<span id="L254"><span class="lineNum">     254</span>                 :<span class="tlaUNC">           0 : static inline void cfl_predict_lbd_avx2(const int16_t *pred_buf_q3,</span></span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :                                         uint8_t *dst, int dst_stride,</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :                                         int alpha_q3, int width, int height) {</span>
+<span id="L257"><span class="lineNum">     257</span>                 :<span class="tlaUNC">           0 :   (void)width;</span></span>
+<span id="L258"><span class="lineNum">     258</span>                 :<span class="tlaUNC">           0 :   const __m256i alpha_sign = _mm256_set1_epi16(alpha_q3);</span></span>
+<span id="L259"><span class="lineNum">     259</span>                 :<span class="tlaUNC">           0 :   const __m256i alpha_q12 = _mm256_slli_epi16(_mm256_abs_epi16(alpha_sign), 9);</span></span>
+<span id="L260"><span class="lineNum">     260</span>                 :<span class="tlaUNC">           0 :   const __m256i dc_q0 = _mm256_set1_epi16(*dst);</span></span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 :   __m256i *row = (__m256i *)pred_buf_q3;</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :<span class="tlaUNC">           0 :   const __m256i *row_end = row + height * CFL_BUF_LINE_I256;</span></span>
+<span id="L263"><span class="lineNum">     263</span>                 :             : </span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :<span class="tlaUNC">           0 :     __m256i res = predict_unclipped(row, alpha_q12, alpha_sign, dc_q0);</span></span>
+<span id="L266"><span class="lineNum">     266</span>                 :<span class="tlaUNC">           0 :     __m256i next = predict_unclipped(row + 1, alpha_q12, alpha_sign, dc_q0);</span></span>
+<span id="L267"><span class="lineNum">     267</span>                 :<span class="tlaUNC">           0 :     res = _mm256_packus_epi16(res, next);</span></span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 :     res = _mm256_permute4x64_epi64(res, _MM_SHUFFLE(3, 1, 2, 0));</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256((__m256i *)dst, res);</span></span>
+<span id="L270"><span class="lineNum">     270</span>                 :<span class="tlaUNC">           0 :     dst += dst_stride;</span></span>
+<span id="L271"><span class="lineNum">     271</span>                 :<span class="tlaUNC">           0 :   } while ((row += CFL_BUF_LINE_I256) &lt; row_end);</span></span>
+<span id="L272"><span class="lineNum">     272</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L273"><span class="lineNum">     273</span>                 :             : </span>
+<span id="L274"><span class="lineNum">     274</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 32, 8, lbd)</span></span>
+<span id="L275"><span class="lineNum">     275</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 32, 16, lbd)</span></span>
+<span id="L276"><span class="lineNum">     276</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 32, 32, lbd)</span></span>
+<span id="L277"><span class="lineNum">     277</span>                 :             : </span>
+<span id="L278"><span class="lineNum">     278</span>                 :<span class="tlaUNC">           0 : cfl_predict_lbd_fn cfl_get_predict_lbd_fn_avx2(TX_SIZE tx_size) {</span></span>
+<span id="L279"><span class="lineNum">     279</span>                 :             :   static const cfl_predict_lbd_fn pred[TX_SIZES_ALL] = {</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :     cfl_predict_lbd_4x4_ssse3,   /* 4x4 */</span>
+<span id="L281"><span class="lineNum">     281</span>                 :             :     cfl_predict_lbd_8x8_ssse3,   /* 8x8 */</span>
+<span id="L282"><span class="lineNum">     282</span>                 :             :     cfl_predict_lbd_16x16_ssse3, /* 16x16 */</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             :     cfl_predict_lbd_32x32_avx2,  /* 32x32 */</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             :     NULL,                        /* 64x64 (invalid CFL size) */</span>
+<span id="L285"><span class="lineNum">     285</span>                 :             :     cfl_predict_lbd_4x8_ssse3,   /* 4x8 */</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :     cfl_predict_lbd_8x4_ssse3,   /* 8x4 */</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             :     cfl_predict_lbd_8x16_ssse3,  /* 8x16 */</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :     cfl_predict_lbd_16x8_ssse3,  /* 16x8 */</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             :     cfl_predict_lbd_16x32_ssse3, /* 16x32 */</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             :     cfl_predict_lbd_32x16_avx2,  /* 32x16 */</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             :     NULL,                        /* 32x64 (invalid CFL size) */</span>
+<span id="L292"><span class="lineNum">     292</span>                 :             :     NULL,                        /* 64x32 (invalid CFL size) */</span>
+<span id="L293"><span class="lineNum">     293</span>                 :             :     cfl_predict_lbd_4x16_ssse3,  /* 4x16  */</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :     cfl_predict_lbd_16x4_ssse3,  /* 16x4  */</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             :     cfl_predict_lbd_8x32_ssse3,  /* 8x32  */</span>
+<span id="L296"><span class="lineNum">     296</span>                 :             :     cfl_predict_lbd_32x8_avx2,   /* 32x8  */</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             :     NULL,                        /* 16x64 (invalid CFL size) */</span>
+<span id="L298"><span class="lineNum">     298</span>                 :             :     NULL,                        /* 64x16 (invalid CFL size) */</span>
+<span id="L299"><span class="lineNum">     299</span>                 :             :   };</span>
+<span id="L300"><span class="lineNum">     300</span>                 :             :   // Modulo TX_SIZES_ALL to ensure that an attacker won't be able to index the</span>
+<span id="L301"><span class="lineNum">     301</span>                 :             :   // function pointer array out of bounds.</span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :   return pred[tx_size % TX_SIZES_ALL];</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :             : }</span>
+<span id="L304"><span class="lineNum">     304</span>                 :             : </span>
+<span id="L305"><span class="lineNum">     305</span>                 :             : #if CONFIG_AV1_HIGHBITDEPTH</span>
+<span id="L306"><span class="lineNum">     306</span>                 :<span class="tlaUNC">           0 : static __m256i highbd_max_epi16(int bd) {</span></span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 :   const __m256i neg_one = _mm256_set1_epi16(-1);</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :             :   // (1 &lt;&lt; bd) - 1 =&gt; -(-1 &lt;&lt; bd) -1 =&gt; -1 - (-1 &lt;&lt; bd) =&gt; -1 ^ (-1 &lt;&lt; bd)</span>
+<span id="L309"><span class="lineNum">     309</span>                 :<span class="tlaUNC">           0 :   return _mm256_xor_si256(_mm256_slli_epi16(neg_one, bd), neg_one);</span></span>
+<span id="L310"><span class="lineNum">     310</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L311"><span class="lineNum">     311</span>                 :             : </span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 : static __m256i highbd_clamp_epi16(__m256i u, __m256i zero, __m256i max) {</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :<span class="tlaUNC">           0 :   return _mm256_max_epi16(_mm256_min_epi16(u, max), zero);</span></span>
+<span id="L314"><span class="lineNum">     314</span>                 :             : }</span>
+<span id="L315"><span class="lineNum">     315</span>                 :             : </span>
+<span id="L316"><span class="lineNum">     316</span>                 :<span class="tlaUNC">           0 : static inline void cfl_predict_hbd_avx2(const int16_t *pred_buf_q3,</span></span>
+<span id="L317"><span class="lineNum">     317</span>                 :             :                                         uint16_t *dst, int dst_stride,</span>
+<span id="L318"><span class="lineNum">     318</span>                 :             :                                         int alpha_q3, int bd, int width,</span>
+<span id="L319"><span class="lineNum">     319</span>                 :             :                                         int height) {</span>
+<span id="L320"><span class="lineNum">     320</span>                 :             :   // Use SSSE3 version for smaller widths</span>
+<span id="L321"><span class="lineNum">     321</span>                 :             :   assert(width == 16 || width == 32);</span>
+<span id="L322"><span class="lineNum">     322</span>                 :<span class="tlaUNC">           0 :   const __m256i alpha_sign = _mm256_set1_epi16(alpha_q3);</span></span>
+<span id="L323"><span class="lineNum">     323</span>                 :<span class="tlaUNC">           0 :   const __m256i alpha_q12 = _mm256_slli_epi16(_mm256_abs_epi16(alpha_sign), 9);</span></span>
+<span id="L324"><span class="lineNum">     324</span>                 :<span class="tlaUNC">           0 :   const __m256i dc_q0 = _mm256_loadu_si256((__m256i *)dst);</span></span>
+<span id="L325"><span class="lineNum">     325</span>                 :<span class="tlaUNC">           0 :   const __m256i max = highbd_max_epi16(bd);</span></span>
+<span id="L326"><span class="lineNum">     326</span>                 :             : </span>
+<span id="L327"><span class="lineNum">     327</span>                 :<span class="tlaUNC">           0 :   __m256i *row = (__m256i *)pred_buf_q3;</span></span>
+<span id="L328"><span class="lineNum">     328</span>                 :<span class="tlaUNC">           0 :   const __m256i *row_end = row + height * CFL_BUF_LINE_I256;</span></span>
+<span id="L329"><span class="lineNum">     329</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L330"><span class="lineNum">     330</span>                 :<span class="tlaUNC">           0 :     const __m256i res = predict_unclipped(row, alpha_q12, alpha_sign, dc_q0);</span></span>
+<span id="L331"><span class="lineNum">     331</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256((__m256i *)dst,</span></span>
+<span id="L332"><span class="lineNum">     332</span>                 :<span class="tlaUNC">           0 :                         highbd_clamp_epi16(res, _mm256_setzero_si256(), max));</span></span>
+<span id="L333"><span class="lineNum">     333</span>                 :<span class="tlaUNC">           0 :     if (width == 32) {</span></span>
+<span id="L334"><span class="lineNum">     334</span>                 :<span class="tlaUNC">           0 :       const __m256i res_1 =</span></span>
+<span id="L335"><span class="lineNum">     335</span>                 :<span class="tlaUNC">           0 :           predict_unclipped(row + 1, alpha_q12, alpha_sign, dc_q0);</span></span>
+<span id="L336"><span class="lineNum">     336</span>                 :<span class="tlaUNC">           0 :       _mm256_storeu_si256(</span></span>
+<span id="L337"><span class="lineNum">     337</span>                 :<span class="tlaUNC">           0 :           (__m256i *)(dst + 16),</span></span>
+<span id="L338"><span class="lineNum">     338</span>                 :<span class="tlaUNC">           0 :           highbd_clamp_epi16(res_1, _mm256_setzero_si256(), max));</span></span>
+<span id="L339"><span class="lineNum">     339</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L340"><span class="lineNum">     340</span>                 :<span class="tlaUNC">           0 :     dst += dst_stride;</span></span>
+<span id="L341"><span class="lineNum">     341</span>                 :<span class="tlaUNC">           0 :   } while ((row += CFL_BUF_LINE_I256) &lt; row_end);</span></span>
+<span id="L342"><span class="lineNum">     342</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L343"><span class="lineNum">     343</span>                 :             : </span>
+<span id="L344"><span class="lineNum">     344</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 16, 4, hbd)</span></span>
+<span id="L345"><span class="lineNum">     345</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 16, 8, hbd)</span></span>
+<span id="L346"><span class="lineNum">     346</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 16, 16, hbd)</span></span>
+<span id="L347"><span class="lineNum">     347</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 16, 32, hbd)</span></span>
+<span id="L348"><span class="lineNum">     348</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 32, 8, hbd)</span></span>
+<span id="L349"><span class="lineNum">     349</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 32, 16, hbd)</span></span>
+<span id="L350"><span class="lineNum">     350</span>                 :<span class="tlaUNC">           0 : CFL_PREDICT_X(avx2, 32, 32, hbd)</span></span>
+<span id="L351"><span class="lineNum">     351</span>                 :             : </span>
+<span id="L352"><span class="lineNum">     352</span>                 :<span class="tlaUNC">           0 : cfl_predict_hbd_fn cfl_get_predict_hbd_fn_avx2(TX_SIZE tx_size) {</span></span>
+<span id="L353"><span class="lineNum">     353</span>                 :             :   static const cfl_predict_hbd_fn pred[TX_SIZES_ALL] = {</span>
+<span id="L354"><span class="lineNum">     354</span>                 :             :     cfl_predict_hbd_4x4_ssse3,  /* 4x4 */</span>
+<span id="L355"><span class="lineNum">     355</span>                 :             :     cfl_predict_hbd_8x8_ssse3,  /* 8x8 */</span>
+<span id="L356"><span class="lineNum">     356</span>                 :             :     cfl_predict_hbd_16x16_avx2, /* 16x16 */</span>
+<span id="L357"><span class="lineNum">     357</span>                 :             :     cfl_predict_hbd_32x32_avx2, /* 32x32 */</span>
+<span id="L358"><span class="lineNum">     358</span>                 :             :     NULL,                       /* 64x64 (invalid CFL size) */</span>
+<span id="L359"><span class="lineNum">     359</span>                 :             :     cfl_predict_hbd_4x8_ssse3,  /* 4x8 */</span>
+<span id="L360"><span class="lineNum">     360</span>                 :             :     cfl_predict_hbd_8x4_ssse3,  /* 8x4 */</span>
+<span id="L361"><span class="lineNum">     361</span>                 :             :     cfl_predict_hbd_8x16_ssse3, /* 8x16 */</span>
+<span id="L362"><span class="lineNum">     362</span>                 :             :     cfl_predict_hbd_16x8_avx2,  /* 16x8 */</span>
+<span id="L363"><span class="lineNum">     363</span>                 :             :     cfl_predict_hbd_16x32_avx2, /* 16x32 */</span>
+<span id="L364"><span class="lineNum">     364</span>                 :             :     cfl_predict_hbd_32x16_avx2, /* 32x16 */</span>
+<span id="L365"><span class="lineNum">     365</span>                 :             :     NULL,                       /* 32x64 (invalid CFL size) */</span>
+<span id="L366"><span class="lineNum">     366</span>                 :             :     NULL,                       /* 64x32 (invalid CFL size) */</span>
+<span id="L367"><span class="lineNum">     367</span>                 :             :     cfl_predict_hbd_4x16_ssse3, /* 4x16  */</span>
+<span id="L368"><span class="lineNum">     368</span>                 :             :     cfl_predict_hbd_16x4_avx2,  /* 16x4  */</span>
+<span id="L369"><span class="lineNum">     369</span>                 :             :     cfl_predict_hbd_8x32_ssse3, /* 8x32  */</span>
+<span id="L370"><span class="lineNum">     370</span>                 :             :     cfl_predict_hbd_32x8_avx2,  /* 32x8  */</span>
+<span id="L371"><span class="lineNum">     371</span>                 :             :     NULL,                       /* 16x64 (invalid CFL size) */</span>
+<span id="L372"><span class="lineNum">     372</span>                 :             :     NULL,                       /* 64x16 (invalid CFL size) */</span>
+<span id="L373"><span class="lineNum">     373</span>                 :             :   };</span>
+<span id="L374"><span class="lineNum">     374</span>                 :             :   // Modulo TX_SIZES_ALL to ensure that an attacker won't be able to index the</span>
+<span id="L375"><span class="lineNum">     375</span>                 :             :   // function pointer array out of bounds.</span>
+<span id="L376"><span class="lineNum">     376</span>                 :<span class="tlaUNC">           0 :   return pred[tx_size % TX_SIZES_ALL];</span></span>
+<span id="L377"><span class="lineNum">     377</span>                 :             : }</span>
+<span id="L378"><span class="lineNum">     378</span>                 :             : #endif  // CONFIG_AV1_HIGHBITDEPTH</span>
+<span id="L379"><span class="lineNum">     379</span>                 :             : </span>
+<span id="L380"><span class="lineNum">     380</span>                 :             : // Returns a vector where all the (32-bits) elements are the sum of all the</span>
+<span id="L381"><span class="lineNum">     381</span>                 :             : // lanes in a.</span>
+<span id="L382"><span class="lineNum">     382</span>                 :<span class="tlaUNC">           0 : static inline __m256i fill_sum_epi32(__m256i a) {</span></span>
+<span id="L383"><span class="lineNum">     383</span>                 :             :   // Given that a == [A, B, C, D, E, F, G, H]</span>
+<span id="L384"><span class="lineNum">     384</span>                 :<span class="tlaUNC">           0 :   a = _mm256_hadd_epi32(a, a);</span></span>
+<span id="L385"><span class="lineNum">     385</span>                 :             :   // Given that A' == A + B, C' == C + D, E' == E + F, G' == G + H</span>
+<span id="L386"><span class="lineNum">     386</span>                 :             :   // a == [A', C', A', C', E', G', E', G']</span>
+<span id="L387"><span class="lineNum">     387</span>                 :<span class="tlaUNC">           0 :   a = _mm256_permute4x64_epi64(a, _MM_SHUFFLE(3, 1, 2, 0));</span></span>
+<span id="L388"><span class="lineNum">     388</span>                 :             :   // a == [A', C', E', G', A', C', E', G']</span>
+<span id="L389"><span class="lineNum">     389</span>                 :<span class="tlaUNC">           0 :   a = _mm256_hadd_epi32(a, a);</span></span>
+<span id="L390"><span class="lineNum">     390</span>                 :             :   // Given that A'' == A' + C' and E'' == E' + G'</span>
+<span id="L391"><span class="lineNum">     391</span>                 :             :   // a == [A'', E'', A'', E'', A'', E'', A'', E'']</span>
+<span id="L392"><span class="lineNum">     392</span>                 :<span class="tlaUNC">           0 :   return _mm256_hadd_epi32(a, a);</span></span>
+<span id="L393"><span class="lineNum">     393</span>                 :             :   // Given that A''' == A'' + E''</span>
+<span id="L394"><span class="lineNum">     394</span>                 :             :   // a == [A''', A''', A''', A''', A''', A''', A''', A''']</span>
+<span id="L395"><span class="lineNum">     395</span>                 :             : }</span>
+<span id="L396"><span class="lineNum">     396</span>                 :             : </span>
+<span id="L397"><span class="lineNum">     397</span>                 :<span class="tlaUNC">           0 : static inline __m256i _mm256_addl_epi16(__m256i a) {</span></span>
+<span id="L398"><span class="lineNum">     398</span>                 :<span class="tlaUNC">           0 :   return _mm256_add_epi32(_mm256_unpacklo_epi16(a, _mm256_setzero_si256()),</span></span>
+<span id="L399"><span class="lineNum">     399</span>                 :<span class="tlaUNC">           0 :                           _mm256_unpackhi_epi16(a, _mm256_setzero_si256()));</span></span>
+<span id="L400"><span class="lineNum">     400</span>                 :             : }</span>
+<span id="L401"><span class="lineNum">     401</span>                 :             : </span>
+<span id="L402"><span class="lineNum">     402</span>                 :<span class="tlaUNC">           0 : static inline void subtract_average_avx2(const uint16_t *src_ptr,</span></span>
+<span id="L403"><span class="lineNum">     403</span>                 :             :                                          int16_t *dst_ptr, int width,</span>
+<span id="L404"><span class="lineNum">     404</span>                 :             :                                          int height, int round_offset,</span>
+<span id="L405"><span class="lineNum">     405</span>                 :             :                                          int num_pel_log2) {</span>
+<span id="L406"><span class="lineNum">     406</span>                 :             :   // Use SSE2 version for smaller widths</span>
+<span id="L407"><span class="lineNum">     407</span>                 :             :   assert(width == 16 || width == 32);</span>
+<span id="L408"><span class="lineNum">     408</span>                 :             : </span>
+<span id="L409"><span class="lineNum">     409</span>                 :<span class="tlaUNC">           0 :   const __m256i *src = (__m256i *)src_ptr;</span></span>
+<span id="L410"><span class="lineNum">     410</span>                 :<span class="tlaUNC">           0 :   const __m256i *const end = src + height * CFL_BUF_LINE_I256;</span></span>
+<span id="L411"><span class="lineNum">     411</span>                 :             :   // To maximize usage of the AVX2 registers, we sum two rows per loop</span>
+<span id="L412"><span class="lineNum">     412</span>                 :             :   // iteration</span>
+<span id="L413"><span class="lineNum">     413</span>                 :<span class="tlaUNC">           0 :   const int step = 2 * CFL_BUF_LINE_I256;</span></span>
+<span id="L414"><span class="lineNum">     414</span>                 :             : </span>
+<span id="L415"><span class="lineNum">     415</span>                 :<span class="tlaUNC">           0 :   __m256i sum = _mm256_setzero_si256();</span></span>
+<span id="L416"><span class="lineNum">     416</span>                 :             :   // For width 32, we use a second sum accumulator to reduce accumulator</span>
+<span id="L417"><span class="lineNum">     417</span>                 :             :   // dependencies in the loop.</span>
+<span id="L418"><span class="lineNum">     418</span>                 :<span class="tlaUNC">           0 :   __m256i sum2;</span></span>
+<span id="L419"><span class="lineNum">     419</span>                 :<span class="tlaUNC">           0 :   if (width == 32) sum2 = _mm256_setzero_si256();</span></span>
+<span id="L420"><span class="lineNum">     420</span>                 :             : </span>
+<span id="L421"><span class="lineNum">     421</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L422"><span class="lineNum">     422</span>                 :             :     // Add top row to the bottom row</span>
+<span id="L423"><span class="lineNum">     423</span>                 :<span class="tlaUNC">           0 :     __m256i l0 = _mm256_add_epi16(_mm256_loadu_si256(src),</span></span>
+<span id="L424"><span class="lineNum">     424</span>                 :<span class="tlaUNC">           0 :                                   _mm256_loadu_si256(src + CFL_BUF_LINE_I256));</span></span>
+<span id="L425"><span class="lineNum">     425</span>                 :<span class="tlaUNC">           0 :     sum = _mm256_add_epi32(sum, _mm256_addl_epi16(l0));</span></span>
+<span id="L426"><span class="lineNum">     426</span>                 :<span class="tlaUNC">           0 :     if (width == 32) { /* Don't worry, this if it gets optimized out. */</span></span>
+<span id="L427"><span class="lineNum">     427</span>                 :             :       // Add the second part of the top row to the second part of the bottom row</span>
+<span id="L428"><span class="lineNum">     428</span>                 :<span class="tlaUNC">           0 :       __m256i l1 =</span></span>
+<span id="L429"><span class="lineNum">     429</span>                 :<span class="tlaUNC">           0 :           _mm256_add_epi16(_mm256_loadu_si256(src + 1),</span></span>
+<span id="L430"><span class="lineNum">     430</span>                 :<span class="tlaUNC">           0 :                            _mm256_loadu_si256(src + 1 + CFL_BUF_LINE_I256));</span></span>
+<span id="L431"><span class="lineNum">     431</span>                 :<span class="tlaUNC">           0 :       sum2 = _mm256_add_epi32(sum2, _mm256_addl_epi16(l1));</span></span>
+<span id="L432"><span class="lineNum">     432</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L433"><span class="lineNum">     433</span>                 :<span class="tlaUNC">           0 :     src += step;</span></span>
+<span id="L434"><span class="lineNum">     434</span>                 :<span class="tlaUNC">           0 :   } while (src &lt; end);</span></span>
+<span id="L435"><span class="lineNum">     435</span>                 :             :   // Combine both sum accumulators</span>
+<span id="L436"><span class="lineNum">     436</span>                 :<span class="tlaUNC">           0 :   if (width == 32) sum = _mm256_add_epi32(sum, sum2);</span></span>
+<span id="L437"><span class="lineNum">     437</span>                 :             : </span>
+<span id="L438"><span class="lineNum">     438</span>                 :<span class="tlaUNC">           0 :   __m256i fill = fill_sum_epi32(sum);</span></span>
+<span id="L439"><span class="lineNum">     439</span>                 :             : </span>
+<span id="L440"><span class="lineNum">     440</span>                 :<span class="tlaUNC">           0 :   __m256i avg_epi16 = _mm256_srli_epi32(</span></span>
+<span id="L441"><span class="lineNum">     441</span>                 :<span class="tlaUNC">           0 :       _mm256_add_epi32(fill, _mm256_set1_epi32(round_offset)), num_pel_log2);</span></span>
+<span id="L442"><span class="lineNum">     442</span>                 :<span class="tlaUNC">           0 :   avg_epi16 = _mm256_packs_epi32(avg_epi16, avg_epi16);</span></span>
+<span id="L443"><span class="lineNum">     443</span>                 :             : </span>
+<span id="L444"><span class="lineNum">     444</span>                 :             :   // Store and subtract loop</span>
+<span id="L445"><span class="lineNum">     445</span>                 :<span class="tlaUNC">           0 :   src = (__m256i *)src_ptr;</span></span>
+<span id="L446"><span class="lineNum">     446</span>                 :<span class="tlaUNC">           0 :   __m256i *dst = (__m256i *)dst_ptr;</span></span>
+<span id="L447"><span class="lineNum">     447</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L448"><span class="lineNum">     448</span>                 :<span class="tlaUNC">           0 :     _mm256_storeu_si256(dst,</span></span>
+<span id="L449"><span class="lineNum">     449</span>                 :<span class="tlaUNC">           0 :                         _mm256_sub_epi16(_mm256_loadu_si256(src), avg_epi16));</span></span>
+<span id="L450"><span class="lineNum">     450</span>                 :<span class="tlaUNC">           0 :     if (width == 32) {</span></span>
+<span id="L451"><span class="lineNum">     451</span>                 :<span class="tlaUNC">           0 :       _mm256_storeu_si256(</span></span>
+<span id="L452"><span class="lineNum">     452</span>                 :<span class="tlaUNC">           0 :           dst + 1, _mm256_sub_epi16(_mm256_loadu_si256(src + 1), avg_epi16));</span></span>
+<span id="L453"><span class="lineNum">     453</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L454"><span class="lineNum">     454</span>                 :<span class="tlaUNC">           0 :     src += CFL_BUF_LINE_I256;</span></span>
+<span id="L455"><span class="lineNum">     455</span>                 :<span class="tlaUNC">           0 :     dst += CFL_BUF_LINE_I256;</span></span>
+<span id="L456"><span class="lineNum">     456</span>                 :<span class="tlaUNC">           0 :   } while (src &lt; end);</span></span>
+<span id="L457"><span class="lineNum">     457</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L458"><span class="lineNum">     458</span>                 :             : </span>
+<span id="L459"><span class="lineNum">     459</span>                 :             : // Declare wrappers for AVX2 sizes</span>
+<span id="L460"><span class="lineNum">     460</span>                 :<span class="tlaUNC">           0 : CFL_SUB_AVG_X(avx2, 16, 4, 32, 6)</span></span>
+<span id="L461"><span class="lineNum">     461</span>                 :<span class="tlaUNC">           0 : CFL_SUB_AVG_X(avx2, 16, 8, 64, 7)</span></span>
+<span id="L462"><span class="lineNum">     462</span>                 :<span class="tlaUNC">           0 : CFL_SUB_AVG_X(avx2, 16, 16, 128, 8)</span></span>
+<span id="L463"><span class="lineNum">     463</span>                 :<span class="tlaUNC">           0 : CFL_SUB_AVG_X(avx2, 16, 32, 256, 9)</span></span>
+<span id="L464"><span class="lineNum">     464</span>                 :<span class="tlaUNC">           0 : CFL_SUB_AVG_X(avx2, 32, 8, 128, 8)</span></span>
+<span id="L465"><span class="lineNum">     465</span>                 :<span class="tlaUNC">           0 : CFL_SUB_AVG_X(avx2, 32, 16, 256, 9)</span></span>
+<span id="L466"><span class="lineNum">     466</span>                 :<span class="tlaUNC">           0 : CFL_SUB_AVG_X(avx2, 32, 32, 512, 10)</span></span>
+<span id="L467"><span class="lineNum">     467</span>                 :             : </span>
+<span id="L468"><span class="lineNum">     468</span>                 :             : // Based on the observation that for small blocks AVX2 does not outperform</span>
+<span id="L469"><span class="lineNum">     469</span>                 :             : // SSE2, we call the SSE2 code for block widths 4 and 8.</span>
+<span id="L470"><span class="lineNum">     470</span>                 :<span class="tlaUNC">           0 : cfl_subtract_average_fn cfl_get_subtract_average_fn_avx2(TX_SIZE tx_size) {</span></span>
+<span id="L471"><span class="lineNum">     471</span>                 :             :   static const cfl_subtract_average_fn sub_avg[TX_SIZES_ALL] = {</span>
+<span id="L472"><span class="lineNum">     472</span>                 :             :     cfl_subtract_average_4x4_sse2,   /* 4x4 */</span>
+<span id="L473"><span class="lineNum">     473</span>                 :             :     cfl_subtract_average_8x8_sse2,   /* 8x8 */</span>
+<span id="L474"><span class="lineNum">     474</span>                 :             :     cfl_subtract_average_16x16_avx2, /* 16x16 */</span>
+<span id="L475"><span class="lineNum">     475</span>                 :             :     cfl_subtract_average_32x32_avx2, /* 32x32 */</span>
+<span id="L476"><span class="lineNum">     476</span>                 :             :     NULL,                            /* 64x64 (invalid CFL size) */</span>
+<span id="L477"><span class="lineNum">     477</span>                 :             :     cfl_subtract_average_4x8_sse2,   /* 4x8 */</span>
+<span id="L478"><span class="lineNum">     478</span>                 :             :     cfl_subtract_average_8x4_sse2,   /* 8x4 */</span>
+<span id="L479"><span class="lineNum">     479</span>                 :             :     cfl_subtract_average_8x16_sse2,  /* 8x16 */</span>
+<span id="L480"><span class="lineNum">     480</span>                 :             :     cfl_subtract_average_16x8_avx2,  /* 16x8 */</span>
+<span id="L481"><span class="lineNum">     481</span>                 :             :     cfl_subtract_average_16x32_avx2, /* 16x32 */</span>
+<span id="L482"><span class="lineNum">     482</span>                 :             :     cfl_subtract_average_32x16_avx2, /* 32x16 */</span>
+<span id="L483"><span class="lineNum">     483</span>                 :             :     NULL,                            /* 32x64 (invalid CFL size) */</span>
+<span id="L484"><span class="lineNum">     484</span>                 :             :     NULL,                            /* 64x32 (invalid CFL size) */</span>
+<span id="L485"><span class="lineNum">     485</span>                 :             :     cfl_subtract_average_4x16_sse2,  /* 4x16 */</span>
+<span id="L486"><span class="lineNum">     486</span>                 :             :     cfl_subtract_average_16x4_avx2,  /* 16x4 */</span>
+<span id="L487"><span class="lineNum">     487</span>                 :             :     cfl_subtract_average_8x32_sse2,  /* 8x32 */</span>
+<span id="L488"><span class="lineNum">     488</span>                 :             :     cfl_subtract_average_32x8_avx2,  /* 32x8 */</span>
+<span id="L489"><span class="lineNum">     489</span>                 :             :     NULL,                            /* 16x64 (invalid CFL size) */</span>
+<span id="L490"><span class="lineNum">     490</span>                 :             :     NULL,                            /* 64x16 (invalid CFL size) */</span>
+<span id="L491"><span class="lineNum">     491</span>                 :             :   };</span>
+<span id="L492"><span class="lineNum">     492</span>                 :             :   // Modulo TX_SIZES_ALL to ensure that an attacker won't be able to</span>
+<span id="L493"><span class="lineNum">     493</span>                 :             :   // index the function pointer array out of bounds.</span>
+<span id="L494"><span class="lineNum">     494</span>                 :<span class="tlaUNC">           0 :   return sub_avg[tx_size % TX_SIZES_ALL];</span></span>
+<span id="L495"><span class="lineNum">     495</span>                 :             : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

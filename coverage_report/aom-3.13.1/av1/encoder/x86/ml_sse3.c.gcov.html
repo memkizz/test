@@ -1,0 +1,428 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/encoder/x86/ml_sse3.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/encoder/x86</a> - ml_sse3.c<span style="font-size: 80%;"> (source / <a href="ml_sse3.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">212</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2018, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #include &lt;stdbool.h&gt;</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #include &lt;assert.h&gt;</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;config/av1_rtcd.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;av1/encoder/ml.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;av1/encoder/x86/ml_sse3.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : </span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : // In order to avoid the high-latency of swapping between FPU and SIMD</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : // operations, we keep the result in a 128-bit register even though we only</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : // care about a single value.</span>
+<span id="L22"><span class="lineNum">      22</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static void nn_propagate_8to1(const float *const inputs,</span></span>
+<span id="L23"><span class="lineNum">      23</span>                 :             :                               const float *const weights,</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             :                               __m128 *const output) {</span>
+<span id="L25"><span class="lineNum">      25</span>                 :<span class="tlaUNC">           0 :   const __m128 inputs_h = _mm_loadu_ps(&amp;inputs[4]);</span></span>
+<span id="L26"><span class="lineNum">      26</span>                 :<span class="tlaUNC">           0 :   const __m128 inputs_l = _mm_loadu_ps(inputs);</span></span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : </span>
+<span id="L28"><span class="lineNum">      28</span>                 :<span class="tlaUNC">           0 :   const __m128 weights_h = _mm_loadu_ps(&amp;weights[4]);</span></span>
+<span id="L29"><span class="lineNum">      29</span>                 :<span class="tlaUNC">           0 :   const __m128 weights_l = _mm_loadu_ps(weights);</span></span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : </span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC">           0 :   const __m128 mul_h = _mm_mul_ps(inputs_h, weights_h);</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :   const __m128 mul_l = _mm_mul_ps(inputs_l, weights_l);</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :   // [7 6 5 4] [3 2 1 0] (weight and input indices)</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : </span>
+<span id="L35"><span class="lineNum">      35</span>                 :<span class="tlaUNC">           0 :   const __m128 vadd = _mm_add_ps(mul_l, mul_h);</span></span>
+<span id="L36"><span class="lineNum">      36</span>                 :             :   // [7+3 6+2 5+1 4+0]</span>
+<span id="L37"><span class="lineNum">      37</span>                 :<span class="tlaUNC">           0 :   const __m128 hadd1 = _mm_hadd_ps(vadd, vadd);</span></span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :   // [7+6+3+2 5+4+1+0 7+6+3+2 5+4+1+0]</span>
+<span id="L39"><span class="lineNum">      39</span>                 :<span class="tlaUNC">           0 :   const __m128 hadd2 = _mm_hadd_ps(hadd1, hadd1);</span></span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :   // [7+6+5+4+3+2+1+0 7+6+5+4+3+2+1+0 7+6+5+4+3+2+1+0 7+6+5+4+3+2+1+0]</span>
+<span id="L41"><span class="lineNum">      41</span>                 :<span class="tlaUNC">           0 :   *output = _mm_add_ps(*output, hadd2);</span></span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : </span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 : void av1_nn_propagate_4to1_sse3(const float *const inputs,</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :                                 const float *const weights,</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :                                 __m128 *const output) {</span>
+<span id="L47"><span class="lineNum">      47</span>                 :<span class="tlaUNC">           0 :   const __m128 inputs128 = _mm_loadu_ps(inputs);</span></span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : </span>
+<span id="L49"><span class="lineNum">      49</span>                 :<span class="tlaUNC">           0 :   const __m128 weights128 = _mm_loadu_ps(weights);</span></span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : </span>
+<span id="L51"><span class="lineNum">      51</span>                 :<span class="tlaUNC">           0 :   const __m128 mul = _mm_mul_ps(inputs128, weights128);</span></span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   // [3 2 1 0] (weight and input indices)</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : </span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 :   const __m128 hadd1 = _mm_hadd_ps(mul, mul);</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :   // [3+2 1+0 3+2 1+0]</span>
+<span id="L56"><span class="lineNum">      56</span>                 :<span class="tlaUNC">           0 :   const __m128 hadd2 = _mm_hadd_ps(hadd1, hadd1);</span></span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :   // [3+2+1+0 3+2+1+0 3+2+1+0 3+2+1+0]</span>
+<span id="L58"><span class="lineNum">      58</span>                 :<span class="tlaUNC">           0 :   *output = _mm_add_ps(*output, hadd2);</span></span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : </span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 : void av1_nn_propagate_4to4_sse3(const float *const inputs,</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :                                 const float *const weights,</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :                                 __m128 *const outputs, const int num_inputs) {</span>
+<span id="L64"><span class="lineNum">      64</span>                 :<span class="tlaUNC">           0 :   const __m128 inputs128 = _mm_loadu_ps(inputs);</span></span>
+<span id="L65"><span class="lineNum">      65</span>                 :             : </span>
+<span id="L66"><span class="lineNum">      66</span>                 :<span class="tlaUNC">           0 :   __m128 hadd[2];</span></span>
+<span id="L67"><span class="lineNum">      67</span>                 :<span class="tlaUNC">           0 :   for (int i = 0; i &lt; 2; i++) {  // For each pair of outputs</span></span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 :     const __m128 weight0 = _mm_loadu_ps(&amp;weights[2 * i * num_inputs]);</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 :     const __m128 mul0 = _mm_mul_ps(weight0, inputs128);</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 :     const __m128 weight1 = _mm_loadu_ps(&amp;weights[(2 * i + 1) * num_inputs]);</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :<span class="tlaUNC">           0 :     const __m128 mul1 = _mm_mul_ps(weight1, inputs128);</span></span>
+<span id="L72"><span class="lineNum">      72</span>                 :<span class="tlaUNC">           0 :     hadd[i] = _mm_hadd_ps(mul0, mul1);</span></span>
+<span id="L73"><span class="lineNum">      73</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   // hadd[0] = [7+6 5+4 3+2 1+0] (weight indices)</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :   // hadd[1] = [15+14 13+12 11+10 9+8]</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : </span>
+<span id="L77"><span class="lineNum">      77</span>                 :<span class="tlaUNC">           0 :   const __m128 hh = _mm_hadd_ps(hadd[0], hadd[1]);</span></span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   // [15+14+13+12 11+10+9+8 7+6+5+4 3+2+1+0]</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : </span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 :   *outputs = _mm_add_ps(*outputs, hh);</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L82"><span class="lineNum">      82</span>                 :             : </span>
+<span id="L83"><span class="lineNum">      83</span>                 :<span class="tlaUNC">           0 : void av1_nn_propagate_4to8_sse3(const float *const inputs,</span></span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :                                 const float *const weights, __m128 *const out_h,</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :                                 __m128 *const out_l, const int num_inputs) {</span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :   const __m128 inputs128 = _mm_loadu_ps(inputs);</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : </span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :   __m128 hadd[4];</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :<span class="tlaUNC">           0 :   for (int i = 0; i &lt; 4; i++) {  // For each pair of outputs</span></span>
+<span id="L90"><span class="lineNum">      90</span>                 :<span class="tlaUNC">           0 :     const __m128 weight0 = _mm_loadu_ps(&amp;weights[2 * i * num_inputs]);</span></span>
+<span id="L91"><span class="lineNum">      91</span>                 :<span class="tlaUNC">           0 :     const __m128 weight1 = _mm_loadu_ps(&amp;weights[(2 * i + 1) * num_inputs]);</span></span>
+<span id="L92"><span class="lineNum">      92</span>                 :<span class="tlaUNC">           0 :     const __m128 mul0 = _mm_mul_ps(inputs128, weight0);</span></span>
+<span id="L93"><span class="lineNum">      93</span>                 :<span class="tlaUNC">           0 :     const __m128 mul1 = _mm_mul_ps(inputs128, weight1);</span></span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :     hadd[i] = _mm_hadd_ps(mul0, mul1);</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :             :   // hadd[0] = [7+6 5+4 3+2 1+0] (weight indices)</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :   // hadd[1] = [15+14 13+12 11+10 9+8]</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :   // hadd[2] = [23+22 21+20 19+18 17+16]</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :   // hadd[3] = [31+30 29+28 27+26 25+24]</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : </span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 :   const __m128 hh0 = _mm_hadd_ps(hadd[0], hadd[1]);</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :   // [15+14+13+12 11+10+9+8 7+6+5+4 3+2+1+0]</span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :   const __m128 hh1 = _mm_hadd_ps(hadd[2], hadd[3]);</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :   // [31+30+29+28 27+26+25+24 23+22+21+20 19+18+17+16]</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : </span>
+<span id="L106"><span class="lineNum">     106</span>                 :<span class="tlaUNC">           0 :   *out_h = _mm_add_ps(*out_h, hh1);</span></span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :   *out_l = _mm_add_ps(*out_l, hh0);</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L109"><span class="lineNum">     109</span>                 :             : </span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 : static void nn_propagate_8to4(const float *const inputs,</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :                               const float *const weights, __m128 *const outputs,</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :                               const int num_inputs) {</span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :   const __m128 inputs_h = _mm_loadu_ps(inputs + 4);</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :<span class="tlaUNC">           0 :   const __m128 inputs_l = _mm_loadu_ps(inputs);</span></span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :   // [7 6 5 4] [3 2 1 0] (input indices)</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             : </span>
+<span id="L117"><span class="lineNum">     117</span>                 :<span class="tlaUNC">           0 :   __m128 add[4];</span></span>
+<span id="L118"><span class="lineNum">     118</span>                 :<span class="tlaUNC">           0 :   for (int i = 0; i &lt; 4; i++) {  // For each output:</span></span>
+<span id="L119"><span class="lineNum">     119</span>                 :<span class="tlaUNC">           0 :     const __m128 weight_h = _mm_loadu_ps(&amp;weights[i * num_inputs + 4]);</span></span>
+<span id="L120"><span class="lineNum">     120</span>                 :<span class="tlaUNC">           0 :     const __m128 weight_l = _mm_loadu_ps(&amp;weights[i * num_inputs]);</span></span>
+<span id="L121"><span class="lineNum">     121</span>                 :<span class="tlaUNC">           0 :     const __m128 mul_h = _mm_mul_ps(inputs_h, weight_h);</span></span>
+<span id="L122"><span class="lineNum">     122</span>                 :<span class="tlaUNC">           0 :     const __m128 mul_l = _mm_mul_ps(inputs_l, weight_l);</span></span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaUNC">           0 :     add[i] = _mm_add_ps(mul_l, mul_h);</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :   // add[0] = [7+3 6+2 5+1 4+0]</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :   // add[1] = [15+11 14+10 13+9 12+8]</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :   // add[2] = [23+19 22+18 21+17 20+16]</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :   // add[3] = [31+27 30+26 29+25 28+24]</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : </span>
+<span id="L130"><span class="lineNum">     130</span>                 :<span class="tlaUNC">           0 :   const __m128 hadd_h = _mm_hadd_ps(add[2], add[3]);</span></span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :   // [31+30+27+26 29+28+25+24 23+22+19+18 21+20+17+16]</span>
+<span id="L132"><span class="lineNum">     132</span>                 :<span class="tlaUNC">           0 :   const __m128 hadd_l = _mm_hadd_ps(add[0], add[1]);</span></span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :   // [15+14+11+10 13+12+9+8 7+6+3+2 5+4+1+0]</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             : </span>
+<span id="L135"><span class="lineNum">     135</span>                 :<span class="tlaUNC">           0 :   const __m128 haddhadd = _mm_hadd_ps(hadd_l, hadd_h);</span></span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :   // [31+30+29+28+27+26+25+24 23+22+21+20+19+18+17+16</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :   //  15+14+13+12+11+10+9+8 7+6+5+4+3+2+1+0]</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : </span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :   *outputs = _mm_add_ps(*outputs, haddhadd);</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L141"><span class="lineNum">     141</span>                 :             : </span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 : static void nn_activate8(__m128 *out_h, __m128 *out_l) {</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :<span class="tlaUNC">           0 :   const __m128 zero = _mm_setzero_ps();</span></span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :   *out_h = _mm_max_ps(*out_h, zero);</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :<span class="tlaUNC">           0 :   *out_l = _mm_max_ps(*out_l, zero);</span></span>
+<span id="L146"><span class="lineNum">     146</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : </span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 : static void nn_activate4(__m128 *x) { *x = _mm_max_ps(*x, _mm_setzero_ps()); }</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :             : </span>
+<span id="L150"><span class="lineNum">     150</span>                 :             : // Calculate prediction based on the given input features and neural net config.</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : // Assume there are no more than NN_MAX_NODES_PER_LAYER nodes in each hidden</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             : // layer.</span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 : void av1_nn_predict_sse3(const float *input_nodes,</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :                          const NN_CONFIG *const nn_config, int reduce_prec,</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :                          float *const output) {</span>
+<span id="L156"><span class="lineNum">     156</span>                 :<span class="tlaUNC">           0 :   float buf[2][NN_MAX_NODES_PER_LAYER];</span></span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :   int buf_index = 0;</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 :   int num_inputs = nn_config-&gt;num_inputs;</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :   // Hidden layers, except the final iteration is the output layer.</span>
+<span id="L161"><span class="lineNum">     161</span>                 :<span class="tlaUNC">           0 :   for (int layer = 0; layer &lt;= nn_config-&gt;num_hidden_layers; layer++) {</span></span>
+<span id="L162"><span class="lineNum">     162</span>                 :<span class="tlaUNC">           0 :     const float *layer_weights = nn_config-&gt;weights[layer];</span></span>
+<span id="L163"><span class="lineNum">     163</span>                 :<span class="tlaUNC">           0 :     const float *layer_bias = nn_config-&gt;bias[layer];</span></span>
+<span id="L164"><span class="lineNum">     164</span>                 :<span class="tlaUNC">           0 :     bool output_layer = (layer == nn_config-&gt;num_hidden_layers);</span></span>
+<span id="L165"><span class="lineNum">     165</span>                 :<span class="tlaUNC">           0 :     float *const output_nodes = output_layer ? output : &amp;buf[buf_index][0];</span></span>
+<span id="L166"><span class="lineNum">     166</span>                 :<span class="tlaUNC">           0 :     const int num_outputs = output_layer ? nn_config-&gt;num_outputs</span></span>
+<span id="L167"><span class="lineNum">     167</span>                 :<span class="tlaUNC">           0 :                                          : nn_config-&gt;num_hidden_nodes[layer];</span></span>
+<span id="L168"><span class="lineNum">     168</span>                 :             : </span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 :     if (num_inputs % 4 == 0 &amp;&amp; num_outputs % 8 == 0) {</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :<span class="tlaUNC">           0 :       for (int out = 0; out &lt; num_outputs; out += 8) {</span></span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :         __m128 out_h = _mm_loadu_ps(&amp;layer_bias[out + 4]);</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :<span class="tlaUNC">           0 :         __m128 out_l = _mm_loadu_ps(&amp;layer_bias[out]);</span></span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :         for (int in = 0; in &lt; num_inputs; in += 4) {</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :           av1_nn_propagate_4to8_sse3(&amp;input_nodes[in],</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 :                                      &amp;layer_weights[out * num_inputs + in],</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :<span class="tlaUNC">           0 :                                      &amp;out_h, &amp;out_l, num_inputs);</span></span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :<span class="tlaUNC">           0 :         if (!output_layer) nn_activate8(&amp;out_h, &amp;out_l);</span></span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :         _mm_storeu_ps(&amp;output_nodes[out + 4], out_h);</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :         _mm_storeu_ps(&amp;output_nodes[out], out_l);</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 :     } else if (num_inputs % 8 == 0 &amp;&amp; num_outputs % 4 == 0) {</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :<span class="tlaUNC">           0 :       for (int out = 0; out &lt; num_outputs; out += 4) {</span></span>
+<span id="L184"><span class="lineNum">     184</span>                 :<span class="tlaUNC">           0 :         __m128 outputs = _mm_loadu_ps(&amp;layer_bias[out]);</span></span>
+<span id="L185"><span class="lineNum">     185</span>                 :<span class="tlaUNC">           0 :         for (int in = 0; in &lt; num_inputs; in += 8) {</span></span>
+<span id="L186"><span class="lineNum">     186</span>                 :<span class="tlaUNC">           0 :           nn_propagate_8to4(&amp;input_nodes[in],</span></span>
+<span id="L187"><span class="lineNum">     187</span>                 :<span class="tlaUNC">           0 :                             &amp;layer_weights[out * num_inputs + in], &amp;outputs,</span></span>
+<span id="L188"><span class="lineNum">     188</span>                 :<span class="tlaUNC">           0 :                             num_inputs);</span></span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 :         if (!output_layer) nn_activate4(&amp;outputs);</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :<span class="tlaUNC">           0 :         _mm_storeu_ps(&amp;output_nodes[out], outputs);</span></span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :<span class="tlaUNC">           0 :     } else if (num_inputs % 4 == 0 &amp;&amp; num_outputs % 4 == 0) {</span></span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 :       for (int out = 0; out &lt; num_outputs; out += 4) {</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :         __m128 outputs = _mm_loadu_ps(&amp;layer_bias[out]);</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :<span class="tlaUNC">           0 :         for (int in = 0; in &lt; num_inputs; in += 4) {</span></span>
+<span id="L197"><span class="lineNum">     197</span>                 :<span class="tlaUNC">           0 :           av1_nn_propagate_4to4_sse3(&amp;input_nodes[in],</span></span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 :                                      &amp;layer_weights[out * num_inputs + in],</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :<span class="tlaUNC">           0 :                                      &amp;outputs, num_inputs);</span></span>
+<span id="L200"><span class="lineNum">     200</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L201"><span class="lineNum">     201</span>                 :<span class="tlaUNC">           0 :         if (!output_layer) nn_activate4(&amp;outputs);</span></span>
+<span id="L202"><span class="lineNum">     202</span>                 :<span class="tlaUNC">           0 :         _mm_storeu_ps(&amp;output_nodes[out], outputs);</span></span>
+<span id="L203"><span class="lineNum">     203</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L204"><span class="lineNum">     204</span>                 :<span class="tlaUNC">           0 :     } else if (num_inputs % 8 == 0) {</span></span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :       for (int out = 0; out &lt; num_outputs; out++) {</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :<span class="tlaUNC">           0 :         __m128 total = _mm_load1_ps(&amp;layer_bias[out]);</span></span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 :         for (int in = 0; in &lt; num_inputs; in += 8) {</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 :           nn_propagate_8to1(&amp;input_nodes[in],</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :                             &amp;layer_weights[out * num_inputs + in], &amp;total);</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L211"><span class="lineNum">     211</span>                 :<span class="tlaUNC">           0 :         if (!output_layer) nn_activate4(&amp;total);</span></span>
+<span id="L212"><span class="lineNum">     212</span>                 :<span class="tlaUNC">           0 :         output_nodes[out] = _mm_cvtss_f32(total);</span></span>
+<span id="L213"><span class="lineNum">     213</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L214"><span class="lineNum">     214</span>                 :<span class="tlaUNC">           0 :     } else if (num_inputs % 4 == 0) {</span></span>
+<span id="L215"><span class="lineNum">     215</span>                 :<span class="tlaUNC">           0 :       for (int out = 0; out &lt; num_outputs; out++) {</span></span>
+<span id="L216"><span class="lineNum">     216</span>                 :<span class="tlaUNC">           0 :         __m128 total = _mm_load1_ps(&amp;layer_bias[out]);</span></span>
+<span id="L217"><span class="lineNum">     217</span>                 :<span class="tlaUNC">           0 :         for (int in = 0; in &lt; num_inputs; in += 4) {</span></span>
+<span id="L218"><span class="lineNum">     218</span>                 :<span class="tlaUNC">           0 :           av1_nn_propagate_4to1_sse3(</span></span>
+<span id="L219"><span class="lineNum">     219</span>                 :<span class="tlaUNC">           0 :               &amp;input_nodes[in], &amp;layer_weights[out * num_inputs + in], &amp;total);</span></span>
+<span id="L220"><span class="lineNum">     220</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L221"><span class="lineNum">     221</span>                 :<span class="tlaUNC">           0 :         if (!output_layer) nn_activate4(&amp;total);</span></span>
+<span id="L222"><span class="lineNum">     222</span>                 :<span class="tlaUNC">           0 :         output_nodes[out] = _mm_cvtss_f32(total);</span></span>
+<span id="L223"><span class="lineNum">     223</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L224"><span class="lineNum">     224</span>                 :<span class="tlaUNC">           0 :     } else {</span></span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :       // Use SSE instructions for scalar operations to avoid the latency of</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :       // swapping between SIMD and FPU modes.</span>
+<span id="L227"><span class="lineNum">     227</span>                 :<span class="tlaUNC">           0 :       for (int out = 0; out &lt; num_outputs; out++) {</span></span>
+<span id="L228"><span class="lineNum">     228</span>                 :<span class="tlaUNC">           0 :         __m128 total = _mm_load1_ps(&amp;layer_bias[out]);</span></span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :         for (int in_node = 0; in_node &lt; num_inputs; in_node++) {</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 :           __m128 input = _mm_load1_ps(&amp;input_nodes[in_node]);</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :<span class="tlaUNC">           0 :           __m128 weight =</span></span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 :               _mm_load1_ps(&amp;layer_weights[num_inputs * out + in_node]);</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 :           total = _mm_add_ps(total, _mm_mul_ps(input, weight));</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L235"><span class="lineNum">     235</span>                 :<span class="tlaUNC">           0 :         if (!output_layer) nn_activate4(&amp;total);</span></span>
+<span id="L236"><span class="lineNum">     236</span>                 :<span class="tlaUNC">           0 :         output_nodes[out] = _mm_cvtss_f32(total);</span></span>
+<span id="L237"><span class="lineNum">     237</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :     }</span>
+<span id="L239"><span class="lineNum">     239</span>                 :<span class="tlaUNC">           0 :     input_nodes = output_nodes;</span></span>
+<span id="L240"><span class="lineNum">     240</span>                 :<span class="tlaUNC">           0 :     num_inputs = num_outputs;</span></span>
+<span id="L241"><span class="lineNum">     241</span>                 :<span class="tlaUNC">           0 :     buf_index = 1 - buf_index;</span></span>
+<span id="L242"><span class="lineNum">     242</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L243"><span class="lineNum">     243</span>                 :<span class="tlaUNC">           0 :   if (reduce_prec) av1_nn_output_prec_reduce(output, nn_config-&gt;num_outputs);</span></span>
+<span id="L244"><span class="lineNum">     244</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L245"><span class="lineNum">     245</span>                 :             : </span>
+<span id="L246"><span class="lineNum">     246</span>                 :             : // Based on N. N. Schraudolph. A Fast, Compact Approximation of the Exponential</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             : // Function. Neural Computation, 11(4):853–862, 1999.</span>
+<span id="L248"><span class="lineNum">     248</span>                 :<span class="tlaUNC">           0 : static inline __m128 approx_exp(__m128 y) {</span></span>
+<span id="L249"><span class="lineNum">     249</span>                 :             : #define A ((1 &lt;&lt; 23) / 0.69314718056f)  // (1 &lt;&lt; 23) / ln(2)</span>
+<span id="L250"><span class="lineNum">     250</span>                 :             : #define B \</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :   127  // Offset for the exponent according to IEEE floating point standard.</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             : #define C 60801  // Magic number controls the accuracy of approximation</span>
+<span id="L253"><span class="lineNum">     253</span>                 :<span class="tlaUNC">           0 :   const __m128 multiplier = _mm_set1_ps(A);</span></span>
+<span id="L254"><span class="lineNum">     254</span>                 :<span class="tlaUNC">           0 :   const __m128i offset = _mm_set1_epi32(B * (1 &lt;&lt; 23) - C);</span></span>
+<span id="L255"><span class="lineNum">     255</span>                 :             : </span>
+<span id="L256"><span class="lineNum">     256</span>                 :<span class="tlaUNC">           0 :   y = _mm_mul_ps(y, multiplier);</span></span>
+<span id="L257"><span class="lineNum">     257</span>                 :<span class="tlaUNC">           0 :   y = _mm_castsi128_ps(_mm_add_epi32(_mm_cvtps_epi32(y), offset));</span></span>
+<span id="L258"><span class="lineNum">     258</span>                 :<span class="tlaUNC">           0 :   return y;</span></span>
+<span id="L259"><span class="lineNum">     259</span>                 :             : #undef A</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             : #undef B</span>
+<span id="L261"><span class="lineNum">     261</span>                 :             : #undef C</span>
+<span id="L262"><span class="lineNum">     262</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L263"><span class="lineNum">     263</span>                 :             : </span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 : static inline __m128 reduce_max(__m128 reg) {</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :<span class="tlaUNC">           0 :   __m128 tmp_reg;</span></span>
+<span id="L266"><span class="lineNum">     266</span>                 :             : </span>
+<span id="L267"><span class="lineNum">     267</span>                 :<span class="tlaUNC">           0 :   tmp_reg = _mm_shuffle_ps(reg, reg, 0x4e);  // 01 00 11 10</span></span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 :   reg = _mm_max_ps(reg, tmp_reg);</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :             : </span>
+<span id="L270"><span class="lineNum">     270</span>                 :<span class="tlaUNC">           0 :   tmp_reg = _mm_shuffle_ps(reg, reg, 0xb1);  // 10 11 00 01</span></span>
+<span id="L271"><span class="lineNum">     271</span>                 :<span class="tlaUNC">           0 :   reg = _mm_max_ps(reg, tmp_reg);</span></span>
+<span id="L272"><span class="lineNum">     272</span>                 :             : </span>
+<span id="L273"><span class="lineNum">     273</span>                 :<span class="tlaUNC">           0 :   return reg;</span></span>
+<span id="L274"><span class="lineNum">     274</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L275"><span class="lineNum">     275</span>                 :             : </span>
+<span id="L276"><span class="lineNum">     276</span>                 :<span class="tlaUNC">           0 : static inline __m128 reduce_sum(__m128 reg) {</span></span>
+<span id="L277"><span class="lineNum">     277</span>                 :<span class="tlaUNC">           0 :   __m128 tmp_reg;</span></span>
+<span id="L278"><span class="lineNum">     278</span>                 :             : </span>
+<span id="L279"><span class="lineNum">     279</span>                 :<span class="tlaUNC">           0 :   tmp_reg = _mm_shuffle_ps(reg, reg, 0x4e);  // 01 00 11 10</span></span>
+<span id="L280"><span class="lineNum">     280</span>                 :<span class="tlaUNC">           0 :   reg = _mm_add_ps(reg, tmp_reg);</span></span>
+<span id="L281"><span class="lineNum">     281</span>                 :             : </span>
+<span id="L282"><span class="lineNum">     282</span>                 :<span class="tlaUNC">           0 :   tmp_reg = _mm_shuffle_ps(reg, reg, 0xb1);  // 10 11 00 01</span></span>
+<span id="L283"><span class="lineNum">     283</span>                 :<span class="tlaUNC">           0 :   reg = _mm_add_ps(reg, tmp_reg);</span></span>
+<span id="L284"><span class="lineNum">     284</span>                 :             : </span>
+<span id="L285"><span class="lineNum">     285</span>                 :<span class="tlaUNC">           0 :   return reg;</span></span>
+<span id="L286"><span class="lineNum">     286</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L287"><span class="lineNum">     287</span>                 :             : </span>
+<span id="L288"><span class="lineNum">     288</span>                 :<span class="tlaUNC">           0 : void av1_nn_fast_softmax_16_sse3(const float *input, float *output) {</span></span>
+<span id="L289"><span class="lineNum">     289</span>                 :             :   // Clips at -10 to avoid underflowing</span>
+<span id="L290"><span class="lineNum">     290</span>                 :<span class="tlaUNC">           0 :   const __m128 clipper = _mm_set1_ps(-10.0f);</span></span>
+<span id="L291"><span class="lineNum">     291</span>                 :             : </span>
+<span id="L292"><span class="lineNum">     292</span>                 :             :   // Load in 16 values</span>
+<span id="L293"><span class="lineNum">     293</span>                 :<span class="tlaUNC">           0 :   __m128 in_0 = _mm_loadu_ps(&amp;input[0]);</span></span>
+<span id="L294"><span class="lineNum">     294</span>                 :<span class="tlaUNC">           0 :   __m128 in_1 = _mm_loadu_ps(&amp;input[4]);</span></span>
+<span id="L295"><span class="lineNum">     295</span>                 :<span class="tlaUNC">           0 :   __m128 in_2 = _mm_loadu_ps(&amp;input[8]);</span></span>
+<span id="L296"><span class="lineNum">     296</span>                 :<span class="tlaUNC">           0 :   __m128 in_3 = _mm_loadu_ps(&amp;input[12]);</span></span>
+<span id="L297"><span class="lineNum">     297</span>                 :             : </span>
+<span id="L298"><span class="lineNum">     298</span>                 :             :   // Get the max</span>
+<span id="L299"><span class="lineNum">     299</span>                 :<span class="tlaUNC">           0 :   __m128 max_0 = _mm_max_ps(in_0, in_1);</span></span>
+<span id="L300"><span class="lineNum">     300</span>                 :<span class="tlaUNC">           0 :   __m128 max_1 = _mm_max_ps(in_2, in_3);</span></span>
+<span id="L301"><span class="lineNum">     301</span>                 :             : </span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :   max_0 = _mm_max_ps(max_0, max_1);</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :<span class="tlaUNC">           0 :   max_0 = reduce_max(max_0);</span></span>
+<span id="L304"><span class="lineNum">     304</span>                 :             : </span>
+<span id="L305"><span class="lineNum">     305</span>                 :             :   // Subtract the max off and clip</span>
+<span id="L306"><span class="lineNum">     306</span>                 :<span class="tlaUNC">           0 :   in_0 = _mm_sub_ps(in_0, max_0);</span></span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 :   in_1 = _mm_sub_ps(in_1, max_0);</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :<span class="tlaUNC">           0 :   in_2 = _mm_sub_ps(in_2, max_0);</span></span>
+<span id="L309"><span class="lineNum">     309</span>                 :<span class="tlaUNC">           0 :   in_3 = _mm_sub_ps(in_3, max_0);</span></span>
+<span id="L310"><span class="lineNum">     310</span>                 :             : </span>
+<span id="L311"><span class="lineNum">     311</span>                 :<span class="tlaUNC">           0 :   in_0 = _mm_max_ps(in_0, clipper);</span></span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 :   in_1 = _mm_max_ps(in_1, clipper);</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :<span class="tlaUNC">           0 :   in_2 = _mm_max_ps(in_2, clipper);</span></span>
+<span id="L314"><span class="lineNum">     314</span>                 :<span class="tlaUNC">           0 :   in_3 = _mm_max_ps(in_3, clipper);</span></span>
+<span id="L315"><span class="lineNum">     315</span>                 :             : </span>
+<span id="L316"><span class="lineNum">     316</span>                 :             :   // Exponentiate and compute the denominator</span>
+<span id="L317"><span class="lineNum">     317</span>                 :<span class="tlaUNC">           0 :   __m128 sum = in_0 = approx_exp(in_0);</span></span>
+<span id="L318"><span class="lineNum">     318</span>                 :<span class="tlaUNC">           0 :   in_1 = approx_exp(in_1);</span></span>
+<span id="L319"><span class="lineNum">     319</span>                 :<span class="tlaUNC">           0 :   sum = _mm_add_ps(sum, in_1);</span></span>
+<span id="L320"><span class="lineNum">     320</span>                 :<span class="tlaUNC">           0 :   in_2 = approx_exp(in_2);</span></span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 :   sum = _mm_add_ps(sum, in_2);</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :<span class="tlaUNC">           0 :   in_3 = approx_exp(in_3);</span></span>
+<span id="L323"><span class="lineNum">     323</span>                 :<span class="tlaUNC">           0 :   sum = _mm_add_ps(sum, in_3);</span></span>
+<span id="L324"><span class="lineNum">     324</span>                 :<span class="tlaUNC">           0 :   sum = reduce_sum(sum);</span></span>
+<span id="L325"><span class="lineNum">     325</span>                 :             : </span>
+<span id="L326"><span class="lineNum">     326</span>                 :             :   // Divide to get the probability</span>
+<span id="L327"><span class="lineNum">     327</span>                 :<span class="tlaUNC">           0 :   in_0 = _mm_div_ps(in_0, sum);</span></span>
+<span id="L328"><span class="lineNum">     328</span>                 :<span class="tlaUNC">           0 :   in_1 = _mm_div_ps(in_1, sum);</span></span>
+<span id="L329"><span class="lineNum">     329</span>                 :<span class="tlaUNC">           0 :   in_2 = _mm_div_ps(in_2, sum);</span></span>
+<span id="L330"><span class="lineNum">     330</span>                 :<span class="tlaUNC">           0 :   in_3 = _mm_div_ps(in_3, sum);</span></span>
+<span id="L331"><span class="lineNum">     331</span>                 :             : </span>
+<span id="L332"><span class="lineNum">     332</span>                 :<span class="tlaUNC">           0 :   _mm_storeu_ps(&amp;output[0], in_0);</span></span>
+<span id="L333"><span class="lineNum">     333</span>                 :<span class="tlaUNC">           0 :   _mm_storeu_ps(&amp;output[4], in_1);</span></span>
+<span id="L334"><span class="lineNum">     334</span>                 :<span class="tlaUNC">           0 :   _mm_storeu_ps(&amp;output[8], in_2);</span></span>
+<span id="L335"><span class="lineNum">     335</span>                 :<span class="tlaUNC">           0 :   _mm_storeu_ps(&amp;output[12], in_3);</span></span>
+<span id="L336"><span class="lineNum">     336</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

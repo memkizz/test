@@ -1,0 +1,531 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/encoder/global_motion_facade.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/encoder</a> - global_motion_facade.c<span style="font-size: 80%;"> (source / <a href="global_motion_facade.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">251</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2020, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #include &quot;aom_dsp/binary_codes_writer.h&quot;</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #include &quot;aom_dsp/flow_estimation/corner_detect.h&quot;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;aom_dsp/flow_estimation/flow_estimation.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;aom_dsp/pyramid.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;av1/common/warped_motion.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &quot;av1/encoder/encoder.h&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &quot;av1/encoder/ethread.h&quot;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #include &quot;av1/encoder/rdopt.h&quot;</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #include &quot;av1/encoder/global_motion_facade.h&quot;</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : </span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : // Range of model types to search</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : #define FIRST_GLOBAL_TRANS_TYPE ROTZOOM</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : #define LAST_GLOBAL_TRANS_TYPE ROTZOOM</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : </span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : // Computes the cost for the warp parameters.</span>
+<span id="L28"><span class="lineNum">      28</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static int gm_get_params_cost(const WarpedMotionParams *gm,</span></span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :                               const WarpedMotionParams *ref_gm, int allow_hp) {</span>
+<span id="L30"><span class="lineNum">      30</span>                 :<span class="tlaUNC">           0 :   int params_cost = 0;</span></span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC">           0 :   int trans_bits, trans_prec_diff;</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :   switch (gm-&gt;wmtype) {</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :     case AFFINE:</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :     case ROTZOOM:</span>
+<span id="L35"><span class="lineNum">      35</span>                 :<span class="tlaUNC">           0 :       params_cost += aom_count_signed_primitive_refsubexpfin(</span></span>
+<span id="L36"><span class="lineNum">      36</span>                 :             :           GM_ALPHA_MAX + 1, SUBEXPFIN_K,</span>
+<span id="L37"><span class="lineNum">      37</span>                 :<span class="tlaUNC">           0 :           (ref_gm-&gt;wmmat[2] &gt;&gt; GM_ALPHA_PREC_DIFF) - (1 &lt;&lt; GM_ALPHA_PREC_BITS),</span></span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 :           (gm-&gt;wmmat[2] &gt;&gt; GM_ALPHA_PREC_DIFF) - (1 &lt;&lt; GM_ALPHA_PREC_BITS));</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :<span class="tlaUNC">           0 :       params_cost += aom_count_signed_primitive_refsubexpfin(</span></span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :           GM_ALPHA_MAX + 1, SUBEXPFIN_K,</span>
+<span id="L41"><span class="lineNum">      41</span>                 :<span class="tlaUNC">           0 :           (ref_gm-&gt;wmmat[3] &gt;&gt; GM_ALPHA_PREC_DIFF),</span></span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 :           (gm-&gt;wmmat[3] &gt;&gt; GM_ALPHA_PREC_DIFF));</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :<span class="tlaUNC">           0 :       if (gm-&gt;wmtype &gt;= AFFINE) {</span></span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 :         params_cost += aom_count_signed_primitive_refsubexpfin(</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :             GM_ALPHA_MAX + 1, SUBEXPFIN_K,</span>
+<span id="L46"><span class="lineNum">      46</span>                 :<span class="tlaUNC">           0 :             (ref_gm-&gt;wmmat[4] &gt;&gt; GM_ALPHA_PREC_DIFF),</span></span>
+<span id="L47"><span class="lineNum">      47</span>                 :<span class="tlaUNC">           0 :             (gm-&gt;wmmat[4] &gt;&gt; GM_ALPHA_PREC_DIFF));</span></span>
+<span id="L48"><span class="lineNum">      48</span>                 :<span class="tlaUNC">           0 :         params_cost += aom_count_signed_primitive_refsubexpfin(</span></span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :             GM_ALPHA_MAX + 1, SUBEXPFIN_K,</span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 :             (ref_gm-&gt;wmmat[5] &gt;&gt; GM_ALPHA_PREC_DIFF) -</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :                 (1 &lt;&lt; GM_ALPHA_PREC_BITS),</span>
+<span id="L52"><span class="lineNum">      52</span>                 :<span class="tlaUNC">           0 :             (gm-&gt;wmmat[5] &gt;&gt; GM_ALPHA_PREC_DIFF) - (1 &lt;&lt; GM_ALPHA_PREC_BITS));</span></span>
+<span id="L53"><span class="lineNum">      53</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 :       AOM_FALLTHROUGH_INTENDED;</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :     case TRANSLATION:</span>
+<span id="L56"><span class="lineNum">      56</span>                 :<span class="tlaUNC">           0 :       trans_bits = (gm-&gt;wmtype == TRANSLATION)</span></span>
+<span id="L57"><span class="lineNum">      57</span>                 :<span class="tlaUNC">           0 :                        ? GM_ABS_TRANS_ONLY_BITS - !allow_hp</span></span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :                        : GM_ABS_TRANS_BITS;</span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 :       trans_prec_diff = (gm-&gt;wmtype == TRANSLATION)</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :<span class="tlaUNC">           0 :                             ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp</span></span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :                             : GM_TRANS_PREC_DIFF;</span>
+<span id="L62"><span class="lineNum">      62</span>                 :<span class="tlaUNC">           0 :       params_cost += aom_count_signed_primitive_refsubexpfin(</span></span>
+<span id="L63"><span class="lineNum">      63</span>                 :<span class="tlaUNC">           0 :           (1 &lt;&lt; trans_bits) + 1, SUBEXPFIN_K,</span></span>
+<span id="L64"><span class="lineNum">      64</span>                 :<span class="tlaUNC">           0 :           (ref_gm-&gt;wmmat[0] &gt;&gt; trans_prec_diff),</span></span>
+<span id="L65"><span class="lineNum">      65</span>                 :<span class="tlaUNC">           0 :           (gm-&gt;wmmat[0] &gt;&gt; trans_prec_diff));</span></span>
+<span id="L66"><span class="lineNum">      66</span>                 :<span class="tlaUNC">           0 :       params_cost += aom_count_signed_primitive_refsubexpfin(</span></span>
+<span id="L67"><span class="lineNum">      67</span>                 :<span class="tlaUNC">           0 :           (1 &lt;&lt; trans_bits) + 1, SUBEXPFIN_K,</span></span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 :           (ref_gm-&gt;wmmat[1] &gt;&gt; trans_prec_diff),</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 :           (gm-&gt;wmmat[1] &gt;&gt; trans_prec_diff));</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 :       AOM_FALLTHROUGH_INTENDED;</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :     case IDENTITY: break;</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :     default: assert(0);</span>
+<span id="L73"><span class="lineNum">      73</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L74"><span class="lineNum">      74</span>                 :<span class="tlaUNC">           0 :   return (params_cost &lt;&lt; AV1_PROB_COST_SHIFT);</span></span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : </span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : // For the given reference frame, computes the global motion parameters for</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             : // different motion models and finds the best.</span>
+<span id="L79"><span class="lineNum">      79</span>                 :<span class="tlaUNC">           0 : static inline void compute_global_motion_for_ref_frame(</span></span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :     AV1_COMP *cpi, struct aom_internal_error_info *error_info,</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :     YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES], int frame,</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :     MotionModel *motion_models, uint8_t *segment_map, const int segment_map_w,</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :     const int segment_map_h, const WarpedMotionParams *ref_params) {</span>
+<span id="L84"><span class="lineNum">      84</span>                 :<span class="tlaUNC">           0 :   AV1_COMMON *const cm = &amp;cpi-&gt;common;</span></span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :   MACROBLOCKD *const xd = &amp;cpi-&gt;td.mb.e_mbd;</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :   int src_width = cpi-&gt;source-&gt;y_crop_width;</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :<span class="tlaUNC">           0 :   int src_height = cpi-&gt;source-&gt;y_crop_height;</span></span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :   int src_stride = cpi-&gt;source-&gt;y_stride;</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :   assert(ref_buf[frame] != NULL);</span>
+<span id="L90"><span class="lineNum">      90</span>                 :<span class="tlaUNC">           0 :   int bit_depth = cpi-&gt;common.seq_params-&gt;bit_depth;</span></span>
+<span id="L91"><span class="lineNum">      91</span>                 :<span class="tlaUNC">           0 :   GlobalMotionMethod global_motion_method = default_global_motion_method;</span></span>
+<span id="L92"><span class="lineNum">      92</span>                 :<span class="tlaUNC">           0 :   int downsample_level = cpi-&gt;sf.gm_sf.downsample_level;</span></span>
+<span id="L93"><span class="lineNum">      93</span>                 :<span class="tlaUNC">           0 :   int num_refinements = cpi-&gt;sf.gm_sf.num_refinement_steps;</span></span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :   int gm_erroradv_tr_level = cpi-&gt;sf.gm_sf.gm_erroradv_tr_level;</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :   bool mem_alloc_failed = false;</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : </span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :   assert(gm_erroradv_tr_level &lt; 2);</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :   // Select the best model based on fractional error reduction.</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :   // By initializing this to erroradv_tr, the same logic which is used to</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :   // select the best model will automatically filter out any model which</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :   // doesn't meet the required quality threshold</span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 :   double best_erroradv = erroradv_tr[gm_erroradv_tr_level];</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :   for (TransformationType model = FIRST_GLOBAL_TRANS_TYPE;</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :<span class="tlaUNC">           0 :        model &lt;= LAST_GLOBAL_TRANS_TYPE; ++model) {</span></span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :     if (!aom_compute_global_motion(model, cpi-&gt;source, ref_buf[frame],</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :<span class="tlaUNC">           0 :                                    bit_depth, global_motion_method,</span></span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :                                    downsample_level, motion_models,</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :                                    RANSAC_NUM_MOTIONS, &amp;mem_alloc_failed)) {</span>
+<span id="L109"><span class="lineNum">     109</span>                 :<span class="tlaUNC">           0 :       if (mem_alloc_failed) {</span></span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 :         aom_internal_error(error_info, AOM_CODEC_MEM_ERROR,</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :                            &quot;Failed to allocate global motion buffers&quot;);</span>
+<span id="L112"><span class="lineNum">     112</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :       continue;</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :     }</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : </span>
+<span id="L116"><span class="lineNum">     116</span>                 :<span class="tlaUNC">           0 :     for (int i = 0; i &lt; RANSAC_NUM_MOTIONS; ++i) {</span></span>
+<span id="L117"><span class="lineNum">     117</span>                 :<span class="tlaUNC">           0 :       if (motion_models[i].num_inliers == 0) continue;</span></span>
+<span id="L118"><span class="lineNum">     118</span>                 :             : </span>
+<span id="L119"><span class="lineNum">     119</span>                 :<span class="tlaUNC">           0 :       WarpedMotionParams tmp_wm_params;</span></span>
+<span id="L120"><span class="lineNum">     120</span>                 :<span class="tlaUNC">           0 :       av1_convert_model_to_params(motion_models[i].params, &amp;tmp_wm_params);</span></span>
+<span id="L121"><span class="lineNum">     121</span>                 :             : </span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :       // Check that the generated model is warp-able</span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaUNC">           0 :       if (!av1_get_shear_params(&amp;tmp_wm_params)) continue;</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :             : </span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :       // Skip models that we won't use (IDENTITY or TRANSLATION)</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :       //</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :       // For IDENTITY type models, we don't need to evaluate anything because</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :       // all the following logic is effectively comparing the estimated model</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :       // to an identity model.</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :       //</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :       // For TRANSLATION type global motion models, gm_get_motion_vector() gives</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :       // the wrong motion vector (see comments in that function for details).</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :       // As translation-type models do not give much gain, we can avoid this bug</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :       // by never choosing a TRANSLATION type model</span>
+<span id="L135"><span class="lineNum">     135</span>                 :<span class="tlaUNC">           0 :       if (tmp_wm_params.wmtype &lt;= TRANSLATION) continue;</span></span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : </span>
+<span id="L137"><span class="lineNum">     137</span>                 :<span class="tlaUNC">           0 :       av1_compute_feature_segmentation_map(</span></span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 :           segment_map, segment_map_w, segment_map_h, motion_models[i].inliers,</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :           motion_models[i].num_inliers);</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : </span>
+<span id="L141"><span class="lineNum">     141</span>                 :<span class="tlaUNC">           0 :       int64_t ref_frame_error = av1_segmented_frame_error(</span></span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :           is_cur_buf_hbd(xd), xd-&gt;bd, ref_buf[frame]-&gt;y_buffer,</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :<span class="tlaUNC">           0 :           ref_buf[frame]-&gt;y_stride, cpi-&gt;source-&gt;y_buffer, src_stride,</span></span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :           src_width, src_height, segment_map, segment_map_w);</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :             : </span>
+<span id="L146"><span class="lineNum">     146</span>                 :<span class="tlaUNC">           0 :       if (ref_frame_error == 0) continue;</span></span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : </span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :       const int64_t warp_error = av1_refine_integerized_param(</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :           &amp;tmp_wm_params, tmp_wm_params.wmtype, is_cur_buf_hbd(xd), xd-&gt;bd,</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :<span class="tlaUNC">           0 :           ref_buf[frame]-&gt;y_buffer, ref_buf[frame]-&gt;y_crop_width,</span></span>
+<span id="L151"><span class="lineNum">     151</span>                 :<span class="tlaUNC">           0 :           ref_buf[frame]-&gt;y_crop_height, ref_buf[frame]-&gt;y_stride,</span></span>
+<span id="L152"><span class="lineNum">     152</span>                 :<span class="tlaUNC">           0 :           cpi-&gt;source-&gt;y_buffer, src_width, src_height, src_stride,</span></span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 :           num_refinements, ref_frame_error, segment_map, segment_map_w,</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 :           erroradv_tr[gm_erroradv_tr_level]);</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :             : </span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :       // av1_refine_integerized_param() can return a simpler model type than</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :       // its input, so re-check model type here</span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 :       if (tmp_wm_params.wmtype &lt;= TRANSLATION) continue;</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :<span class="tlaUNC">           0 :       double erroradvantage = (double)warp_error / ref_frame_error;</span></span>
+<span id="L161"><span class="lineNum">     161</span>                 :             : </span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :       // Check that the model signaling cost is not too high</span>
+<span id="L163"><span class="lineNum">     163</span>                 :<span class="tlaUNC">           0 :       if (!av1_is_enough_erroradvantage(</span></span>
+<span id="L164"><span class="lineNum">     164</span>                 :<span class="tlaUNC">           0 :               erroradvantage,</span></span>
+<span id="L165"><span class="lineNum">     165</span>                 :<span class="tlaUNC">           0 :               gm_get_params_cost(&amp;tmp_wm_params, ref_params,</span></span>
+<span id="L166"><span class="lineNum">     166</span>                 :<span class="tlaUNC">           0 :                                  cm-&gt;features.allow_high_precision_mv),</span></span>
+<span id="L167"><span class="lineNum">     167</span>                 :<span class="tlaUNC">           0 :               erroradv_tr[gm_erroradv_tr_level])) {</span></span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 :         continue;</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :             :       }</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             : </span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :       if (erroradvantage &lt; best_erroradv) {</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :<span class="tlaUNC">           0 :         best_erroradv = erroradvantage;</span></span>
+<span id="L173"><span class="lineNum">     173</span>                 :             :         // Save the wm_params modified by</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :         // av1_refine_integerized_param() rather than motion index to</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             :         // avoid rerunning refine() below.</span>
+<span id="L176"><span class="lineNum">     176</span>                 :<span class="tlaUNC">           0 :         memcpy(&amp;(cm-&gt;global_motion[frame]), &amp;tmp_wm_params,</span></span>
+<span id="L177"><span class="lineNum">     177</span>                 :             :                sizeof(WarpedMotionParams));</span>
+<span id="L178"><span class="lineNum">     178</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : </span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : // Computes global motion for the given reference frame.</span>
+<span id="L184"><span class="lineNum">     184</span>                 :<span class="tlaUNC">           0 : void av1_compute_gm_for_valid_ref_frames(</span></span>
+<span id="L185"><span class="lineNum">     185</span>                 :             :     AV1_COMP *cpi, struct aom_internal_error_info *error_info,</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :     YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES], int frame,</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :     MotionModel *motion_models, uint8_t *segment_map, int segment_map_w,</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             :     int segment_map_h) {</span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :   AV1_COMMON *const cm = &amp;cpi-&gt;common;</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 :   const WarpedMotionParams *ref_params =</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :<span class="tlaUNC">           0 :       cm-&gt;prev_frame ? &amp;cm-&gt;prev_frame-&gt;global_motion[frame]</span></span>
+<span id="L192"><span class="lineNum">     192</span>                 :             :                      : &amp;default_warp_params;</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : </span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 :   compute_global_motion_for_ref_frame(cpi, error_info, ref_buf, frame,</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :                                       motion_models, segment_map, segment_map_w,</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :<span class="tlaUNC">           0 :                                       segment_map_h, ref_params);</span></span>
+<span id="L197"><span class="lineNum">     197</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L198"><span class="lineNum">     198</span>                 :             : </span>
+<span id="L199"><span class="lineNum">     199</span>                 :             : // Loops over valid reference frames and computes global motion estimation.</span>
+<span id="L200"><span class="lineNum">     200</span>                 :<span class="tlaUNC">           0 : static inline void compute_global_motion_for_references(</span></span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :     AV1_COMP *cpi, YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES],</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             :     FrameDistPair reference_frame[REF_FRAMES - 1], int num_ref_frames,</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :     MotionModel *motion_models, uint8_t *segment_map, const int segment_map_w,</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :     const int segment_map_h) {</span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :   AV1_COMMON *const cm = &amp;cpi-&gt;common;</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :<span class="tlaUNC">           0 :   struct aom_internal_error_info *const error_info =</span></span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;td.mb.e_mbd.error_info;</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :             :   // Compute global motion w.r.t. reference frames starting from the nearest ref</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             :   // frame in a given direction.</span>
+<span id="L210"><span class="lineNum">     210</span>                 :<span class="tlaUNC">           0 :   for (int frame = 0; frame &lt; num_ref_frames; frame++) {</span></span>
+<span id="L211"><span class="lineNum">     211</span>                 :<span class="tlaUNC">           0 :     int ref_frame = reference_frame[frame].frame;</span></span>
+<span id="L212"><span class="lineNum">     212</span>                 :<span class="tlaUNC">           0 :     av1_compute_gm_for_valid_ref_frames(cpi, error_info, ref_buf, ref_frame,</span></span>
+<span id="L213"><span class="lineNum">     213</span>                 :<span class="tlaUNC">           0 :                                         motion_models, segment_map,</span></span>
+<span id="L214"><span class="lineNum">     214</span>                 :<span class="tlaUNC">           0 :                                         segment_map_w, segment_map_h);</span></span>
+<span id="L215"><span class="lineNum">     215</span>                 :             :     // If global motion w.r.t. current ref frame is</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :     // INVALID/TRANSLATION/IDENTITY, skip the evaluation of global motion w.r.t</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             :     // the remaining ref frames in that direction.</span>
+<span id="L218"><span class="lineNum">     218</span>                 :<span class="tlaUNC">           0 :     if (cpi-&gt;sf.gm_sf.prune_ref_frame_for_gm_search &amp;&amp;</span></span>
+<span id="L219"><span class="lineNum">     219</span>                 :<span class="tlaUNC">           0 :         cm-&gt;global_motion[ref_frame].wmtype &lt;= TRANSLATION)</span></span>
+<span id="L220"><span class="lineNum">     220</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L221"><span class="lineNum">     221</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L222"><span class="lineNum">     222</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L223"><span class="lineNum">     223</span>                 :             : </span>
+<span id="L224"><span class="lineNum">     224</span>                 :             : // Compares the distance in 'a' and 'b'. Returns 1 if the frame corresponding to</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             : // 'a' is farther, -1 if the frame corresponding to 'b' is farther, 0 otherwise.</span>
+<span id="L226"><span class="lineNum">     226</span>                 :<span class="tlaUNC">           0 : static int compare_distance(const void *a, const void *b) {</span></span>
+<span id="L227"><span class="lineNum">     227</span>                 :<span class="tlaUNC">           0 :   const int diff =</span></span>
+<span id="L228"><span class="lineNum">     228</span>                 :<span class="tlaUNC">           0 :       ((FrameDistPair *)a)-&gt;distance - ((FrameDistPair *)b)-&gt;distance;</span></span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :   if (diff &gt; 0)</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :<span class="tlaUNC">           0 :   else if (diff &lt; 0)</span></span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 :     return -1;</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 :   return 0;</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L235"><span class="lineNum">     235</span>                 :             : </span>
+<span id="L236"><span class="lineNum">     236</span>                 :<span class="tlaUNC">           0 : static int disable_gm_search_based_on_stats(const AV1_COMP *const cpi) {</span></span>
+<span id="L237"><span class="lineNum">     237</span>                 :<span class="tlaUNC">           0 :   int is_gm_present = 1;</span></span>
+<span id="L238"><span class="lineNum">     238</span>                 :             : </span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :   // Check number of GM models only in GF groups with ARF frames. GM param</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             :   // estimation is always done in the case of GF groups with no ARF frames (flat</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :   // gops)</span>
+<span id="L242"><span class="lineNum">     242</span>                 :<span class="tlaUNC">           0 :   if (cpi-&gt;ppi-&gt;gf_group.arf_index &gt; -1) {</span></span>
+<span id="L243"><span class="lineNum">     243</span>                 :             :     // valid_gm_model_found is initialized to INT32_MAX in the beginning of</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :     // every GF group.</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :     // Therefore, GM param estimation is always done for all frames until</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             :     // at least 1 frame each of ARF_UPDATE, INTNL_ARF_UPDATE and LF_UPDATE are</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             :     // encoded in a GF group For subsequent frames, GM param estimation is</span>
+<span id="L248"><span class="lineNum">     248</span>                 :             :     // disabled, if no valid models have been found in all the three update</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             :     // types.</span>
+<span id="L250"><span class="lineNum">     250</span>                 :<span class="tlaUNC">           0 :     is_gm_present = (cpi-&gt;ppi-&gt;valid_gm_model_found[ARF_UPDATE] != 0) ||</span></span>
+<span id="L251"><span class="lineNum">     251</span>                 :<span class="tlaUNC">           0 :                     (cpi-&gt;ppi-&gt;valid_gm_model_found[INTNL_ARF_UPDATE] != 0) ||</span></span>
+<span id="L252"><span class="lineNum">     252</span>                 :<span class="tlaUNC">           0 :                     (cpi-&gt;ppi-&gt;valid_gm_model_found[LF_UPDATE] != 0);</span></span>
+<span id="L253"><span class="lineNum">     253</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L254"><span class="lineNum">     254</span>                 :<span class="tlaUNC">           0 :   return !is_gm_present;</span></span>
+<span id="L255"><span class="lineNum">     255</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L256"><span class="lineNum">     256</span>                 :             : </span>
+<span id="L257"><span class="lineNum">     257</span>                 :             : // Prunes reference frames for global motion estimation based on the speed</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             : // feature 'gm_search_type'.</span>
+<span id="L259"><span class="lineNum">     259</span>                 :<span class="tlaUNC">           0 : static int do_gm_search_logic(SPEED_FEATURES *const sf, int frame) {</span></span>
+<span id="L260"><span class="lineNum">     260</span>                 :<span class="tlaUNC">           0 :   (void)frame;</span></span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 :   switch (sf-&gt;gm_sf.gm_search_type) {</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :<span class="tlaUNC">           0 :     case GM_FULL_SEARCH: return 1;</span></span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :     case GM_REDUCED_REF_SEARCH_SKIP_L2_L3:</span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 :       return !(frame == LAST2_FRAME || frame == LAST3_FRAME);</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :     case GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2:</span>
+<span id="L266"><span class="lineNum">     266</span>                 :<span class="tlaUNC">           0 :       return !(frame == LAST2_FRAME || frame == LAST3_FRAME ||</span></span>
+<span id="L267"><span class="lineNum">     267</span>                 :<span class="tlaUNC">           0 :                (frame == ALTREF2_FRAME));</span></span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 :     case GM_SEARCH_CLOSEST_REFS_ONLY: return 1;</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :<span class="tlaUNC">           0 :     case GM_DISABLE_SEARCH: return 0;</span></span>
+<span id="L270"><span class="lineNum">     270</span>                 :             :     default: assert(0);</span>
+<span id="L271"><span class="lineNum">     271</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L272"><span class="lineNum">     272</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L273"><span class="lineNum">     273</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L274"><span class="lineNum">     274</span>                 :             : </span>
+<span id="L275"><span class="lineNum">     275</span>                 :             : // Populates valid reference frames in past/future directions in</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             : // 'reference_frames' and their count in 'num_ref_frames'.</span>
+<span id="L277"><span class="lineNum">     277</span>                 :<span class="tlaUNC">           0 : static inline void update_valid_ref_frames_for_gm(</span></span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :     AV1_COMP *cpi, YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES],</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             :     FrameDistPair reference_frames[MAX_DIRECTIONS][REF_FRAMES - 1],</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :     int *num_ref_frames) {</span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 :   AV1_COMMON *const cm = &amp;cpi-&gt;common;</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :<span class="tlaUNC">           0 :   int *num_past_ref_frames = &amp;num_ref_frames[0];</span></span>
+<span id="L283"><span class="lineNum">     283</span>                 :<span class="tlaUNC">           0 :   int *num_future_ref_frames = &amp;num_ref_frames[1];</span></span>
+<span id="L284"><span class="lineNum">     284</span>                 :<span class="tlaUNC">           0 :   const GF_GROUP *gf_group = &amp;cpi-&gt;ppi-&gt;gf_group;</span></span>
+<span id="L285"><span class="lineNum">     285</span>                 :<span class="tlaUNC">           0 :   int ref_pruning_enabled = is_frame_eligible_for_ref_pruning(</span></span>
+<span id="L286"><span class="lineNum">     286</span>                 :<span class="tlaUNC">           0 :       gf_group, cpi-&gt;sf.inter_sf.selective_ref_frame, 1, cpi-&gt;gf_frame_index);</span></span>
+<span id="L287"><span class="lineNum">     287</span>                 :<span class="tlaUNC">           0 :   int cur_frame_gm_disabled = 0;</span></span>
+<span id="L288"><span class="lineNum">     288</span>                 :<span class="tlaUNC">           0 :   int pyr_lvl = cm-&gt;cur_frame-&gt;pyramid_level;</span></span>
+<span id="L289"><span class="lineNum">     289</span>                 :             : </span>
+<span id="L290"><span class="lineNum">     290</span>                 :<span class="tlaUNC">           0 :   if (cpi-&gt;sf.gm_sf.disable_gm_search_based_on_stats) {</span></span>
+<span id="L291"><span class="lineNum">     291</span>                 :<span class="tlaUNC">           0 :     cur_frame_gm_disabled = disable_gm_search_based_on_stats(cpi);</span></span>
+<span id="L292"><span class="lineNum">     292</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L293"><span class="lineNum">     293</span>                 :             : </span>
+<span id="L294"><span class="lineNum">     294</span>                 :<span class="tlaUNC">           0 :   for (int frame = ALTREF_FRAME; frame &gt;= LAST_FRAME; --frame) {</span></span>
+<span id="L295"><span class="lineNum">     295</span>                 :<span class="tlaUNC">           0 :     const MV_REFERENCE_FRAME ref_frame[2] = { frame, NONE_FRAME };</span></span>
+<span id="L296"><span class="lineNum">     296</span>                 :<span class="tlaUNC">           0 :     RefCntBuffer *buf = get_ref_frame_buf(cm, frame);</span></span>
+<span id="L297"><span class="lineNum">     297</span>                 :<span class="tlaUNC">           0 :     const int ref_disabled =</span></span>
+<span id="L298"><span class="lineNum">     298</span>                 :<span class="tlaUNC">           0 :         !(cpi-&gt;ref_frame_flags &amp; av1_ref_frame_flag_list[frame]);</span></span>
+<span id="L299"><span class="lineNum">     299</span>                 :<span class="tlaUNC">           0 :     ref_buf[frame] = NULL;</span></span>
+<span id="L300"><span class="lineNum">     300</span>                 :<span class="tlaUNC">           0 :     cm-&gt;global_motion[frame] = default_warp_params;</span></span>
+<span id="L301"><span class="lineNum">     301</span>                 :             :     // Skip global motion estimation for invalid ref frames</span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :     if (buf == NULL ||</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :<span class="tlaUNC">           0 :         (ref_disabled &amp;&amp; cpi-&gt;sf.hl_sf.recode_loop != DISALLOW_RECODE)) {</span></span>
+<span id="L304"><span class="lineNum">     304</span>                 :<span class="tlaUNC">           0 :       continue;</span></span>
+<span id="L305"><span class="lineNum">     305</span>                 :             :     } else {</span>
+<span id="L306"><span class="lineNum">     306</span>                 :<span class="tlaUNC">           0 :       ref_buf[frame] = &amp;buf-&gt;buf;</span></span>
+<span id="L307"><span class="lineNum">     307</span>                 :             :     }</span>
+<span id="L308"><span class="lineNum">     308</span>                 :             : </span>
+<span id="L309"><span class="lineNum">     309</span>                 :<span class="tlaUNC">           0 :     int prune_ref_frames =</span></span>
+<span id="L310"><span class="lineNum">     310</span>                 :<span class="tlaUNC">           0 :         ref_pruning_enabled &amp;&amp;</span></span>
+<span id="L311"><span class="lineNum">     311</span>                 :<span class="tlaUNC">           0 :         prune_ref_by_selective_ref_frame(cpi, NULL, ref_frame,</span></span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 :                                          cm-&gt;cur_frame-&gt;ref_display_order_hint);</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :<span class="tlaUNC">           0 :     int ref_pyr_lvl = buf-&gt;pyramid_level;</span></span>
+<span id="L314"><span class="lineNum">     314</span>                 :             : </span>
+<span id="L315"><span class="lineNum">     315</span>                 :<span class="tlaUNC">           0 :     if (ref_buf[frame]-&gt;y_crop_width == cpi-&gt;source-&gt;y_crop_width &amp;&amp;</span></span>
+<span id="L316"><span class="lineNum">     316</span>                 :<span class="tlaUNC">           0 :         ref_buf[frame]-&gt;y_crop_height == cpi-&gt;source-&gt;y_crop_height &amp;&amp;</span></span>
+<span id="L317"><span class="lineNum">     317</span>                 :<span class="tlaUNC">           0 :         do_gm_search_logic(&amp;cpi-&gt;sf, frame) &amp;&amp; !prune_ref_frames &amp;&amp;</span></span>
+<span id="L318"><span class="lineNum">     318</span>                 :<span class="tlaUNC">           0 :         ref_pyr_lvl &lt;= pyr_lvl &amp;&amp; !cur_frame_gm_disabled) {</span></span>
+<span id="L319"><span class="lineNum">     319</span>                 :             :       assert(ref_buf[frame] != NULL);</span>
+<span id="L320"><span class="lineNum">     320</span>                 :<span class="tlaUNC">           0 :       const int relative_frame_dist = av1_encoder_get_relative_dist(</span></span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 :           buf-&gt;display_order_hint, cm-&gt;cur_frame-&gt;display_order_hint);</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :             :       // Populate past and future ref frames.</span>
+<span id="L323"><span class="lineNum">     323</span>                 :             :       // reference_frames[0][] indicates past direction and</span>
+<span id="L324"><span class="lineNum">     324</span>                 :             :       // reference_frames[1][] indicates future direction.</span>
+<span id="L325"><span class="lineNum">     325</span>                 :<span class="tlaUNC">           0 :       if (relative_frame_dist == 0) {</span></span>
+<span id="L326"><span class="lineNum">     326</span>                 :             :         // Skip global motion estimation for frames at the same nominal instant.</span>
+<span id="L327"><span class="lineNum">     327</span>                 :             :         // This will generally be either a &quot;real&quot; frame coded against a</span>
+<span id="L328"><span class="lineNum">     328</span>                 :             :         // temporal filtered version, or a higher spatial layer coded against</span>
+<span id="L329"><span class="lineNum">     329</span>                 :             :         // a lower spatial layer. In either case, the optimal motion model will</span>
+<span id="L330"><span class="lineNum">     330</span>                 :             :         // be IDENTITY, so we don't need to search explicitly.</span>
+<span id="L331"><span class="lineNum">     331</span>                 :<span class="tlaUNC">           0 :       } else if (relative_frame_dist &lt; 0) {</span></span>
+<span id="L332"><span class="lineNum">     332</span>                 :<span class="tlaUNC">           0 :         reference_frames[0][*num_past_ref_frames].distance =</span></span>
+<span id="L333"><span class="lineNum">     333</span>                 :<span class="tlaUNC">           0 :             abs(relative_frame_dist);</span></span>
+<span id="L334"><span class="lineNum">     334</span>                 :<span class="tlaUNC">           0 :         reference_frames[0][*num_past_ref_frames].frame = frame;</span></span>
+<span id="L335"><span class="lineNum">     335</span>                 :<span class="tlaUNC">           0 :         (*num_past_ref_frames)++;</span></span>
+<span id="L336"><span class="lineNum">     336</span>                 :<span class="tlaUNC">           0 :       } else {</span></span>
+<span id="L337"><span class="lineNum">     337</span>                 :<span class="tlaUNC">           0 :         reference_frames[1][*num_future_ref_frames].distance =</span></span>
+<span id="L338"><span class="lineNum">     338</span>                 :<span class="tlaUNC">           0 :             abs(relative_frame_dist);</span></span>
+<span id="L339"><span class="lineNum">     339</span>                 :<span class="tlaUNC">           0 :         reference_frames[1][*num_future_ref_frames].frame = frame;</span></span>
+<span id="L340"><span class="lineNum">     340</span>                 :<span class="tlaUNC">           0 :         (*num_future_ref_frames)++;</span></span>
+<span id="L341"><span class="lineNum">     341</span>                 :             :       }</span>
+<span id="L342"><span class="lineNum">     342</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L343"><span class="lineNum">     343</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L344"><span class="lineNum">     344</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L345"><span class="lineNum">     345</span>                 :             : </span>
+<span id="L346"><span class="lineNum">     346</span>                 :             : // Initializes parameters used for computing global motion.</span>
+<span id="L347"><span class="lineNum">     347</span>                 :<span class="tlaUNC">           0 : static inline void setup_global_motion_info_params(AV1_COMP *cpi) {</span></span>
+<span id="L348"><span class="lineNum">     348</span>                 :<span class="tlaUNC">           0 :   GlobalMotionInfo *const gm_info = &amp;cpi-&gt;gm_info;</span></span>
+<span id="L349"><span class="lineNum">     349</span>                 :<span class="tlaUNC">           0 :   YV12_BUFFER_CONFIG *source = cpi-&gt;source;</span></span>
+<span id="L350"><span class="lineNum">     350</span>                 :             : </span>
+<span id="L351"><span class="lineNum">     351</span>                 :<span class="tlaUNC">           0 :   gm_info-&gt;segment_map_w =</span></span>
+<span id="L352"><span class="lineNum">     352</span>                 :<span class="tlaUNC">           0 :       (source-&gt;y_crop_width + WARP_ERROR_BLOCK - 1) &gt;&gt; WARP_ERROR_BLOCK_LOG;</span></span>
+<span id="L353"><span class="lineNum">     353</span>                 :<span class="tlaUNC">           0 :   gm_info-&gt;segment_map_h =</span></span>
+<span id="L354"><span class="lineNum">     354</span>                 :<span class="tlaUNC">           0 :       (source-&gt;y_crop_height + WARP_ERROR_BLOCK - 1) &gt;&gt; WARP_ERROR_BLOCK_LOG;</span></span>
+<span id="L355"><span class="lineNum">     355</span>                 :             : </span>
+<span id="L356"><span class="lineNum">     356</span>                 :<span class="tlaUNC">           0 :   memset(gm_info-&gt;reference_frames, -1,</span></span>
+<span id="L357"><span class="lineNum">     357</span>                 :             :          sizeof(gm_info-&gt;reference_frames[0][0]) * MAX_DIRECTIONS *</span>
+<span id="L358"><span class="lineNum">     358</span>                 :             :              (REF_FRAMES - 1));</span>
+<span id="L359"><span class="lineNum">     359</span>                 :<span class="tlaUNC">           0 :   av1_zero(gm_info-&gt;num_ref_frames);</span></span>
+<span id="L360"><span class="lineNum">     360</span>                 :             : </span>
+<span id="L361"><span class="lineNum">     361</span>                 :             :   // Populate ref_buf for valid ref frames in global motion</span>
+<span id="L362"><span class="lineNum">     362</span>                 :<span class="tlaUNC">           0 :   update_valid_ref_frames_for_gm(cpi, gm_info-&gt;ref_buf,</span></span>
+<span id="L363"><span class="lineNum">     363</span>                 :<span class="tlaUNC">           0 :                                  gm_info-&gt;reference_frames,</span></span>
+<span id="L364"><span class="lineNum">     364</span>                 :<span class="tlaUNC">           0 :                                  gm_info-&gt;num_ref_frames);</span></span>
+<span id="L365"><span class="lineNum">     365</span>                 :             : </span>
+<span id="L366"><span class="lineNum">     366</span>                 :             :   // Sort the past and future ref frames in the ascending order of their</span>
+<span id="L367"><span class="lineNum">     367</span>                 :             :   // distance from the current frame. reference_frames[0] =&gt; past direction</span>
+<span id="L368"><span class="lineNum">     368</span>                 :             :   // and reference_frames[1] =&gt; future direction.</span>
+<span id="L369"><span class="lineNum">     369</span>                 :<span class="tlaUNC">           0 :   qsort(gm_info-&gt;reference_frames[0], gm_info-&gt;num_ref_frames[0],</span></span>
+<span id="L370"><span class="lineNum">     370</span>                 :             :         sizeof(gm_info-&gt;reference_frames[0][0]), compare_distance);</span>
+<span id="L371"><span class="lineNum">     371</span>                 :<span class="tlaUNC">           0 :   qsort(gm_info-&gt;reference_frames[1], gm_info-&gt;num_ref_frames[1],</span></span>
+<span id="L372"><span class="lineNum">     372</span>                 :             :         sizeof(gm_info-&gt;reference_frames[1][0]), compare_distance);</span>
+<span id="L373"><span class="lineNum">     373</span>                 :             : </span>
+<span id="L374"><span class="lineNum">     374</span>                 :<span class="tlaUNC">           0 :   if (cpi-&gt;sf.gm_sf.gm_search_type == GM_SEARCH_CLOSEST_REFS_ONLY) {</span></span>
+<span id="L375"><span class="lineNum">     375</span>                 :             :     // Filter down to the nearest two ref frames.</span>
+<span id="L376"><span class="lineNum">     376</span>                 :             :     // Prefer one past and one future ref over two past refs, even if</span>
+<span id="L377"><span class="lineNum">     377</span>                 :             :     // the second past ref is closer</span>
+<span id="L378"><span class="lineNum">     378</span>                 :<span class="tlaUNC">           0 :     if (gm_info-&gt;num_ref_frames[1] &gt; 0) {</span></span>
+<span id="L379"><span class="lineNum">     379</span>                 :<span class="tlaUNC">           0 :       gm_info-&gt;num_ref_frames[0] = AOMMIN(gm_info-&gt;num_ref_frames[0], 1);</span></span>
+<span id="L380"><span class="lineNum">     380</span>                 :<span class="tlaUNC">           0 :       gm_info-&gt;num_ref_frames[1] = AOMMIN(gm_info-&gt;num_ref_frames[1], 1);</span></span>
+<span id="L381"><span class="lineNum">     381</span>                 :<span class="tlaUNC">           0 :     } else {</span></span>
+<span id="L382"><span class="lineNum">     382</span>                 :<span class="tlaUNC">           0 :       gm_info-&gt;num_ref_frames[0] = AOMMIN(gm_info-&gt;num_ref_frames[0], 2);</span></span>
+<span id="L383"><span class="lineNum">     383</span>                 :             :     }</span>
+<span id="L384"><span class="lineNum">     384</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L385"><span class="lineNum">     385</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L386"><span class="lineNum">     386</span>                 :             : </span>
+<span id="L387"><span class="lineNum">     387</span>                 :             : // Computes global motion w.r.t. valid reference frames.</span>
+<span id="L388"><span class="lineNum">     388</span>                 :<span class="tlaUNC">           0 : static inline void global_motion_estimation(AV1_COMP *cpi) {</span></span>
+<span id="L389"><span class="lineNum">     389</span>                 :<span class="tlaUNC">           0 :   GlobalMotionInfo *const gm_info = &amp;cpi-&gt;gm_info;</span></span>
+<span id="L390"><span class="lineNum">     390</span>                 :<span class="tlaUNC">           0 :   GlobalMotionData *gm_data = &amp;cpi-&gt;td.gm_data;</span></span>
+<span id="L391"><span class="lineNum">     391</span>                 :             : </span>
+<span id="L392"><span class="lineNum">     392</span>                 :             :   // Compute global motion w.r.t. past reference frames and future reference</span>
+<span id="L393"><span class="lineNum">     393</span>                 :             :   // frames</span>
+<span id="L394"><span class="lineNum">     394</span>                 :<span class="tlaUNC">           0 :   for (int dir = 0; dir &lt; MAX_DIRECTIONS; dir++) {</span></span>
+<span id="L395"><span class="lineNum">     395</span>                 :<span class="tlaUNC">           0 :     if (gm_info-&gt;num_ref_frames[dir] &gt; 0)</span></span>
+<span id="L396"><span class="lineNum">     396</span>                 :<span class="tlaUNC">           0 :       compute_global_motion_for_references(</span></span>
+<span id="L397"><span class="lineNum">     397</span>                 :<span class="tlaUNC">           0 :           cpi, gm_info-&gt;ref_buf, gm_info-&gt;reference_frames[dir],</span></span>
+<span id="L398"><span class="lineNum">     398</span>                 :<span class="tlaUNC">           0 :           gm_info-&gt;num_ref_frames[dir], gm_data-&gt;motion_models,</span></span>
+<span id="L399"><span class="lineNum">     399</span>                 :<span class="tlaUNC">           0 :           gm_data-&gt;segment_map, gm_info-&gt;segment_map_w, gm_info-&gt;segment_map_h);</span></span>
+<span id="L400"><span class="lineNum">     400</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L401"><span class="lineNum">     401</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L402"><span class="lineNum">     402</span>                 :             : </span>
+<span id="L403"><span class="lineNum">     403</span>                 :             : // Global motion estimation for the current frame is computed.This computation</span>
+<span id="L404"><span class="lineNum">     404</span>                 :             : // happens once per frame and the winner motion model parameters are stored in</span>
+<span id="L405"><span class="lineNum">     405</span>                 :             : // cm-&gt;cur_frame-&gt;global_motion.</span>
+<span id="L406"><span class="lineNum">     406</span>                 :<span class="tlaUNC">           0 : void av1_compute_global_motion_facade(AV1_COMP *cpi) {</span></span>
+<span id="L407"><span class="lineNum">     407</span>                 :<span class="tlaUNC">           0 :   AV1_COMMON *const cm = &amp;cpi-&gt;common;</span></span>
+<span id="L408"><span class="lineNum">     408</span>                 :<span class="tlaUNC">           0 :   GlobalMotionInfo *const gm_info = &amp;cpi-&gt;gm_info;</span></span>
+<span id="L409"><span class="lineNum">     409</span>                 :             : </span>
+<span id="L410"><span class="lineNum">     410</span>                 :<span class="tlaUNC">           0 :   if (cpi-&gt;oxcf.tool_cfg.enable_global_motion) {</span></span>
+<span id="L411"><span class="lineNum">     411</span>                 :<span class="tlaUNC">           0 :     if (cpi-&gt;gf_frame_index == 0) {</span></span>
+<span id="L412"><span class="lineNum">     412</span>                 :<span class="tlaUNC">           0 :       for (int i = 0; i &lt; FRAME_UPDATE_TYPES; i++) {</span></span>
+<span id="L413"><span class="lineNum">     413</span>                 :<span class="tlaUNC">           0 :         cpi-&gt;ppi-&gt;valid_gm_model_found[i] = INT32_MAX;</span></span>
+<span id="L414"><span class="lineNum">     414</span>                 :             : #if CONFIG_FPMT_TEST</span>
+<span id="L415"><span class="lineNum">     415</span>                 :             :         if (cpi-&gt;ppi-&gt;fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE)</span>
+<span id="L416"><span class="lineNum">     416</span>                 :             :           cpi-&gt;ppi-&gt;temp_valid_gm_model_found[i] = INT32_MAX;</span>
+<span id="L417"><span class="lineNum">     417</span>                 :             : #endif</span>
+<span id="L418"><span class="lineNum">     418</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L419"><span class="lineNum">     419</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L420"><span class="lineNum">     420</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L421"><span class="lineNum">     421</span>                 :             : </span>
+<span id="L422"><span class="lineNum">     422</span>                 :<span class="tlaUNC">           0 :   if (cpi-&gt;common.current_frame.frame_type == INTER_FRAME &amp;&amp; cpi-&gt;source &amp;&amp;</span></span>
+<span id="L423"><span class="lineNum">     423</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;oxcf.tool_cfg.enable_global_motion &amp;&amp; !gm_info-&gt;search_done &amp;&amp;</span></span>
+<span id="L424"><span class="lineNum">     424</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;sf.gm_sf.gm_search_type != GM_DISABLE_SEARCH) {</span></span>
+<span id="L425"><span class="lineNum">     425</span>                 :<span class="tlaUNC">           0 :     setup_global_motion_info_params(cpi);</span></span>
+<span id="L426"><span class="lineNum">     426</span>                 :             :     // Terminate early if the total number of reference frames is zero.</span>
+<span id="L427"><span class="lineNum">     427</span>                 :<span class="tlaUNC">           0 :     if (cpi-&gt;gm_info.num_ref_frames[0] || cpi-&gt;gm_info.num_ref_frames[1]) {</span></span>
+<span id="L428"><span class="lineNum">     428</span>                 :<span class="tlaUNC">           0 :       gm_alloc_data(cpi, &amp;cpi-&gt;td.gm_data);</span></span>
+<span id="L429"><span class="lineNum">     429</span>                 :<span class="tlaUNC">           0 :       if (cpi-&gt;mt_info.num_workers &gt; 1)</span></span>
+<span id="L430"><span class="lineNum">     430</span>                 :<span class="tlaUNC">           0 :         av1_global_motion_estimation_mt(cpi);</span></span>
+<span id="L431"><span class="lineNum">     431</span>                 :             :       else</span>
+<span id="L432"><span class="lineNum">     432</span>                 :<span class="tlaUNC">           0 :         global_motion_estimation(cpi);</span></span>
+<span id="L433"><span class="lineNum">     433</span>                 :<span class="tlaUNC">           0 :       gm_dealloc_data(&amp;cpi-&gt;td.gm_data);</span></span>
+<span id="L434"><span class="lineNum">     434</span>                 :<span class="tlaUNC">           0 :       gm_info-&gt;search_done = 1;</span></span>
+<span id="L435"><span class="lineNum">     435</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L436"><span class="lineNum">     436</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L437"><span class="lineNum">     437</span>                 :<span class="tlaUNC">           0 :   memcpy(cm-&gt;cur_frame-&gt;global_motion, cm-&gt;global_motion,</span></span>
+<span id="L438"><span class="lineNum">     438</span>                 :             :          sizeof(cm-&gt;cur_frame-&gt;global_motion));</span>
+<span id="L439"><span class="lineNum">     439</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

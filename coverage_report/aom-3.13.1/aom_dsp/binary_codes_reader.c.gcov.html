@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/aom_dsp/binary_codes_reader.c</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">aom-3.13.1/aom_dsp</a> - binary_codes_reader.c<span style="font-size: 80%;"> (source / <a href="binary_codes_reader.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">24</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2017, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #include &quot;aom_dsp/binary_codes_reader.h&quot;</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #include &quot;aom_dsp/recenter.h&quot;</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #define read_primitive_quniform(r, n, ACCT_STR_NAME) \</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             :   read_primitive_quniform_(r, n ACCT_STR_ARG(ACCT_STR_NAME))</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #define read_primitive_subexpfin(r, n, k, ACCT_STR_NAME) \</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             :   read_primitive_subexpfin_(r, n, k ACCT_STR_ARG(ACCT_STR_NAME))</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : </span>
+<span id="L20"><span class="lineNum">      20</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static uint16_t read_primitive_quniform_(aom_reader *r,</span></span>
+<span id="L21"><span class="lineNum">      21</span>                 :             :                                          uint16_t n ACCT_STR_PARAM) {</span>
+<span id="L22"><span class="lineNum">      22</span>                 :<span class="tlaUNC">           0 :   if (n &lt;= 1) return 0;</span></span>
+<span id="L23"><span class="lineNum">      23</span>                 :<span class="tlaUNC">           0 :   const int l = get_msb(n) + 1;</span></span>
+<span id="L24"><span class="lineNum">      24</span>                 :<span class="tlaUNC">           0 :   const int m = (1 &lt;&lt; l) - n;</span></span>
+<span id="L25"><span class="lineNum">      25</span>                 :<span class="tlaUNC">           0 :   const int v = aom_read_literal(r, l - 1, ACCT_STR_NAME);</span></span>
+<span id="L26"><span class="lineNum">      26</span>                 :<span class="tlaUNC">           0 :   return v &lt; m ? v : (v &lt;&lt; 1) - m + aom_read_bit(r, ACCT_STR_NAME);</span></span>
+<span id="L27"><span class="lineNum">      27</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : </span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : // Decode finite subexponential code that for a symbol v in [0, n-1] with</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : // parameter k</span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC">           0 : static uint16_t read_primitive_subexpfin_(aom_reader *r, uint16_t n,</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :                                           uint16_t k ACCT_STR_PARAM) {</span>
+<span id="L33"><span class="lineNum">      33</span>                 :<span class="tlaUNC">           0 :   int i = 0;</span></span>
+<span id="L34"><span class="lineNum">      34</span>                 :<span class="tlaUNC">           0 :   int mk = 0;</span></span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : </span>
+<span id="L36"><span class="lineNum">      36</span>                 :<span class="tlaUNC">           0 :   while (1) {</span></span>
+<span id="L37"><span class="lineNum">      37</span>                 :<span class="tlaUNC">           0 :     int b = (i ? k + i - 1 : k);</span></span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 :     int a = (1 &lt;&lt; b);</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : </span>
+<span id="L40"><span class="lineNum">      40</span>                 :<span class="tlaUNC">           0 :     if (n &lt;= mk + 3 * a) {</span></span>
+<span id="L41"><span class="lineNum">      41</span>                 :<span class="tlaUNC">           0 :       return read_primitive_quniform(r, n - mk, ACCT_STR_NAME) + mk;</span></span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :     }</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : </span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 :     if (!aom_read_bit(r, ACCT_STR_NAME)) {</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :<span class="tlaUNC">           0 :       return aom_read_literal(r, b, ACCT_STR_NAME) + mk;</span></span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :     }</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : </span>
+<span id="L48"><span class="lineNum">      48</span>                 :<span class="tlaUNC">           0 :     i = i + 1;</span></span>
+<span id="L49"><span class="lineNum">      49</span>                 :<span class="tlaUNC">           0 :     mk += a;</span></span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : </span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   assert(0);</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :   return 0;</span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : </span>
+<span id="L56"><span class="lineNum">      56</span>                 :<span class="tlaUNC">           0 : uint16_t aom_read_primitive_refsubexpfin_(aom_reader *r, uint16_t n, uint16_t k,</span></span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :                                           uint16_t ref ACCT_STR_PARAM) {</span>
+<span id="L58"><span class="lineNum">      58</span>                 :<span class="tlaUNC">           0 :   return inv_recenter_finite_nonneg(</span></span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 :       n, ref, read_primitive_subexpfin(r, n, k, ACCT_STR_NAME));</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

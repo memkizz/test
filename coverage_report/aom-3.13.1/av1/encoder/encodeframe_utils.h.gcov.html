@@ -1,0 +1,681 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/encoder/encodeframe_utils.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/encoder</a> - encodeframe_utils.h<span style="font-size: 80%;"> (source / <a href="encodeframe_utils.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">156</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2020, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #ifndef AOM_AV1_ENCODER_ENCODEFRAME_UTILS_H_</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #define AOM_AV1_ENCODER_ENCODEFRAME_UTILS_H_</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;aom_ports/aom_timer.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;av1/common/reconinter.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : </span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &quot;av1/encoder/encoder.h&quot;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #include &quot;av1/encoder/rdopt.h&quot;</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : </span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #ifdef __cplusplus</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : extern &quot;C&quot; {</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : #endif</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : </span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : #define WRITE_FEATURE_TO_FILE 0</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : </span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : #define FEATURE_SIZE_SMS_SPLIT_FAST 6</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : #define FEATURE_SIZE_SMS_SPLIT 17</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : #define FEATURE_SIZE_SMS_PRUNE_PART 25</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             : #define FEATURE_SIZE_SMS_TERM_NONE 28</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : #define FEATURE_SIZE_FP_SMS_TERM_NONE 20</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : #define FEATURE_SIZE_MAX_MIN_PART_PRED 13</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : #define MAX_NUM_CLASSES_MAX_MIN_PART_PRED 4</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : </span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : #define FEATURE_SMS_NONE_FLAG 1</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : #define FEATURE_SMS_SPLIT_FLAG (1 &lt;&lt; 1)</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : #define FEATURE_SMS_RECT_FLAG (1 &lt;&lt; 2)</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : </span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : #define FEATURE_SMS_PRUNE_PART_FLAG \</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :   (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG | FEATURE_SMS_RECT_FLAG)</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : #define FEATURE_SMS_SPLIT_MODEL_FLAG \</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :   (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG)</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : </span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : // Number of sub-partitions in rectangular partition types.</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : #define SUB_PARTITIONS_RECT 2</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : </span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : // Number of sub-partitions in split partition type.</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : #define SUB_PARTITIONS_SPLIT 4</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : </span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : // Number of sub-partitions in AB partition types.</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : #define SUB_PARTITIONS_AB 3</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : </span>
+<span id="L54"><span class="lineNum">      54</span>                 :             : // Number of sub-partitions in 4-way partition types.</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : #define SUB_PARTITIONS_PART4 4</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : </span>
+<span id="L57"><span class="lineNum">      57</span>                 :             : // 4part partition types.</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : enum { HORZ4 = 0, VERT4, NUM_PART4_TYPES } UENUM1BYTE(PART4_TYPES);</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : </span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : // AB partition types.</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             : enum {</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   HORZ_A = 0,</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   HORZ_B,</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   VERT_A,</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   VERT_B,</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   NUM_AB_PARTS</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : } UENUM1BYTE(AB_PART_TYPE);</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : </span>
+<span id="L69"><span class="lineNum">      69</span>                 :             : // Rectangular partition types.</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             : enum { HORZ = 0, VERT, NUM_RECT_PARTS } UENUM1BYTE(RECT_PART_TYPE);</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             : </span>
+<span id="L72"><span class="lineNum">      72</span>                 :             : // Structure to keep win flags for HORZ and VERT partition evaluations.</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : typedef struct {</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   int rect_part_win[NUM_RECT_PARTS];</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             : } RD_RECT_PART_WIN_INFO;</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : </span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : enum { PICK_MODE_RD = 0, PICK_MODE_NONRD };</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             : </span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : enum {</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :   SB_SINGLE_PASS,  // Single pass encoding: all ctxs get updated normally</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :   SB_DRY_PASS,     // First pass of multi-pass: does not update the ctxs</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   SB_WET_PASS      // Second pass of multi-pass: finalize and update the ctx</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             : } UENUM1BYTE(SB_MULTI_PASS_MODE);</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             : </span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : typedef struct {</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :   ENTROPY_CONTEXT a[MAX_MIB_SIZE * MAX_MB_PLANE];</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :   ENTROPY_CONTEXT l[MAX_MIB_SIZE * MAX_MB_PLANE];</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :   PARTITION_CONTEXT sa[MAX_MIB_SIZE];</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :   PARTITION_CONTEXT sl[MAX_MIB_SIZE];</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :   TXFM_CONTEXT *p_ta;</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :   TXFM_CONTEXT *p_tl;</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :   TXFM_CONTEXT ta[MAX_MIB_SIZE];</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :   TXFM_CONTEXT tl[MAX_MIB_SIZE];</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             : } RD_SEARCH_MACROBLOCK_CONTEXT;</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             : </span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : // This struct is used to store the statistics used by sb-level multi-pass</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : // encoding. Currently, this is only used to make a copy of the state before we</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             : // perform the first pass</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             : typedef struct SB_FIRST_PASS_STATS {</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :   RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :   RD_COUNTS rd_count;</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             : </span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :   int split_count;</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :   FRAME_COUNTS fc;</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :   InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :   int thresh_freq_fact[BLOCK_SIZES_ALL][MAX_MODES];</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :   int current_qindex;</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             : </span>
+<span id="L109"><span class="lineNum">     109</span>                 :             : #if CONFIG_INTERNAL_STATS</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   unsigned int mode_chosen_counts[MAX_MODES];</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : #endif  // CONFIG_INTERNAL_STATS</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             : } SB_FIRST_PASS_STATS;</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             : </span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : // This structure contains block size related</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : // variables for use in rd_pick_partition().</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             : typedef struct {</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :   // Half of block width to determine block edge.</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :   int mi_step;</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             : </span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :   // Block row and column indices.</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :   int mi_row;</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :   int mi_col;</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             : </span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :   // Block edge row and column indices.</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :   int mi_row_edge;</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :   int mi_col_edge;</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : </span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :   // Block width of current partition block.</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :   int width;</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : </span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :   // Block width of minimum partition size allowed.</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :   int min_partition_size_1d;</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             : </span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :   // Flag to indicate if partition is 8x8 or higher size.</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :   int bsize_at_least_8x8;</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : </span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :   // Indicates edge blocks in frame.</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :   int has_rows;</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :   int has_cols;</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : </span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   // Block size of current partition.</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :   BLOCK_SIZE bsize;</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             : </span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :   // Size of current sub-partition.</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :   BLOCK_SIZE subsize;</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : </span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :   // Size of split partition.</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :   BLOCK_SIZE split_bsize2;</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             : } PartitionBlkParams;</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             : </span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : #if CONFIG_COLLECT_PARTITION_STATS</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             : typedef struct PartitionTimingStats {</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :   // Tracks the number of partition decision used in the current call to \ref</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :   // av1_rd_pick_partition</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :   int partition_decisions[EXT_PARTITION_TYPES];</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :   // Tracks the number of partition_block searched in the current call to \ref</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :   // av1_rd_pick_partition</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :   int partition_attempts[EXT_PARTITION_TYPES];</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             :   // Tracks the time spent on each partition search in the current call to \ref</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :   // av1_rd_pick_partition</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :   int64_t partition_times[EXT_PARTITION_TYPES];</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :   // Tracks the rdcost spent on each partition search in the current call to</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :   // \ref av1_rd_pick_partition</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :   int64_t partition_rdcost[EXT_PARTITION_TYPES];</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :   // Timer used to time the partitions.</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :   struct aom_usec_timer timer;</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             :   // Whether the timer is on</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             :   int timer_is_on;</span>
+<span id="L169"><span class="lineNum">     169</span>                 :             : } PartitionTimingStats;</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             : #endif  // CONFIG_COLLECT_PARTITION_STATS</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             : </span>
+<span id="L172"><span class="lineNum">     172</span>                 :             : // Structure holding state variables for partition search.</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             : typedef struct {</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :   // Intra partitioning related info.</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             :   PartitionSearchInfo *intra_part_info;</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : </span>
+<span id="L177"><span class="lineNum">     177</span>                 :             :   // Parameters related to partition block size.</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :   PartitionBlkParams part_blk_params;</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : </span>
+<span id="L180"><span class="lineNum">     180</span>                 :             :   // Win flags for HORZ and VERT partition evaluations.</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :   RD_RECT_PART_WIN_INFO split_part_rect_win[SUB_PARTITIONS_SPLIT];</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : </span>
+<span id="L183"><span class="lineNum">     183</span>                 :             :   // RD cost for the current block of given partition type.</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             :   RD_STATS this_rdc;</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : </span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :   // RD cost summed across all blocks of partition type.</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :   RD_STATS sum_rdc;</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : </span>
+<span id="L189"><span class="lineNum">     189</span>                 :             :   // Array holding partition type cost.</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :   int tmp_partition_cost[PARTITION_TYPES];</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             : </span>
+<span id="L192"><span class="lineNum">     192</span>                 :             :   // Pointer to partition cost buffer</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             :   int *partition_cost;</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             : </span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :   // RD costs for different partition types.</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :   int64_t none_rd;</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :   int64_t split_rd[SUB_PARTITIONS_SPLIT];</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :   // RD costs for rectangular partitions.</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :   // rect_part_rd[0][i] is the RD cost of ith partition index of PARTITION_HORZ.</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :   // rect_part_rd[1][i] is the RD cost of ith partition index of PARTITION_VERT.</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :   int64_t rect_part_rd[NUM_RECT_PARTS][SUB_PARTITIONS_RECT];</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             : </span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :   // Flags indicating if the corresponding partition was winner or not.</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :   // Used to bypass similar blocks during AB partition evaluation.</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :   int is_split_ctx_is_ready[2];</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :   int is_rect_ctx_is_ready[NUM_RECT_PARTS];</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             : </span>
+<span id="L208"><span class="lineNum">     208</span>                 :             :   // If true, skips the rest of partition evaluation at the current bsize level.</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             :   int terminate_partition_search;</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             : </span>
+<span id="L211"><span class="lineNum">     211</span>                 :             :   // If false, skips rdopt on PARTITION_NONE.</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             :   int partition_none_allowed;</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             : </span>
+<span id="L214"><span class="lineNum">     214</span>                 :             :   // If partition_rect_allowed[HORZ] is false, skips searching PARTITION_HORZ,</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             :   // PARTITION_HORZ_A, PARTITIO_HORZ_B, PARTITION_HORZ_4. Same holds for VERT.</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :   int partition_rect_allowed[NUM_RECT_PARTS];</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             : </span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :   // If false, skips searching rectangular partition unless some logic related</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :   // to edge detection holds.</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :   int do_rectangular_split;</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             : </span>
+<span id="L222"><span class="lineNum">     222</span>                 :             :   // If false, skips searching PARTITION_SPLIT.</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             :   int do_square_split;</span>
+<span id="L224"><span class="lineNum">     224</span>                 :             : </span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :   // If true, prunes the corresponding PARTITION_HORZ/PARTITION_VERT. Note that</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :   // this does not directly affect the extended partitions, so this can be used</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             :   // to prune out PARTITION_HORZ/PARTITION_VERT while still allowing rdopt of</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :   // PARTITION_HORZ_AB4, etc.</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             :   int prune_rect_part[NUM_RECT_PARTS];</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             : </span>
+<span id="L231"><span class="lineNum">     231</span>                 :             :   // Chroma subsampling in x and y directions.</span>
+<span id="L232"><span class="lineNum">     232</span>                 :             :   int ss_x;</span>
+<span id="L233"><span class="lineNum">     233</span>                 :             :   int ss_y;</span>
+<span id="L234"><span class="lineNum">     234</span>                 :             : </span>
+<span id="L235"><span class="lineNum">     235</span>                 :             :   // Partition plane context index.</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             :   int pl_ctx_idx;</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             : </span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :   // This flag will be set if best partition is found from the search.</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :   bool found_best_partition;</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             : </span>
+<span id="L241"><span class="lineNum">     241</span>                 :             : #if CONFIG_COLLECT_PARTITION_STATS</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :   PartitionTimingStats part_timing_stats;</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             : #endif  // CONFIG_COLLECT_PARTITION_STATS</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             : } PartitionSearchState;</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             : </span>
+<span id="L246"><span class="lineNum">     246</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static inline void av1_disable_square_split_partition(</span></span>
+<span id="L247"><span class="lineNum">     247</span>                 :             :     PartitionSearchState *part_state) {</span>
+<span id="L248"><span class="lineNum">     248</span>                 :<span class="tlaUNC">           0 :   part_state-&gt;do_square_split = 0;</span></span>
+<span id="L249"><span class="lineNum">     249</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L250"><span class="lineNum">     250</span>                 :             : </span>
+<span id="L251"><span class="lineNum">     251</span>                 :             : // Disables all possible rectangular splits. This includes PARTITION_AB4 as they</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             : // depend on the corresponding partition_rect_allowed.</span>
+<span id="L253"><span class="lineNum">     253</span>                 :<span class="tlaUNC">           0 : static inline void av1_disable_rect_partitions(</span></span>
+<span id="L254"><span class="lineNum">     254</span>                 :             :     PartitionSearchState *part_state) {</span>
+<span id="L255"><span class="lineNum">     255</span>                 :<span class="tlaUNC">           0 :   part_state-&gt;do_rectangular_split = 0;</span></span>
+<span id="L256"><span class="lineNum">     256</span>                 :<span class="tlaUNC">           0 :   part_state-&gt;partition_rect_allowed[HORZ] = 0;</span></span>
+<span id="L257"><span class="lineNum">     257</span>                 :<span class="tlaUNC">           0 :   part_state-&gt;partition_rect_allowed[VERT] = 0;</span></span>
+<span id="L258"><span class="lineNum">     258</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L259"><span class="lineNum">     259</span>                 :             : </span>
+<span id="L260"><span class="lineNum">     260</span>                 :             : // Disables all possible splits so that only PARTITION_NONE *might* be allowed.</span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 : static inline void av1_disable_all_splits(PartitionSearchState *part_state) {</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :<span class="tlaUNC">           0 :   av1_disable_square_split_partition(part_state);</span></span>
+<span id="L263"><span class="lineNum">     263</span>                 :<span class="tlaUNC">           0 :   av1_disable_rect_partitions(part_state);</span></span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :             : </span>
+<span id="L266"><span class="lineNum">     266</span>                 :<span class="tlaUNC">           0 : static inline void av1_set_square_split_only(PartitionSearchState *part_state) {</span></span>
+<span id="L267"><span class="lineNum">     267</span>                 :<span class="tlaUNC">           0 :   part_state-&gt;partition_none_allowed = 0;</span></span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 :   part_state-&gt;do_square_split = 1;</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :<span class="tlaUNC">           0 :   av1_disable_rect_partitions(part_state);</span></span>
+<span id="L270"><span class="lineNum">     270</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L271"><span class="lineNum">     271</span>                 :             : </span>
+<span id="L272"><span class="lineNum">     272</span>                 :<span class="tlaUNC">           0 : static inline bool av1_blk_has_rows_and_cols(</span></span>
+<span id="L273"><span class="lineNum">     273</span>                 :             :     const PartitionBlkParams *blk_params) {</span>
+<span id="L274"><span class="lineNum">     274</span>                 :<span class="tlaUNC">           0 :   return blk_params-&gt;has_rows &amp;&amp; blk_params-&gt;has_cols;</span></span>
+<span id="L275"><span class="lineNum">     275</span>                 :             : }</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             : </span>
+<span id="L277"><span class="lineNum">     277</span>                 :<span class="tlaUNC">           0 : static inline bool av1_is_whole_blk_in_frame(</span></span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :     const PartitionBlkParams *blk_params,</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             :     const CommonModeInfoParams *mi_params) {</span>
+<span id="L280"><span class="lineNum">     280</span>                 :<span class="tlaUNC">           0 :   const int mi_row = blk_params-&gt;mi_row, mi_col = blk_params-&gt;mi_col;</span></span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 :   const BLOCK_SIZE bsize = blk_params-&gt;bsize;</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :<span class="tlaUNC">           0 :   return mi_row + mi_size_high[bsize] &lt;= mi_params-&gt;mi_rows &amp;&amp;</span></span>
+<span id="L283"><span class="lineNum">     283</span>                 :<span class="tlaUNC">           0 :          mi_col + mi_size_wide[bsize] &lt;= mi_params-&gt;mi_cols;</span></span>
+<span id="L284"><span class="lineNum">     284</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L285"><span class="lineNum">     285</span>                 :             : </span>
+<span id="L286"><span class="lineNum">     286</span>                 :<span class="tlaUNC">           0 : static inline void update_filter_type_cdf(const MACROBLOCKD *xd,</span></span>
+<span id="L287"><span class="lineNum">     287</span>                 :             :                                           const MB_MODE_INFO *mbmi,</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :                                           int dual_filter) {</span>
+<span id="L289"><span class="lineNum">     289</span>                 :<span class="tlaUNC">           0 :   for (int dir = 0; dir &lt; 2; ++dir) {</span></span>
+<span id="L290"><span class="lineNum">     290</span>                 :<span class="tlaUNC">           0 :     if (dir &amp;&amp; !dual_filter) break;</span></span>
+<span id="L291"><span class="lineNum">     291</span>                 :<span class="tlaUNC">           0 :     const int ctx = av1_get_pred_context_switchable_interp(xd, dir);</span></span>
+<span id="L292"><span class="lineNum">     292</span>                 :<span class="tlaUNC">           0 :     InterpFilter filter = av1_extract_interp_filter(mbmi-&gt;interp_filters, dir);</span></span>
+<span id="L293"><span class="lineNum">     293</span>                 :<span class="tlaUNC">           0 :     update_cdf(xd-&gt;tile_ctx-&gt;switchable_interp_cdf[ctx], filter,</span></span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :                SWITCHABLE_FILTERS);</span>
+<span id="L295"><span class="lineNum">     295</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L296"><span class="lineNum">     296</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L297"><span class="lineNum">     297</span>                 :             : </span>
+<span id="L298"><span class="lineNum">     298</span>                 :<span class="tlaUNC">           0 : static inline int set_rdmult(const AV1_COMP *const cpi,</span></span>
+<span id="L299"><span class="lineNum">     299</span>                 :             :                              const MACROBLOCK *const x, int segment_id) {</span>
+<span id="L300"><span class="lineNum">     300</span>                 :<span class="tlaUNC">           0 :   const AV1_COMMON *const cm = &amp;cpi-&gt;common;</span></span>
+<span id="L301"><span class="lineNum">     301</span>                 :<span class="tlaUNC">           0 :   const GF_GROUP *const gf_group = &amp;cpi-&gt;ppi-&gt;gf_group;</span></span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :   const CommonQuantParams *quant_params = &amp;cm-&gt;quant_params;</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :<span class="tlaUNC">           0 :   const aom_bit_depth_t bit_depth = cm-&gt;seq_params-&gt;bit_depth;</span></span>
+<span id="L304"><span class="lineNum">     304</span>                 :<span class="tlaUNC">           0 :   const FRAME_UPDATE_TYPE update_type =</span></span>
+<span id="L305"><span class="lineNum">     305</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;ppi-&gt;gf_group.update_type[cpi-&gt;gf_frame_index];</span></span>
+<span id="L306"><span class="lineNum">     306</span>                 :<span class="tlaUNC">           0 :   const FRAME_TYPE frame_type = cm-&gt;current_frame.frame_type;</span></span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 :   const int boost_index = AOMMIN(15, (cpi-&gt;ppi-&gt;p_rc.gfu_boost / 100));</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :<span class="tlaUNC">           0 :   const int layer_depth = AOMMIN(gf_group-&gt;layer_depth[cpi-&gt;gf_frame_index], 6);</span></span>
+<span id="L309"><span class="lineNum">     309</span>                 :             : </span>
+<span id="L310"><span class="lineNum">     310</span>                 :<span class="tlaUNC">           0 :   int qindex;</span></span>
+<span id="L311"><span class="lineNum">     311</span>                 :<span class="tlaUNC">           0 :   if (segment_id &gt;= 0) {</span></span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 :     qindex = av1_get_qindex(&amp;cm-&gt;seg, segment_id, cm-&gt;quant_params.base_qindex);</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L314"><span class="lineNum">     314</span>                 :<span class="tlaUNC">           0 :     qindex = quant_params-&gt;base_qindex + x-&gt;rdmult_delta_qindex +</span></span>
+<span id="L315"><span class="lineNum">     315</span>                 :<span class="tlaUNC">           0 :              quant_params-&gt;y_dc_delta_q;</span></span>
+<span id="L316"><span class="lineNum">     316</span>                 :             :   }</span>
+<span id="L317"><span class="lineNum">     317</span>                 :             : </span>
+<span id="L318"><span class="lineNum">     318</span>                 :<span class="tlaUNC">           0 :   return av1_compute_rd_mult(</span></span>
+<span id="L319"><span class="lineNum">     319</span>                 :<span class="tlaUNC">           0 :       qindex, bit_depth, update_type, layer_depth, boost_index, frame_type,</span></span>
+<span id="L320"><span class="lineNum">     320</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;oxcf.q_cfg.use_fixed_qp_offsets, is_stat_consumption_stage(cpi),</span></span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;oxcf.tune_cfg.tuning);</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L323"><span class="lineNum">     323</span>                 :             : </span>
+<span id="L324"><span class="lineNum">     324</span>                 :             : static inline int do_split_check(BLOCK_SIZE bsize) {</span>
+<span id="L325"><span class="lineNum">     325</span>                 :             :   return (bsize == BLOCK_16X16 || bsize == BLOCK_32X32);</span>
+<span id="L326"><span class="lineNum">     326</span>                 :             : }</span>
+<span id="L327"><span class="lineNum">     327</span>                 :             : </span>
+<span id="L328"><span class="lineNum">     328</span>                 :             : #if !CONFIG_REALTIME_ONLY</span>
+<span id="L329"><span class="lineNum">     329</span>                 :<span class="tlaUNC">           0 : static inline const FIRSTPASS_STATS *read_one_frame_stats(const TWO_PASS *p,</span></span>
+<span id="L330"><span class="lineNum">     330</span>                 :             :                                                           int frm) {</span>
+<span id="L331"><span class="lineNum">     331</span>                 :             :   assert(frm &gt;= 0);</span>
+<span id="L332"><span class="lineNum">     332</span>                 :<span class="tlaUNC">           0 :   if (frm &lt; 0 ||</span></span>
+<span id="L333"><span class="lineNum">     333</span>                 :<span class="tlaUNC">           0 :       p-&gt;stats_buf_ctx-&gt;stats_in_start + frm &gt; p-&gt;stats_buf_ctx-&gt;stats_in_end) {</span></span>
+<span id="L334"><span class="lineNum">     334</span>                 :<span class="tlaUNC">           0 :     return NULL;</span></span>
+<span id="L335"><span class="lineNum">     335</span>                 :             :   }</span>
+<span id="L336"><span class="lineNum">     336</span>                 :             : </span>
+<span id="L337"><span class="lineNum">     337</span>                 :<span class="tlaUNC">           0 :   return &amp;p-&gt;stats_buf_ctx-&gt;stats_in_start[frm];</span></span>
+<span id="L338"><span class="lineNum">     338</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L339"><span class="lineNum">     339</span>                 :             : </span>
+<span id="L340"><span class="lineNum">     340</span>                 :             : int av1_get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,</span>
+<span id="L341"><span class="lineNum">     341</span>                 :             :                          int mi_col, int orig_rdmult);</span>
+<span id="L342"><span class="lineNum">     342</span>                 :             : </span>
+<span id="L343"><span class="lineNum">     343</span>                 :             : int av1_active_h_edge(const AV1_COMP *cpi, int mi_row, int mi_step);</span>
+<span id="L344"><span class="lineNum">     344</span>                 :             : </span>
+<span id="L345"><span class="lineNum">     345</span>                 :             : int av1_active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step);</span>
+<span id="L346"><span class="lineNum">     346</span>                 :             : </span>
+<span id="L347"><span class="lineNum">     347</span>                 :             : void av1_get_tpl_stats_sb(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,</span>
+<span id="L348"><span class="lineNum">     348</span>                 :             :                           int mi_col, SuperBlockEnc *sb_enc);</span>
+<span id="L349"><span class="lineNum">     349</span>                 :             : </span>
+<span id="L350"><span class="lineNum">     350</span>                 :             : int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, ThreadData *td,</span>
+<span id="L351"><span class="lineNum">     351</span>                 :             :                                    int64_t *delta_dist, BLOCK_SIZE bsize,</span>
+<span id="L352"><span class="lineNum">     352</span>                 :             :                                    int mi_row, int mi_col);</span>
+<span id="L353"><span class="lineNum">     353</span>                 :             : </span>
+<span id="L354"><span class="lineNum">     354</span>                 :             : int av1_get_q_for_hdr(AV1_COMP *const cpi, MACROBLOCK *const x,</span>
+<span id="L355"><span class="lineNum">     355</span>                 :             :                       BLOCK_SIZE bsize, int mi_row, int mi_col);</span>
+<span id="L356"><span class="lineNum">     356</span>                 :             : </span>
+<span id="L357"><span class="lineNum">     357</span>                 :             : int av1_get_cb_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,</span>
+<span id="L358"><span class="lineNum">     358</span>                 :             :                       const BLOCK_SIZE bsize, const int mi_row,</span>
+<span id="L359"><span class="lineNum">     359</span>                 :             :                       const int mi_col);</span>
+<span id="L360"><span class="lineNum">     360</span>                 :             : #endif  // !CONFIG_REALTIME_ONLY</span>
+<span id="L361"><span class="lineNum">     361</span>                 :             : </span>
+<span id="L362"><span class="lineNum">     362</span>                 :             : void av1_set_ssim_rdmult(const AV1_COMP *const cpi, int *errorperbit,</span>
+<span id="L363"><span class="lineNum">     363</span>                 :             :                          const BLOCK_SIZE bsize, const int mi_row,</span>
+<span id="L364"><span class="lineNum">     364</span>                 :             :                          const int mi_col, int *const rdmult);</span>
+<span id="L365"><span class="lineNum">     365</span>                 :             : </span>
+<span id="L366"><span class="lineNum">     366</span>                 :             : #if CONFIG_SALIENCY_MAP</span>
+<span id="L367"><span class="lineNum">     367</span>                 :             : void av1_set_saliency_map_vmaf_rdmult(const AV1_COMP *const cpi,</span>
+<span id="L368"><span class="lineNum">     368</span>                 :             :                                       int *errorperbit, const BLOCK_SIZE bsize,</span>
+<span id="L369"><span class="lineNum">     369</span>                 :             :                                       const int mi_row, const int mi_col,</span>
+<span id="L370"><span class="lineNum">     370</span>                 :             :                                       int *const rdmult);</span>
+<span id="L371"><span class="lineNum">     371</span>                 :             : #endif</span>
+<span id="L372"><span class="lineNum">     372</span>                 :             : </span>
+<span id="L373"><span class="lineNum">     373</span>                 :             : void av1_update_state(const AV1_COMP *const cpi, ThreadData *td,</span>
+<span id="L374"><span class="lineNum">     374</span>                 :             :                       const PICK_MODE_CONTEXT *const ctx, int mi_row,</span>
+<span id="L375"><span class="lineNum">     375</span>                 :             :                       int mi_col, BLOCK_SIZE bsize, RUN_TYPE dry_run);</span>
+<span id="L376"><span class="lineNum">     376</span>                 :             : </span>
+<span id="L377"><span class="lineNum">     377</span>                 :             : void av1_update_inter_mode_stats(FRAME_CONTEXT *fc, FRAME_COUNTS *counts,</span>
+<span id="L378"><span class="lineNum">     378</span>                 :             :                                  PREDICTION_MODE mode, int16_t mode_context);</span>
+<span id="L379"><span class="lineNum">     379</span>                 :             : </span>
+<span id="L380"><span class="lineNum">     380</span>                 :             : void av1_sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,</span>
+<span id="L381"><span class="lineNum">     381</span>                 :             :                          MACROBLOCKD *xd, const MB_MODE_INFO *const mbmi,</span>
+<span id="L382"><span class="lineNum">     382</span>                 :             :                          const MB_MODE_INFO *above_mi,</span>
+<span id="L383"><span class="lineNum">     383</span>                 :             :                          const MB_MODE_INFO *left_mi, const int intraonly);</span>
+<span id="L384"><span class="lineNum">     384</span>                 :             : </span>
+<span id="L385"><span class="lineNum">     385</span>                 :             : void av1_restore_context(MACROBLOCK *x, const RD_SEARCH_MACROBLOCK_CONTEXT *ctx,</span>
+<span id="L386"><span class="lineNum">     386</span>                 :             :                          int mi_row, int mi_col, BLOCK_SIZE bsize,</span>
+<span id="L387"><span class="lineNum">     387</span>                 :             :                          const int num_planes);</span>
+<span id="L388"><span class="lineNum">     388</span>                 :             : </span>
+<span id="L389"><span class="lineNum">     389</span>                 :             : void av1_save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,</span>
+<span id="L390"><span class="lineNum">     390</span>                 :             :                       int mi_row, int mi_col, BLOCK_SIZE bsize,</span>
+<span id="L391"><span class="lineNum">     391</span>                 :             :                       const int num_planes);</span>
+<span id="L392"><span class="lineNum">     392</span>                 :             : </span>
+<span id="L393"><span class="lineNum">     393</span>                 :             : void av1_set_fixed_partitioning(AV1_COMP *cpi, const TileInfo *const tile,</span>
+<span id="L394"><span class="lineNum">     394</span>                 :             :                                 MB_MODE_INFO **mib, int mi_row, int mi_col,</span>
+<span id="L395"><span class="lineNum">     395</span>                 :             :                                 BLOCK_SIZE bsize);</span>
+<span id="L396"><span class="lineNum">     396</span>                 :             : </span>
+<span id="L397"><span class="lineNum">     397</span>                 :             : int av1_is_leaf_split_partition(AV1_COMMON *cm, int mi_row, int mi_col,</span>
+<span id="L398"><span class="lineNum">     398</span>                 :             :                                 BLOCK_SIZE bsize);</span>
+<span id="L399"><span class="lineNum">     399</span>                 :             : </span>
+<span id="L400"><span class="lineNum">     400</span>                 :             : void av1_reset_simple_motion_tree_partition(SIMPLE_MOTION_DATA_TREE *sms_tree,</span>
+<span id="L401"><span class="lineNum">     401</span>                 :             :                                             BLOCK_SIZE bsize);</span>
+<span id="L402"><span class="lineNum">     402</span>                 :             : </span>
+<span id="L403"><span class="lineNum">     403</span>                 :             : void av1_update_picked_ref_frames_mask(MACROBLOCK *const x, int ref_type,</span>
+<span id="L404"><span class="lineNum">     404</span>                 :             :                                        BLOCK_SIZE bsize, int mib_size,</span>
+<span id="L405"><span class="lineNum">     405</span>                 :             :                                        int mi_row, int mi_col);</span>
+<span id="L406"><span class="lineNum">     406</span>                 :             : </span>
+<span id="L407"><span class="lineNum">     407</span>                 :             : void av1_avg_cdf_symbols(FRAME_CONTEXT *ctx_left, FRAME_CONTEXT *ctx_tr,</span>
+<span id="L408"><span class="lineNum">     408</span>                 :             :                          int wt_left, int wt_tr);</span>
+<span id="L409"><span class="lineNum">     409</span>                 :             : </span>
+<span id="L410"><span class="lineNum">     410</span>                 :             : void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, TileDataEnc *tile_data,</span>
+<span id="L411"><span class="lineNum">     411</span>                 :             :                            int mi_row, int mi_col);</span>
+<span id="L412"><span class="lineNum">     412</span>                 :             : </span>
+<span id="L413"><span class="lineNum">     413</span>                 :             : void av1_reset_mbmi(CommonModeInfoParams *const mi_params, BLOCK_SIZE sb_size,</span>
+<span id="L414"><span class="lineNum">     414</span>                 :             :                     int mi_row, int mi_col);</span>
+<span id="L415"><span class="lineNum">     415</span>                 :             : </span>
+<span id="L416"><span class="lineNum">     416</span>                 :             : void av1_backup_sb_state(SB_FIRST_PASS_STATS *sb_fp_stats, const AV1_COMP *cpi,</span>
+<span id="L417"><span class="lineNum">     417</span>                 :             :                          ThreadData *td, const TileDataEnc *tile_data,</span>
+<span id="L418"><span class="lineNum">     418</span>                 :             :                          int mi_row, int mi_col);</span>
+<span id="L419"><span class="lineNum">     419</span>                 :             : </span>
+<span id="L420"><span class="lineNum">     420</span>                 :             : void av1_restore_sb_state(const SB_FIRST_PASS_STATS *sb_fp_stats, AV1_COMP *cpi,</span>
+<span id="L421"><span class="lineNum">     421</span>                 :             :                           ThreadData *td, TileDataEnc *tile_data, int mi_row,</span>
+<span id="L422"><span class="lineNum">     422</span>                 :             :                           int mi_col);</span>
+<span id="L423"><span class="lineNum">     423</span>                 :             : </span>
+<span id="L424"><span class="lineNum">     424</span>                 :             : void av1_set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,</span>
+<span id="L425"><span class="lineNum">     425</span>                 :             :                            const TileInfo *const tile_info, const int mi_row,</span>
+<span id="L426"><span class="lineNum">     426</span>                 :             :                            const int mi_col);</span>
+<span id="L427"><span class="lineNum">     427</span>                 :             : </span>
+<span id="L428"><span class="lineNum">     428</span>                 :             : void av1_dealloc_src_diff_buf(struct macroblock *mb, int num_planes);</span>
+<span id="L429"><span class="lineNum">     429</span>                 :             : </span>
+<span id="L430"><span class="lineNum">     430</span>                 :<span class="tlaUNC">           0 : static inline void av1_dealloc_mb_data(struct macroblock *mb, int num_planes) {</span></span>
+<span id="L431"><span class="lineNum">     431</span>                 :<span class="tlaUNC">           0 :   aom_free(mb-&gt;txfm_search_info.mb_rd_record);</span></span>
+<span id="L432"><span class="lineNum">     432</span>                 :<span class="tlaUNC">           0 :   mb-&gt;txfm_search_info.mb_rd_record = NULL;</span></span>
+<span id="L433"><span class="lineNum">     433</span>                 :             : </span>
+<span id="L434"><span class="lineNum">     434</span>                 :<span class="tlaUNC">           0 :   aom_free(mb-&gt;inter_modes_info);</span></span>
+<span id="L435"><span class="lineNum">     435</span>                 :<span class="tlaUNC">           0 :   mb-&gt;inter_modes_info = NULL;</span></span>
+<span id="L436"><span class="lineNum">     436</span>                 :             : </span>
+<span id="L437"><span class="lineNum">     437</span>                 :<span class="tlaUNC">           0 :   av1_dealloc_src_diff_buf(mb, num_planes);</span></span>
+<span id="L438"><span class="lineNum">     438</span>                 :             : </span>
+<span id="L439"><span class="lineNum">     439</span>                 :<span class="tlaUNC">           0 :   aom_free(mb-&gt;e_mbd.seg_mask);</span></span>
+<span id="L440"><span class="lineNum">     440</span>                 :<span class="tlaUNC">           0 :   mb-&gt;e_mbd.seg_mask = NULL;</span></span>
+<span id="L441"><span class="lineNum">     441</span>                 :             : </span>
+<span id="L442"><span class="lineNum">     442</span>                 :<span class="tlaUNC">           0 :   aom_free(mb-&gt;winner_mode_stats);</span></span>
+<span id="L443"><span class="lineNum">     443</span>                 :<span class="tlaUNC">           0 :   mb-&gt;winner_mode_stats = NULL;</span></span>
+<span id="L444"><span class="lineNum">     444</span>                 :             : </span>
+<span id="L445"><span class="lineNum">     445</span>                 :<span class="tlaUNC">           0 :   aom_free(mb-&gt;dqcoeff_buf);</span></span>
+<span id="L446"><span class="lineNum">     446</span>                 :<span class="tlaUNC">           0 :   mb-&gt;dqcoeff_buf = NULL;</span></span>
+<span id="L447"><span class="lineNum">     447</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L448"><span class="lineNum">     448</span>                 :             : </span>
+<span id="L449"><span class="lineNum">     449</span>                 :<span class="tlaUNC">           0 : static inline void allocate_winner_mode_stats(const AV1_COMP *cpi,</span></span>
+<span id="L450"><span class="lineNum">     450</span>                 :             :                                               struct macroblock *mb) {</span>
+<span id="L451"><span class="lineNum">     451</span>                 :<span class="tlaUNC">           0 :   const SPEED_FEATURES *sf = &amp;cpi-&gt;sf;</span></span>
+<span id="L452"><span class="lineNum">     452</span>                 :             :   // The winner_mode_stats buffer is not required in these cases.</span>
+<span id="L453"><span class="lineNum">     453</span>                 :<span class="tlaUNC">           0 :   if (is_stat_generation_stage(cpi) ||</span></span>
+<span id="L454"><span class="lineNum">     454</span>                 :<span class="tlaUNC">           0 :       (sf-&gt;rt_sf.use_nonrd_pick_mode &amp;&amp; !sf-&gt;rt_sf.hybrid_intra_pickmode) ||</span></span>
+<span id="L455"><span class="lineNum">     455</span>                 :<span class="tlaUNC">           0 :       (sf-&gt;winner_mode_sf.multi_winner_mode_type == MULTI_WINNER_MODE_OFF))</span></span>
+<span id="L456"><span class="lineNum">     456</span>                 :<span class="tlaUNC">           0 :     return;</span></span>
+<span id="L457"><span class="lineNum">     457</span>                 :             : </span>
+<span id="L458"><span class="lineNum">     458</span>                 :<span class="tlaUNC">           0 :   const AV1_COMMON *cm = &amp;cpi-&gt;common;</span></span>
+<span id="L459"><span class="lineNum">     459</span>                 :<span class="tlaUNC">           0 :   const int winner_mode_count =</span></span>
+<span id="L460"><span class="lineNum">     460</span>                 :<span class="tlaUNC">           0 :       winner_mode_count_allowed[sf-&gt;winner_mode_sf.multi_winner_mode_type];</span></span>
+<span id="L461"><span class="lineNum">     461</span>                 :<span class="tlaUNC">           0 :   CHECK_MEM_ERROR(cm, mb-&gt;winner_mode_stats,</span></span>
+<span id="L462"><span class="lineNum">     462</span>                 :             :                   (WinnerModeStats *)aom_malloc(</span>
+<span id="L463"><span class="lineNum">     463</span>                 :             :                       winner_mode_count * sizeof(mb-&gt;winner_mode_stats[0])));</span>
+<span id="L464"><span class="lineNum">     464</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L465"><span class="lineNum">     465</span>                 :             : </span>
+<span id="L466"><span class="lineNum">     466</span>                 :             : void av1_alloc_src_diff_buf(const struct AV1Common *cm, struct macroblock *mb);</span>
+<span id="L467"><span class="lineNum">     467</span>                 :             : </span>
+<span id="L468"><span class="lineNum">     468</span>                 :<span class="tlaUNC">           0 : static inline void av1_alloc_mb_data(const AV1_COMP *cpi,</span></span>
+<span id="L469"><span class="lineNum">     469</span>                 :             :                                      struct macroblock *mb) {</span>
+<span id="L470"><span class="lineNum">     470</span>                 :<span class="tlaUNC">           0 :   const AV1_COMMON *cm = &amp;cpi-&gt;common;</span></span>
+<span id="L471"><span class="lineNum">     471</span>                 :<span class="tlaUNC">           0 :   const SPEED_FEATURES *sf = &amp;cpi-&gt;sf;</span></span>
+<span id="L472"><span class="lineNum">     472</span>                 :<span class="tlaUNC">           0 :   if (!sf-&gt;rt_sf.use_nonrd_pick_mode) {</span></span>
+<span id="L473"><span class="lineNum">     473</span>                 :             :     // Memory for mb_rd_record is allocated only when use_mb_rd_hash sf is</span>
+<span id="L474"><span class="lineNum">     474</span>                 :             :     // enabled.</span>
+<span id="L475"><span class="lineNum">     475</span>                 :<span class="tlaUNC">           0 :     if (sf-&gt;rd_sf.use_mb_rd_hash)</span></span>
+<span id="L476"><span class="lineNum">     476</span>                 :<span class="tlaUNC">           0 :       CHECK_MEM_ERROR(cm, mb-&gt;txfm_search_info.mb_rd_record,</span></span>
+<span id="L477"><span class="lineNum">     477</span>                 :             :                       (MB_RD_RECORD *)aom_malloc(sizeof(MB_RD_RECORD)));</span>
+<span id="L478"><span class="lineNum">     478</span>                 :<span class="tlaUNC">           0 :     if (!frame_is_intra_only(cm))</span></span>
+<span id="L479"><span class="lineNum">     479</span>                 :<span class="tlaUNC">           0 :       CHECK_MEM_ERROR(</span></span>
+<span id="L480"><span class="lineNum">     480</span>                 :             :           cm, mb-&gt;inter_modes_info,</span>
+<span id="L481"><span class="lineNum">     481</span>                 :             :           (InterModesInfo *)aom_malloc(sizeof(*mb-&gt;inter_modes_info)));</span>
+<span id="L482"><span class="lineNum">     482</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L483"><span class="lineNum">     483</span>                 :             : </span>
+<span id="L484"><span class="lineNum">     484</span>                 :<span class="tlaUNC">           0 :   av1_alloc_src_diff_buf(cm, mb);</span></span>
+<span id="L485"><span class="lineNum">     485</span>                 :             : </span>
+<span id="L486"><span class="lineNum">     486</span>                 :<span class="tlaUNC">           0 :   CHECK_MEM_ERROR(cm, mb-&gt;e_mbd.seg_mask,</span></span>
+<span id="L487"><span class="lineNum">     487</span>                 :             :                   (uint8_t *)aom_memalign(</span>
+<span id="L488"><span class="lineNum">     488</span>                 :             :                       16, 2 * MAX_SB_SQUARE * sizeof(mb-&gt;e_mbd.seg_mask[0])));</span>
+<span id="L489"><span class="lineNum">     489</span>                 :             : </span>
+<span id="L490"><span class="lineNum">     490</span>                 :<span class="tlaUNC">           0 :   allocate_winner_mode_stats(cpi, mb);</span></span>
+<span id="L491"><span class="lineNum">     491</span>                 :             : </span>
+<span id="L492"><span class="lineNum">     492</span>                 :<span class="tlaUNC">           0 :   const int max_sb_square_y = 1</span></span>
+<span id="L493"><span class="lineNum">     493</span>                 :<span class="tlaUNC">           0 :                               &lt;&lt; num_pels_log2_lookup[cm-&gt;seq_params-&gt;sb_size];</span></span>
+<span id="L494"><span class="lineNum">     494</span>                 :<span class="tlaUNC">           0 :   CHECK_MEM_ERROR(</span></span>
+<span id="L495"><span class="lineNum">     495</span>                 :             :       cm, mb-&gt;dqcoeff_buf,</span>
+<span id="L496"><span class="lineNum">     496</span>                 :             :       (tran_low_t *)aom_memalign(32, max_sb_square_y * sizeof(tran_low_t)));</span>
+<span id="L497"><span class="lineNum">     497</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L498"><span class="lineNum">     498</span>                 :             : </span>
+<span id="L499"><span class="lineNum">     499</span>                 :             : // This function will compute the number of reference frames to be disabled</span>
+<span id="L500"><span class="lineNum">     500</span>                 :             : // based on selective_ref_frame speed feature.</span>
+<span id="L501"><span class="lineNum">     501</span>                 :<span class="tlaUNC">           0 : static inline unsigned int get_num_refs_to_disable(</span></span>
+<span id="L502"><span class="lineNum">     502</span>                 :             :     const AV1_COMP *cpi, const int *ref_frame_flags,</span>
+<span id="L503"><span class="lineNum">     503</span>                 :             :     const unsigned int *ref_display_order_hint,</span>
+<span id="L504"><span class="lineNum">     504</span>                 :             :     unsigned int cur_frame_display_index) {</span>
+<span id="L505"><span class="lineNum">     505</span>                 :<span class="tlaUNC">           0 :   unsigned int num_refs_to_disable = 0;</span></span>
+<span id="L506"><span class="lineNum">     506</span>                 :<span class="tlaUNC">           0 :   if (cpi-&gt;sf.inter_sf.selective_ref_frame &gt;= 3) {</span></span>
+<span id="L507"><span class="lineNum">     507</span>                 :<span class="tlaUNC">           0 :     num_refs_to_disable++;</span></span>
+<span id="L508"><span class="lineNum">     508</span>                 :<span class="tlaUNC">           0 :     if (cpi-&gt;sf.inter_sf.selective_ref_frame &gt;= 6) {</span></span>
+<span id="L509"><span class="lineNum">     509</span>                 :             :       // Disable LAST2_FRAME  and ALTREF2_FRAME</span>
+<span id="L510"><span class="lineNum">     510</span>                 :<span class="tlaUNC">           0 :       num_refs_to_disable += 2;</span></span>
+<span id="L511"><span class="lineNum">     511</span>                 :<span class="tlaUNC">           0 :     } else if (cpi-&gt;sf.inter_sf.selective_ref_frame == 5 &amp;&amp;</span></span>
+<span id="L512"><span class="lineNum">     512</span>                 :<span class="tlaUNC">           0 :                *ref_frame_flags &amp; av1_ref_frame_flag_list[LAST2_FRAME]) {</span></span>
+<span id="L513"><span class="lineNum">     513</span>                 :<span class="tlaUNC">           0 :       const int last2_frame_dist = av1_encoder_get_relative_dist(</span></span>
+<span id="L514"><span class="lineNum">     514</span>                 :<span class="tlaUNC">           0 :           ref_display_order_hint[LAST2_FRAME - LAST_FRAME],</span></span>
+<span id="L515"><span class="lineNum">     515</span>                 :<span class="tlaUNC">           0 :           cur_frame_display_index);</span></span>
+<span id="L516"><span class="lineNum">     516</span>                 :             :       // Disable LAST2_FRAME if it is a temporally distant frame</span>
+<span id="L517"><span class="lineNum">     517</span>                 :<span class="tlaUNC">           0 :       if (abs(last2_frame_dist) &gt; 2) {</span></span>
+<span id="L518"><span class="lineNum">     518</span>                 :<span class="tlaUNC">           0 :         num_refs_to_disable++;</span></span>
+<span id="L519"><span class="lineNum">     519</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L520"><span class="lineNum">     520</span>                 :             : #if !CONFIG_REALTIME_ONLY</span>
+<span id="L521"><span class="lineNum">     521</span>                 :<span class="tlaUNC">           0 :       else if (is_stat_consumption_stage_twopass(cpi)) {</span></span>
+<span id="L522"><span class="lineNum">     522</span>                 :<span class="tlaUNC">           0 :         const FIRSTPASS_STATS *const this_frame_stats =</span></span>
+<span id="L523"><span class="lineNum">     523</span>                 :<span class="tlaUNC">           0 :             read_one_frame_stats(&amp;cpi-&gt;ppi-&gt;twopass, cur_frame_display_index);</span></span>
+<span id="L524"><span class="lineNum">     524</span>                 :<span class="tlaUNC">           0 :         const double coded_error_per_mb = this_frame_stats-&gt;coded_error;</span></span>
+<span id="L525"><span class="lineNum">     525</span>                 :             :         // Disable LAST2_FRAME if the coded error of the current frame based on</span>
+<span id="L526"><span class="lineNum">     526</span>                 :             :         // first pass stats is very low.</span>
+<span id="L527"><span class="lineNum">     527</span>                 :<span class="tlaUNC">           0 :         if (coded_error_per_mb &lt; 100.0) num_refs_to_disable++;</span></span>
+<span id="L528"><span class="lineNum">     528</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L529"><span class="lineNum">     529</span>                 :             : #endif  // CONFIG_REALTIME_ONLY</span>
+<span id="L530"><span class="lineNum">     530</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L531"><span class="lineNum">     531</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L532"><span class="lineNum">     532</span>                 :<span class="tlaUNC">           0 :   return num_refs_to_disable;</span></span>
+<span id="L533"><span class="lineNum">     533</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L534"><span class="lineNum">     534</span>                 :             : </span>
+<span id="L535"><span class="lineNum">     535</span>                 :<span class="tlaUNC">           0 : static inline int get_max_allowed_ref_frames(</span></span>
+<span id="L536"><span class="lineNum">     536</span>                 :             :     const AV1_COMP *cpi, const int *ref_frame_flags,</span>
+<span id="L537"><span class="lineNum">     537</span>                 :             :     const unsigned int *ref_display_order_hint,</span>
+<span id="L538"><span class="lineNum">     538</span>                 :             :     unsigned int cur_frame_display_index) {</span>
+<span id="L539"><span class="lineNum">     539</span>                 :<span class="tlaUNC">           0 :   const unsigned int max_reference_frames =</span></span>
+<span id="L540"><span class="lineNum">     540</span>                 :<span class="tlaUNC">           0 :       cpi-&gt;oxcf.ref_frm_cfg.max_reference_frames;</span></span>
+<span id="L541"><span class="lineNum">     541</span>                 :<span class="tlaUNC">           0 :   const unsigned int num_refs_to_disable = get_num_refs_to_disable(</span></span>
+<span id="L542"><span class="lineNum">     542</span>                 :<span class="tlaUNC">           0 :       cpi, ref_frame_flags, ref_display_order_hint, cur_frame_display_index);</span></span>
+<span id="L543"><span class="lineNum">     543</span>                 :<span class="tlaUNC">           0 :   const unsigned int max_allowed_refs_for_given_speed =</span></span>
+<span id="L544"><span class="lineNum">     544</span>                 :<span class="tlaUNC">           0 :       INTER_REFS_PER_FRAME - num_refs_to_disable;</span></span>
+<span id="L545"><span class="lineNum">     545</span>                 :<span class="tlaUNC">           0 :   return AOMMIN(max_allowed_refs_for_given_speed, max_reference_frames);</span></span>
+<span id="L546"><span class="lineNum">     546</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L547"><span class="lineNum">     547</span>                 :             : </span>
+<span id="L548"><span class="lineNum">     548</span>                 :             : // Enforce the number of references for each arbitrary frame based on user</span>
+<span id="L549"><span class="lineNum">     549</span>                 :             : // options and speed.</span>
+<span id="L550"><span class="lineNum">     550</span>                 :<span class="tlaUNC">           0 : static inline void enforce_max_ref_frames(</span></span>
+<span id="L551"><span class="lineNum">     551</span>                 :             :     AV1_COMP *cpi, int *ref_frame_flags,</span>
+<span id="L552"><span class="lineNum">     552</span>                 :             :     const unsigned int *ref_display_order_hint,</span>
+<span id="L553"><span class="lineNum">     553</span>                 :             :     unsigned int cur_frame_display_index) {</span>
+<span id="L554"><span class="lineNum">     554</span>                 :<span class="tlaUNC">           0 :   MV_REFERENCE_FRAME ref_frame;</span></span>
+<span id="L555"><span class="lineNum">     555</span>                 :<span class="tlaUNC">           0 :   int total_valid_refs = 0;</span></span>
+<span id="L556"><span class="lineNum">     556</span>                 :             : </span>
+<span id="L557"><span class="lineNum">     557</span>                 :<span class="tlaUNC">           0 :   for (ref_frame = LAST_FRAME; ref_frame &lt;= ALTREF_FRAME; ++ref_frame) {</span></span>
+<span id="L558"><span class="lineNum">     558</span>                 :<span class="tlaUNC">           0 :     if (*ref_frame_flags &amp; av1_ref_frame_flag_list[ref_frame]) {</span></span>
+<span id="L559"><span class="lineNum">     559</span>                 :<span class="tlaUNC">           0 :       total_valid_refs++;</span></span>
+<span id="L560"><span class="lineNum">     560</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L561"><span class="lineNum">     561</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L562"><span class="lineNum">     562</span>                 :             : </span>
+<span id="L563"><span class="lineNum">     563</span>                 :<span class="tlaUNC">           0 :   const int max_allowed_refs = get_max_allowed_ref_frames(</span></span>
+<span id="L564"><span class="lineNum">     564</span>                 :<span class="tlaUNC">           0 :       cpi, ref_frame_flags, ref_display_order_hint, cur_frame_display_index);</span></span>
+<span id="L565"><span class="lineNum">     565</span>                 :             : </span>
+<span id="L566"><span class="lineNum">     566</span>                 :<span class="tlaUNC">           0 :   for (int i = 0; i &lt; 4 &amp;&amp; total_valid_refs &gt; max_allowed_refs; ++i) {</span></span>
+<span id="L567"><span class="lineNum">     567</span>                 :<span class="tlaUNC">           0 :     const MV_REFERENCE_FRAME ref_frame_to_disable = disable_order[i];</span></span>
+<span id="L568"><span class="lineNum">     568</span>                 :             : </span>
+<span id="L569"><span class="lineNum">     569</span>                 :<span class="tlaUNC">           0 :     if (!(*ref_frame_flags &amp; av1_ref_frame_flag_list[ref_frame_to_disable])) {</span></span>
+<span id="L570"><span class="lineNum">     570</span>                 :<span class="tlaUNC">           0 :       continue;</span></span>
+<span id="L571"><span class="lineNum">     571</span>                 :             :     }</span>
+<span id="L572"><span class="lineNum">     572</span>                 :             : </span>
+<span id="L573"><span class="lineNum">     573</span>                 :<span class="tlaUNC">           0 :     switch (ref_frame_to_disable) {</span></span>
+<span id="L574"><span class="lineNum">     574</span>                 :<span class="tlaUNC">           0 :       case LAST3_FRAME: *ref_frame_flags &amp;= ~AOM_LAST3_FLAG; break;</span></span>
+<span id="L575"><span class="lineNum">     575</span>                 :<span class="tlaUNC">           0 :       case LAST2_FRAME: *ref_frame_flags &amp;= ~AOM_LAST2_FLAG; break;</span></span>
+<span id="L576"><span class="lineNum">     576</span>                 :<span class="tlaUNC">           0 :       case ALTREF2_FRAME: *ref_frame_flags &amp;= ~AOM_ALT2_FLAG; break;</span></span>
+<span id="L577"><span class="lineNum">     577</span>                 :<span class="tlaUNC">           0 :       case BWDREF_FRAME: *ref_frame_flags &amp;= ~AOM_GOLD_FLAG; break;</span></span>
+<span id="L578"><span class="lineNum">     578</span>                 :             :       default: assert(0);</span>
+<span id="L579"><span class="lineNum">     579</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L580"><span class="lineNum">     580</span>                 :<span class="tlaUNC">           0 :     --total_valid_refs;</span></span>
+<span id="L581"><span class="lineNum">     581</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L582"><span class="lineNum">     582</span>                 :             :   assert(total_valid_refs &lt;= max_allowed_refs);</span>
+<span id="L583"><span class="lineNum">     583</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L584"><span class="lineNum">     584</span>                 :             : </span>
+<span id="L585"><span class="lineNum">     585</span>                 :             : #ifdef __cplusplus</span>
+<span id="L586"><span class="lineNum">     586</span>                 :             : }  // extern &quot;C&quot;</span>
+<span id="L587"><span class="lineNum">     587</span>                 :             : #endif</span>
+<span id="L588"><span class="lineNum">     588</span>                 :             : </span>
+<span id="L589"><span class="lineNum">     589</span>                 :             : #endif  // AOM_AV1_ENCODER_ENCODEFRAME_UTILS_H_</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

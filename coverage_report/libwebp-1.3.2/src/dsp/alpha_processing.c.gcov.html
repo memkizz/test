@@ -1,0 +1,588 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libwebp-1.3.2/src/dsp/alpha_processing.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libwebp-1.3.2/src/dsp</a> - alpha_processing.c<span style="font-size: 80%;"> (source / <a href="alpha_processing.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">164</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">23</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // Copyright 2013 Google Inc. All Rights Reserved.</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : //</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : // Use of this source code is governed by a BSD-style license</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : // that can be found in the COPYING file in the root of the source</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : // tree. An additional intellectual property rights grant can be found</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : // in the file PATENTS. All contributing project authors may</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : // be found in the AUTHORS file in the root of the source tree.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : // Utilities for processing transparent channel.</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : //</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : // Author: Skal (pascal.massimino@gmail.com)</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #include &lt;assert.h&gt;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;src/dsp/dsp.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : // Tables can be faster on some platform but incur some extra binary size (~2k).</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #if !defined(USE_TABLES_FOR_ALPHA_MULT)</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #define USE_TABLES_FOR_ALPHA_MULT 0   // ALTERNATE_CODE</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #endif</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : </span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : </span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : </span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : #define MFIX 24    // 24bit fixed-point arithmetic</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : #define HALF ((1u &lt;&lt; MFIX) &gt;&gt; 1)</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : #define KINV_255 ((1u &lt;&lt; MFIX) / 255u)</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : </span>
+<span id="L29"><span class="lineNum">      29</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static uint32_t Mult(uint8_t x, uint32_t mult) {</span></span>
+<span id="L30"><span class="lineNum">      30</span>                 :<span class="tlaUNC">           0 :   const uint32_t v = (x * mult + HALF) &gt;&gt; MFIX;</span></span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :   assert(v &lt;= 255);  // &lt;- 24bit precision is enough to ensure that.</span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :   return v;</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : }</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : </span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : #if (USE_TABLES_FOR_ALPHA_MULT == 1)</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : </span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : static const uint32_t kMultTables[2][256] = {</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :   {    // (255u &lt;&lt; MFIX) / alpha</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :     0x00000000, 0xff000000, 0x7f800000, 0x55000000, 0x3fc00000, 0x33000000,</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :     0x2a800000, 0x246db6db, 0x1fe00000, 0x1c555555, 0x19800000, 0x172e8ba2,</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :     0x15400000, 0x139d89d8, 0x1236db6d, 0x11000000, 0x0ff00000, 0x0f000000,</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :     0x0e2aaaaa, 0x0d6bca1a, 0x0cc00000, 0x0c249249, 0x0b9745d1, 0x0b1642c8,</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :     0x0aa00000, 0x0a333333, 0x09cec4ec, 0x0971c71c, 0x091b6db6, 0x08cb08d3,</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :     0x08800000, 0x0839ce73, 0x07f80000, 0x07ba2e8b, 0x07800000, 0x07492492,</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :     0x07155555, 0x06e45306, 0x06b5e50d, 0x0689d89d, 0x06600000, 0x063831f3,</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :     0x06124924, 0x05ee23b8, 0x05cba2e8, 0x05aaaaaa, 0x058b2164, 0x056cefa8,</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :     0x05500000, 0x05343eb1, 0x05199999, 0x05000000, 0x04e76276, 0x04cfb2b7,</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :     0x04b8e38e, 0x04a2e8ba, 0x048db6db, 0x0479435e, 0x04658469, 0x045270d0,</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :     0x04400000, 0x042e29f7, 0x041ce739, 0x040c30c3, 0x03fc0000, 0x03ec4ec4,</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :     0x03dd1745, 0x03ce540f, 0x03c00000, 0x03b21642, 0x03a49249, 0x03976fc6,</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :     0x038aaaaa, 0x037e3f1f, 0x03722983, 0x03666666, 0x035af286, 0x034fcace,</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :     0x0344ec4e, 0x033a5440, 0x03300000, 0x0325ed09, 0x031c18f9, 0x0312818a,</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :     0x03092492, 0x03000000, 0x02f711dc, 0x02ee5846, 0x02e5d174, 0x02dd7baf,</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :     0x02d55555, 0x02cd5cd5, 0x02c590b2, 0x02bdef7b, 0x02b677d4, 0x02af286b,</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :     0x02a80000, 0x02a0fd5c, 0x029a1f58, 0x029364d9, 0x028ccccc, 0x0286562d,</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :     0x02800000, 0x0279c952, 0x0273b13b, 0x026db6db, 0x0267d95b, 0x026217ec,</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :     0x025c71c7, 0x0256e62a, 0x0251745d, 0x024c1bac, 0x0246db6d, 0x0241b2f9,</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :     0x023ca1af, 0x0237a6f4, 0x0232c234, 0x022df2df, 0x02293868, 0x02249249,</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :     0x02200000, 0x021b810e, 0x021714fb, 0x0212bb51, 0x020e739c, 0x020a3d70,</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :     0x02061861, 0x02020408, 0x01fe0000, 0x01fa0be8, 0x01f62762, 0x01f25213,</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :     0x01ee8ba2, 0x01ead3ba, 0x01e72a07, 0x01e38e38, 0x01e00000, 0x01dc7f10,</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :     0x01d90b21, 0x01d5a3e9, 0x01d24924, 0x01cefa8d, 0x01cbb7e3, 0x01c880e5,</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :     0x01c55555, 0x01c234f7, 0x01bf1f8f, 0x01bc14e5, 0x01b914c1, 0x01b61eed,</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :     0x01b33333, 0x01b05160, 0x01ad7943, 0x01aaaaaa, 0x01a7e567, 0x01a5294a,</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :     0x01a27627, 0x019fcbd2, 0x019d2a20, 0x019a90e7, 0x01980000, 0x01957741,</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :     0x0192f684, 0x01907da4, 0x018e0c7c, 0x018ba2e8, 0x018940c5, 0x0186e5f0,</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :     0x01849249, 0x018245ae, 0x01800000, 0x017dc11f, 0x017b88ee, 0x0179574e,</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :     0x01772c23, 0x01750750, 0x0172e8ba, 0x0170d045, 0x016ebdd7, 0x016cb157,</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :     0x016aaaaa, 0x0168a9b9, 0x0166ae6a, 0x0164b8a7, 0x0162c859, 0x0160dd67,</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :     0x015ef7bd, 0x015d1745, 0x015b3bea, 0x01596596, 0x01579435, 0x0155c7b4,</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :     0x01540000, 0x01523d03, 0x01507eae, 0x014ec4ec, 0x014d0fac, 0x014b5edc,</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :     0x0149b26c, 0x01480a4a, 0x01466666, 0x0144c6af, 0x01432b16, 0x0141938b,</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :     0x01400000, 0x013e7063, 0x013ce4a9, 0x013b5cc0, 0x0139d89d, 0x01385830,</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :     0x0136db6d, 0x01356246, 0x0133ecad, 0x01327a97, 0x01310bf6, 0x012fa0be,</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :     0x012e38e3, 0x012cd459, 0x012b7315, 0x012a150a, 0x0128ba2e, 0x01276276,</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :     0x01260dd6, 0x0124bc44, 0x01236db6, 0x01222222, 0x0120d97c, 0x011f93bc,</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :     0x011e50d7, 0x011d10c4, 0x011bd37a, 0x011a98ef, 0x0119611a, 0x01182bf2,</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :     0x0116f96f, 0x0115c988, 0x01149c34, 0x0113716a, 0x01124924, 0x01112358,</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :     0x01100000, 0x010edf12, 0x010dc087, 0x010ca458, 0x010b8a7d, 0x010a72f0,</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :     0x01095da8, 0x01084a9f, 0x010739ce, 0x01062b2e, 0x01051eb8, 0x01041465,</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :     0x01030c30, 0x01020612, 0x01010204, 0x01000000 },</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   {   // alpha * KINV_255</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :     0x00000000, 0x00010101, 0x00020202, 0x00030303, 0x00040404, 0x00050505,</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :     0x00060606, 0x00070707, 0x00080808, 0x00090909, 0x000a0a0a, 0x000b0b0b,</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :     0x000c0c0c, 0x000d0d0d, 0x000e0e0e, 0x000f0f0f, 0x00101010, 0x00111111,</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :     0x00121212, 0x00131313, 0x00141414, 0x00151515, 0x00161616, 0x00171717,</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :     0x00181818, 0x00191919, 0x001a1a1a, 0x001b1b1b, 0x001c1c1c, 0x001d1d1d,</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :     0x001e1e1e, 0x001f1f1f, 0x00202020, 0x00212121, 0x00222222, 0x00232323,</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :     0x00242424, 0x00252525, 0x00262626, 0x00272727, 0x00282828, 0x00292929,</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :     0x002a2a2a, 0x002b2b2b, 0x002c2c2c, 0x002d2d2d, 0x002e2e2e, 0x002f2f2f,</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :     0x00303030, 0x00313131, 0x00323232, 0x00333333, 0x00343434, 0x00353535,</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :     0x00363636, 0x00373737, 0x00383838, 0x00393939, 0x003a3a3a, 0x003b3b3b,</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :     0x003c3c3c, 0x003d3d3d, 0x003e3e3e, 0x003f3f3f, 0x00404040, 0x00414141,</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :     0x00424242, 0x00434343, 0x00444444, 0x00454545, 0x00464646, 0x00474747,</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :     0x00484848, 0x00494949, 0x004a4a4a, 0x004b4b4b, 0x004c4c4c, 0x004d4d4d,</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             :     0x004e4e4e, 0x004f4f4f, 0x00505050, 0x00515151, 0x00525252, 0x00535353,</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :     0x00545454, 0x00555555, 0x00565656, 0x00575757, 0x00585858, 0x00595959,</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :     0x005a5a5a, 0x005b5b5b, 0x005c5c5c, 0x005d5d5d, 0x005e5e5e, 0x005f5f5f,</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :     0x00606060, 0x00616161, 0x00626262, 0x00636363, 0x00646464, 0x00656565,</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :     0x00666666, 0x00676767, 0x00686868, 0x00696969, 0x006a6a6a, 0x006b6b6b,</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :     0x006c6c6c, 0x006d6d6d, 0x006e6e6e, 0x006f6f6f, 0x00707070, 0x00717171,</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :     0x00727272, 0x00737373, 0x00747474, 0x00757575, 0x00767676, 0x00777777,</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :     0x00787878, 0x00797979, 0x007a7a7a, 0x007b7b7b, 0x007c7c7c, 0x007d7d7d,</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :     0x007e7e7e, 0x007f7f7f, 0x00808080, 0x00818181, 0x00828282, 0x00838383,</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :     0x00848484, 0x00858585, 0x00868686, 0x00878787, 0x00888888, 0x00898989,</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :     0x008a8a8a, 0x008b8b8b, 0x008c8c8c, 0x008d8d8d, 0x008e8e8e, 0x008f8f8f,</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :     0x00909090, 0x00919191, 0x00929292, 0x00939393, 0x00949494, 0x00959595,</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :     0x00969696, 0x00979797, 0x00989898, 0x00999999, 0x009a9a9a, 0x009b9b9b,</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :     0x009c9c9c, 0x009d9d9d, 0x009e9e9e, 0x009f9f9f, 0x00a0a0a0, 0x00a1a1a1,</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :     0x00a2a2a2, 0x00a3a3a3, 0x00a4a4a4, 0x00a5a5a5, 0x00a6a6a6, 0x00a7a7a7,</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :     0x00a8a8a8, 0x00a9a9a9, 0x00aaaaaa, 0x00ababab, 0x00acacac, 0x00adadad,</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :     0x00aeaeae, 0x00afafaf, 0x00b0b0b0, 0x00b1b1b1, 0x00b2b2b2, 0x00b3b3b3,</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :     0x00b4b4b4, 0x00b5b5b5, 0x00b6b6b6, 0x00b7b7b7, 0x00b8b8b8, 0x00b9b9b9,</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :     0x00bababa, 0x00bbbbbb, 0x00bcbcbc, 0x00bdbdbd, 0x00bebebe, 0x00bfbfbf,</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :     0x00c0c0c0, 0x00c1c1c1, 0x00c2c2c2, 0x00c3c3c3, 0x00c4c4c4, 0x00c5c5c5,</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :     0x00c6c6c6, 0x00c7c7c7, 0x00c8c8c8, 0x00c9c9c9, 0x00cacaca, 0x00cbcbcb,</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :     0x00cccccc, 0x00cdcdcd, 0x00cecece, 0x00cfcfcf, 0x00d0d0d0, 0x00d1d1d1,</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :     0x00d2d2d2, 0x00d3d3d3, 0x00d4d4d4, 0x00d5d5d5, 0x00d6d6d6, 0x00d7d7d7,</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :     0x00d8d8d8, 0x00d9d9d9, 0x00dadada, 0x00dbdbdb, 0x00dcdcdc, 0x00dddddd,</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :     0x00dedede, 0x00dfdfdf, 0x00e0e0e0, 0x00e1e1e1, 0x00e2e2e2, 0x00e3e3e3,</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :     0x00e4e4e4, 0x00e5e5e5, 0x00e6e6e6, 0x00e7e7e7, 0x00e8e8e8, 0x00e9e9e9,</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :     0x00eaeaea, 0x00ebebeb, 0x00ececec, 0x00ededed, 0x00eeeeee, 0x00efefef,</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :     0x00f0f0f0, 0x00f1f1f1, 0x00f2f2f2, 0x00f3f3f3, 0x00f4f4f4, 0x00f5f5f5,</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :     0x00f6f6f6, 0x00f7f7f7, 0x00f8f8f8, 0x00f9f9f9, 0x00fafafa, 0x00fbfbfb,</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :     0x00fcfcfc, 0x00fdfdfd, 0x00fefefe, 0x00ffffff }</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             : };</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : </span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : static WEBP_INLINE uint32_t GetScale(uint32_t a, int inverse) {</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :   return kMultTables[!inverse][a];</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : }</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             : </span>
+<span id="L132"><span class="lineNum">     132</span>                 :             : #else</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             : </span>
+<span id="L134"><span class="lineNum">     134</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE uint32_t GetScale(uint32_t a, int inverse) {</span></span>
+<span id="L135"><span class="lineNum">     135</span>                 :<span class="tlaUNC">           0 :   return inverse ? (255u &lt;&lt; MFIX) / a : a * KINV_255;</span></span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : }</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : </span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : #endif  // USE_TABLES_FOR_ALPHA_MULT</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             : </span>
+<span id="L140"><span class="lineNum">     140</span>                 :<span class="tlaUNC">           0 : void WebPMultARGBRow_C(uint32_t* const ptr, int width, int inverse) {</span></span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   int x;</span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :   for (x = 0; x &lt; width; ++x) {</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :<span class="tlaUNC">           0 :     const uint32_t argb = ptr[x];</span></span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :     if (argb &lt; 0xff000000u) {      // alpha &lt; 255</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :<span class="tlaUNC">           0 :       if (argb &lt;= 0x00ffffffu) {   // alpha == 0</span></span>
+<span id="L146"><span class="lineNum">     146</span>                 :<span class="tlaUNC">           0 :         ptr[x] = 0;</span></span>
+<span id="L147"><span class="lineNum">     147</span>                 :<span class="tlaUNC">           0 :       } else {</span></span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :         const uint32_t alpha = (argb &gt;&gt; 24) &amp; 0xff;</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :         const uint32_t scale = GetScale(alpha, inverse);</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :<span class="tlaUNC">           0 :         uint32_t out = argb &amp; 0xff000000u;</span></span>
+<span id="L151"><span class="lineNum">     151</span>                 :<span class="tlaUNC">           0 :         out |= Mult(argb &gt;&gt;  0, scale) &lt;&lt;  0;</span></span>
+<span id="L152"><span class="lineNum">     152</span>                 :<span class="tlaUNC">           0 :         out |= Mult(argb &gt;&gt;  8, scale) &lt;&lt;  8;</span></span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 :         out |= Mult(argb &gt;&gt; 16, scale) &lt;&lt; 16;</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 :         ptr[x] = out;</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :       }</span>
+<span id="L156"><span class="lineNum">     156</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :<span class="tlaUNC">           0 : void WebPMultRow_C(uint8_t* WEBP_RESTRICT const ptr,</span></span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :                    const uint8_t* WEBP_RESTRICT const alpha,</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :                    int width, int inverse) {</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :   int x;</span>
+<span id="L164"><span class="lineNum">     164</span>                 :<span class="tlaUNC">           0 :   for (x = 0; x &lt; width; ++x) {</span></span>
+<span id="L165"><span class="lineNum">     165</span>                 :<span class="tlaUNC">           0 :     const uint32_t a = alpha[x];</span></span>
+<span id="L166"><span class="lineNum">     166</span>                 :<span class="tlaUNC">           0 :     if (a != 255) {</span></span>
+<span id="L167"><span class="lineNum">     167</span>                 :<span class="tlaUNC">           0 :       if (a == 0) {</span></span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 :         ptr[x] = 0;</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 :       } else {</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :<span class="tlaUNC">           0 :         const uint32_t scale = GetScale(a, inverse);</span></span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :         ptr[x] = Mult(ptr[x], scale);</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :             :       }</span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : </span>
+<span id="L177"><span class="lineNum">     177</span>                 :             : #undef KINV_255</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             : #undef HALF</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : #undef MFIX</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             : </span>
+<span id="L181"><span class="lineNum">     181</span>                 :             : void (*WebPMultARGBRow)(uint32_t* const ptr, int width, int inverse);</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : void (*WebPMultRow)(uint8_t* WEBP_RESTRICT const ptr,</span>
+<span id="L183"><span class="lineNum">     183</span>                 :             :                     const uint8_t* WEBP_RESTRICT const alpha,</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             :                     int width, int inverse);</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : </span>
+<span id="L186"><span class="lineNum">     186</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             : // Generic per-plane calls</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : </span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 : void WebPMultARGBRows(uint8_t* ptr, int stride, int width, int num_rows,</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :                       int inverse) {</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :   int n;</span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 :   for (n = 0; n &lt; num_rows; ++n) {</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :<span class="tlaUNC">           0 :     WebPMultARGBRow((uint32_t*)ptr, width, inverse);</span></span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 :     ptr += stride;</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L197"><span class="lineNum">     197</span>                 :             : </span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 : void WebPMultRows(uint8_t* WEBP_RESTRICT ptr, int stride,</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :                   const uint8_t* WEBP_RESTRICT alpha, int alpha_stride,</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :                   int width, int num_rows, int inverse) {</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :   int n;</span>
+<span id="L202"><span class="lineNum">     202</span>                 :<span class="tlaUNC">           0 :   for (n = 0; n &lt; num_rows; ++n) {</span></span>
+<span id="L203"><span class="lineNum">     203</span>                 :<span class="tlaUNC">           0 :     WebPMultRow(ptr, alpha, width, inverse);</span></span>
+<span id="L204"><span class="lineNum">     204</span>                 :<span class="tlaUNC">           0 :     ptr += stride;</span></span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :     alpha += alpha_stride;</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :             : </span>
+<span id="L209"><span class="lineNum">     209</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             : // Premultiplied modes</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             : </span>
+<span id="L212"><span class="lineNum">     212</span>                 :             : // non dithered-modes</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             : </span>
+<span id="L214"><span class="lineNum">     214</span>                 :             : // (x * a * 32897) &gt;&gt; 23 is bit-wise equivalent to (int)(x * a / 255.)</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             : // for all 8bit x or a. For bit-wise equivalence to (int)(x * a / 255. + .5),</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             : // one can use instead: (x * a * 65793 + (1 &lt;&lt; 23)) &gt;&gt; 24</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             : #if 1     // (int)(x * a / 255.)</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             : #define MULTIPLIER(a)   ((a) * 32897U)</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             : #define PREMULTIPLY(x, m) (((x) * (m)) &gt;&gt; 23)</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             : #else     // (int)(x * a / 255. + .5)</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             : #define MULTIPLIER(a) ((a) * 65793U)</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             : #define PREMULTIPLY(x, m) (((x) * (m) + (1U &lt;&lt; 23)) &gt;&gt; 24)</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             : #endif</span>
+<span id="L224"><span class="lineNum">     224</span>                 :             : </span>
+<span id="L225"><span class="lineNum">     225</span>                 :             : #if !WEBP_NEON_OMIT_C_CODE</span>
+<span id="L226"><span class="lineNum">     226</span>                 :<span class="tlaUNC">           0 : static void ApplyAlphaMultiply_C(uint8_t* rgba, int alpha_first,</span></span>
+<span id="L227"><span class="lineNum">     227</span>                 :             :                                  int w, int h, int stride) {</span>
+<span id="L228"><span class="lineNum">     228</span>                 :<span class="tlaUNC">           0 :   while (h-- &gt; 0) {</span></span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :     uint8_t* const rgb = rgba + (alpha_first ? 1 : 0);</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 :     const uint8_t* const alpha = rgba + (alpha_first ? 0 : 3);</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :             :     int i;</span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 :     for (i = 0; i &lt; w; ++i) {</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 :       const uint32_t a = alpha[4 * i];</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :<span class="tlaUNC">           0 :       if (a != 0xff) {</span></span>
+<span id="L235"><span class="lineNum">     235</span>                 :<span class="tlaUNC">           0 :         const uint32_t mult = MULTIPLIER(a);</span></span>
+<span id="L236"><span class="lineNum">     236</span>                 :<span class="tlaUNC">           0 :         rgb[4 * i + 0] = PREMULTIPLY(rgb[4 * i + 0], mult);</span></span>
+<span id="L237"><span class="lineNum">     237</span>                 :<span class="tlaUNC">           0 :         rgb[4 * i + 1] = PREMULTIPLY(rgb[4 * i + 1], mult);</span></span>
+<span id="L238"><span class="lineNum">     238</span>                 :<span class="tlaUNC">           0 :         rgb[4 * i + 2] = PREMULTIPLY(rgb[4 * i + 2], mult);</span></span>
+<span id="L239"><span class="lineNum">     239</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L240"><span class="lineNum">     240</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L241"><span class="lineNum">     241</span>                 :<span class="tlaUNC">           0 :     rgba += stride;</span></span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :   }</span>
+<span id="L243"><span class="lineNum">     243</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L244"><span class="lineNum">     244</span>                 :             : #endif  // !WEBP_NEON_OMIT_C_CODE</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             : #undef MULTIPLIER</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             : #undef PREMULTIPLY</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             : </span>
+<span id="L248"><span class="lineNum">     248</span>                 :             : // rgbA4444</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             : </span>
+<span id="L250"><span class="lineNum">     250</span>                 :             : #define MULTIPLIER(a)  ((a) * 0x1111)    // 0x1111 ~= (1 &lt;&lt; 16) / 15</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             : </span>
+<span id="L252"><span class="lineNum">     252</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE uint8_t dither_hi(uint8_t x) {</span></span>
+<span id="L253"><span class="lineNum">     253</span>                 :<span class="tlaUNC">           0 :   return (x &amp; 0xf0) | (x &gt;&gt; 4);</span></span>
+<span id="L254"><span class="lineNum">     254</span>                 :             : }</span>
+<span id="L255"><span class="lineNum">     255</span>                 :             : </span>
+<span id="L256"><span class="lineNum">     256</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE uint8_t dither_lo(uint8_t x) {</span></span>
+<span id="L257"><span class="lineNum">     257</span>                 :<span class="tlaUNC">           0 :   return (x &amp; 0x0f) | (x &lt;&lt; 4);</span></span>
+<span id="L258"><span class="lineNum">     258</span>                 :             : }</span>
+<span id="L259"><span class="lineNum">     259</span>                 :             : </span>
+<span id="L260"><span class="lineNum">     260</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE uint8_t multiply(uint8_t x, uint32_t m) {</span></span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 :   return (x * m) &gt;&gt; 16;</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :             : }</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             : </span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE void ApplyAlphaMultiply4444_C(uint8_t* rgba4444,</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :                                                  int w, int h, int stride,</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             :                                                  int rg_byte_pos /* 0 or 1 */) {</span>
+<span id="L267"><span class="lineNum">     267</span>                 :<span class="tlaUNC">           0 :   while (h-- &gt; 0) {</span></span>
+<span id="L268"><span class="lineNum">     268</span>                 :             :     int i;</span>
+<span id="L269"><span class="lineNum">     269</span>                 :<span class="tlaUNC">           0 :     for (i = 0; i &lt; w; ++i) {</span></span>
+<span id="L270"><span class="lineNum">     270</span>                 :<span class="tlaUNC">           0 :       const uint32_t rg = rgba4444[2 * i + rg_byte_pos];</span></span>
+<span id="L271"><span class="lineNum">     271</span>                 :<span class="tlaUNC">           0 :       const uint32_t ba = rgba4444[2 * i + (rg_byte_pos ^ 1)];</span></span>
+<span id="L272"><span class="lineNum">     272</span>                 :<span class="tlaUNC">           0 :       const uint8_t a = ba &amp; 0x0f;</span></span>
+<span id="L273"><span class="lineNum">     273</span>                 :<span class="tlaUNC">           0 :       const uint32_t mult = MULTIPLIER(a);</span></span>
+<span id="L274"><span class="lineNum">     274</span>                 :<span class="tlaUNC">           0 :       const uint8_t r = multiply(dither_hi(rg), mult);</span></span>
+<span id="L275"><span class="lineNum">     275</span>                 :<span class="tlaUNC">           0 :       const uint8_t g = multiply(dither_lo(rg), mult);</span></span>
+<span id="L276"><span class="lineNum">     276</span>                 :<span class="tlaUNC">           0 :       const uint8_t b = multiply(dither_hi(ba), mult);</span></span>
+<span id="L277"><span class="lineNum">     277</span>                 :<span class="tlaUNC">           0 :       rgba4444[2 * i + rg_byte_pos] = (r &amp; 0xf0) | ((g &gt;&gt; 4) &amp; 0x0f);</span></span>
+<span id="L278"><span class="lineNum">     278</span>                 :<span class="tlaUNC">           0 :       rgba4444[2 * i + (rg_byte_pos ^ 1)] = (b &amp; 0xf0) | a;</span></span>
+<span id="L279"><span class="lineNum">     279</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L280"><span class="lineNum">     280</span>                 :<span class="tlaUNC">           0 :     rgba4444 += stride;</span></span>
+<span id="L281"><span class="lineNum">     281</span>                 :             :   }</span>
+<span id="L282"><span class="lineNum">     282</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L283"><span class="lineNum">     283</span>                 :             : #undef MULTIPLIER</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             : </span>
+<span id="L285"><span class="lineNum">     285</span>                 :<span class="tlaUNC">           0 : static void ApplyAlphaMultiply_16b_C(uint8_t* rgba4444,</span></span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :                                      int w, int h, int stride) {</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             : #if (WEBP_SWAP_16BIT_CSP == 1)</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :   ApplyAlphaMultiply4444_C(rgba4444, w, h, stride, 1);</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             : #else</span>
+<span id="L290"><span class="lineNum">     290</span>                 :<span class="tlaUNC">           0 :   ApplyAlphaMultiply4444_C(rgba4444, w, h, stride, 0);</span></span>
+<span id="L291"><span class="lineNum">     291</span>                 :             : #endif</span>
+<span id="L292"><span class="lineNum">     292</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L293"><span class="lineNum">     293</span>                 :             : </span>
+<span id="L294"><span class="lineNum">     294</span>                 :             : #if !WEBP_NEON_OMIT_C_CODE</span>
+<span id="L295"><span class="lineNum">     295</span>                 :<span class="tlaUNC">           0 : static int DispatchAlpha_C(const uint8_t* WEBP_RESTRICT alpha, int alpha_stride,</span></span>
+<span id="L296"><span class="lineNum">     296</span>                 :             :                            int width, int height,</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             :                            uint8_t* WEBP_RESTRICT dst, int dst_stride) {</span>
+<span id="L298"><span class="lineNum">     298</span>                 :<span class="tlaUNC">           0 :   uint32_t alpha_mask = 0xff;</span></span>
+<span id="L299"><span class="lineNum">     299</span>                 :             :   int i, j;</span>
+<span id="L300"><span class="lineNum">     300</span>                 :             : </span>
+<span id="L301"><span class="lineNum">     301</span>                 :<span class="tlaUNC">           0 :   for (j = 0; j &lt; height; ++j) {</span></span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :     for (i = 0; i &lt; width; ++i) {</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :<span class="tlaUNC">           0 :       const uint32_t alpha_value = alpha[i];</span></span>
+<span id="L304"><span class="lineNum">     304</span>                 :<span class="tlaUNC">           0 :       dst[4 * i] = alpha_value;</span></span>
+<span id="L305"><span class="lineNum">     305</span>                 :<span class="tlaUNC">           0 :       alpha_mask &amp;= alpha_value;</span></span>
+<span id="L306"><span class="lineNum">     306</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 :     alpha += alpha_stride;</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :<span class="tlaUNC">           0 :     dst += dst_stride;</span></span>
+<span id="L309"><span class="lineNum">     309</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L310"><span class="lineNum">     310</span>                 :             : </span>
+<span id="L311"><span class="lineNum">     311</span>                 :<span class="tlaUNC">           0 :   return (alpha_mask != 0xff);</span></span>
+<span id="L312"><span class="lineNum">     312</span>                 :             : }</span>
+<span id="L313"><span class="lineNum">     313</span>                 :             : </span>
+<span id="L314"><span class="lineNum">     314</span>                 :<span class="tlaUNC">           0 : static void DispatchAlphaToGreen_C(const uint8_t* WEBP_RESTRICT alpha,</span></span>
+<span id="L315"><span class="lineNum">     315</span>                 :             :                                    int alpha_stride, int width, int height,</span>
+<span id="L316"><span class="lineNum">     316</span>                 :             :                                    uint32_t* WEBP_RESTRICT dst,</span>
+<span id="L317"><span class="lineNum">     317</span>                 :             :                                    int dst_stride) {</span>
+<span id="L318"><span class="lineNum">     318</span>                 :             :   int i, j;</span>
+<span id="L319"><span class="lineNum">     319</span>                 :<span class="tlaUNC">           0 :   for (j = 0; j &lt; height; ++j) {</span></span>
+<span id="L320"><span class="lineNum">     320</span>                 :<span class="tlaUNC">           0 :     for (i = 0; i &lt; width; ++i) {</span></span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 :       dst[i] = alpha[i] &lt;&lt; 8;  // leave A/R/B channels zero'd.</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L323"><span class="lineNum">     323</span>                 :<span class="tlaUNC">           0 :     alpha += alpha_stride;</span></span>
+<span id="L324"><span class="lineNum">     324</span>                 :<span class="tlaUNC">           0 :     dst += dst_stride;</span></span>
+<span id="L325"><span class="lineNum">     325</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L326"><span class="lineNum">     326</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L327"><span class="lineNum">     327</span>                 :             : </span>
+<span id="L328"><span class="lineNum">     328</span>                 :<span class="tlaUNC">           0 : static int ExtractAlpha_C(const uint8_t* WEBP_RESTRICT argb, int argb_stride,</span></span>
+<span id="L329"><span class="lineNum">     329</span>                 :             :                           int width, int height,</span>
+<span id="L330"><span class="lineNum">     330</span>                 :             :                           uint8_t* WEBP_RESTRICT alpha, int alpha_stride) {</span>
+<span id="L331"><span class="lineNum">     331</span>                 :<span class="tlaUNC">           0 :   uint8_t alpha_mask = 0xff;</span></span>
+<span id="L332"><span class="lineNum">     332</span>                 :             :   int i, j;</span>
+<span id="L333"><span class="lineNum">     333</span>                 :             : </span>
+<span id="L334"><span class="lineNum">     334</span>                 :<span class="tlaUNC">           0 :   for (j = 0; j &lt; height; ++j) {</span></span>
+<span id="L335"><span class="lineNum">     335</span>                 :<span class="tlaUNC">           0 :     for (i = 0; i &lt; width; ++i) {</span></span>
+<span id="L336"><span class="lineNum">     336</span>                 :<span class="tlaUNC">           0 :       const uint8_t alpha_value = argb[4 * i];</span></span>
+<span id="L337"><span class="lineNum">     337</span>                 :<span class="tlaUNC">           0 :       alpha[i] = alpha_value;</span></span>
+<span id="L338"><span class="lineNum">     338</span>                 :<span class="tlaUNC">           0 :       alpha_mask &amp;= alpha_value;</span></span>
+<span id="L339"><span class="lineNum">     339</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L340"><span class="lineNum">     340</span>                 :<span class="tlaUNC">           0 :     argb += argb_stride;</span></span>
+<span id="L341"><span class="lineNum">     341</span>                 :<span class="tlaUNC">           0 :     alpha += alpha_stride;</span></span>
+<span id="L342"><span class="lineNum">     342</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L343"><span class="lineNum">     343</span>                 :<span class="tlaUNC">           0 :   return (alpha_mask == 0xff);</span></span>
+<span id="L344"><span class="lineNum">     344</span>                 :             : }</span>
+<span id="L345"><span class="lineNum">     345</span>                 :             : </span>
+<span id="L346"><span class="lineNum">     346</span>                 :<span class="tlaUNC">           0 : static void ExtractGreen_C(const uint32_t* WEBP_RESTRICT argb,</span></span>
+<span id="L347"><span class="lineNum">     347</span>                 :             :                            uint8_t* WEBP_RESTRICT alpha, int size) {</span>
+<span id="L348"><span class="lineNum">     348</span>                 :             :   int i;</span>
+<span id="L349"><span class="lineNum">     349</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; size; ++i) alpha[i] = argb[i] &gt;&gt; 8;</span></span>
+<span id="L350"><span class="lineNum">     350</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L351"><span class="lineNum">     351</span>                 :             : #endif  // !WEBP_NEON_OMIT_C_CODE</span>
+<span id="L352"><span class="lineNum">     352</span>                 :             : </span>
+<span id="L353"><span class="lineNum">     353</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L354"><span class="lineNum">     354</span>                 :             : </span>
+<span id="L355"><span class="lineNum">     355</span>                 :<span class="tlaUNC">           0 : static int HasAlpha8b_C(const uint8_t* src, int length) {</span></span>
+<span id="L356"><span class="lineNum">     356</span>                 :<span class="tlaUNC">           0 :   while (length-- &gt; 0) if (*src++ != 0xff) return 1;</span></span>
+<span id="L357"><span class="lineNum">     357</span>                 :<span class="tlaUNC">           0 :   return 0;</span></span>
+<span id="L358"><span class="lineNum">     358</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L359"><span class="lineNum">     359</span>                 :             : </span>
+<span id="L360"><span class="lineNum">     360</span>                 :<span class="tlaUNC">           0 : static int HasAlpha32b_C(const uint8_t* src, int length) {</span></span>
+<span id="L361"><span class="lineNum">     361</span>                 :             :   int x;</span>
+<span id="L362"><span class="lineNum">     362</span>                 :<span class="tlaUNC">           0 :   for (x = 0; length-- &gt; 0; x += 4) if (src[x] != 0xff) return 1;</span></span>
+<span id="L363"><span class="lineNum">     363</span>                 :<span class="tlaUNC">           0 :   return 0;</span></span>
+<span id="L364"><span class="lineNum">     364</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L365"><span class="lineNum">     365</span>                 :             : </span>
+<span id="L366"><span class="lineNum">     366</span>                 :<span class="tlaUNC">           0 : static void AlphaReplace_C(uint32_t* src, int length, uint32_t color) {</span></span>
+<span id="L367"><span class="lineNum">     367</span>                 :             :   int x;</span>
+<span id="L368"><span class="lineNum">     368</span>                 :<span class="tlaUNC">           0 :   for (x = 0; x &lt; length; ++x) if ((src[x] &gt;&gt; 24) == 0) src[x] = color;</span></span>
+<span id="L369"><span class="lineNum">     369</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L370"><span class="lineNum">     370</span>                 :             : </span>
+<span id="L371"><span class="lineNum">     371</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L372"><span class="lineNum">     372</span>                 :             : // Simple channel manipulations.</span>
+<span id="L373"><span class="lineNum">     373</span>                 :             : </span>
+<span id="L374"><span class="lineNum">     374</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE uint32_t MakeARGB32(int a, int r, int g, int b) {</span></span>
+<span id="L375"><span class="lineNum">     375</span>                 :<span class="tlaUNC">           0 :   return (((uint32_t)a &lt;&lt; 24) | (r &lt;&lt; 16) | (g &lt;&lt; 8) | b);</span></span>
+<span id="L376"><span class="lineNum">     376</span>                 :             : }</span>
+<span id="L377"><span class="lineNum">     377</span>                 :             : </span>
+<span id="L378"><span class="lineNum">     378</span>                 :             : #ifdef WORDS_BIGENDIAN</span>
+<span id="L379"><span class="lineNum">     379</span>                 :             : static void PackARGB_C(const uint8_t* WEBP_RESTRICT a,</span>
+<span id="L380"><span class="lineNum">     380</span>                 :             :                        const uint8_t* WEBP_RESTRICT r,</span>
+<span id="L381"><span class="lineNum">     381</span>                 :             :                        const uint8_t* WEBP_RESTRICT g,</span>
+<span id="L382"><span class="lineNum">     382</span>                 :             :                        const uint8_t* WEBP_RESTRICT b,</span>
+<span id="L383"><span class="lineNum">     383</span>                 :             :                        int len, uint32_t* WEBP_RESTRICT out) {</span>
+<span id="L384"><span class="lineNum">     384</span>                 :             :   int i;</span>
+<span id="L385"><span class="lineNum">     385</span>                 :             :   for (i = 0; i &lt; len; ++i) {</span>
+<span id="L386"><span class="lineNum">     386</span>                 :             :     out[i] = MakeARGB32(a[4 * i], r[4 * i], g[4 * i], b[4 * i]);</span>
+<span id="L387"><span class="lineNum">     387</span>                 :             :   }</span>
+<span id="L388"><span class="lineNum">     388</span>                 :             : }</span>
+<span id="L389"><span class="lineNum">     389</span>                 :             : #endif</span>
+<span id="L390"><span class="lineNum">     390</span>                 :             : </span>
+<span id="L391"><span class="lineNum">     391</span>                 :<span class="tlaUNC">           0 : static void PackRGB_C(const uint8_t* WEBP_RESTRICT r,</span></span>
+<span id="L392"><span class="lineNum">     392</span>                 :             :                       const uint8_t* WEBP_RESTRICT g,</span>
+<span id="L393"><span class="lineNum">     393</span>                 :             :                       const uint8_t* WEBP_RESTRICT b,</span>
+<span id="L394"><span class="lineNum">     394</span>                 :             :                       int len, int step, uint32_t* WEBP_RESTRICT out) {</span>
+<span id="L395"><span class="lineNum">     395</span>                 :<span class="tlaUNC">           0 :   int i, offset = 0;</span></span>
+<span id="L396"><span class="lineNum">     396</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; len; ++i) {</span></span>
+<span id="L397"><span class="lineNum">     397</span>                 :<span class="tlaUNC">           0 :     out[i] = MakeARGB32(0xff, r[offset], g[offset], b[offset]);</span></span>
+<span id="L398"><span class="lineNum">     398</span>                 :<span class="tlaUNC">           0 :     offset += step;</span></span>
+<span id="L399"><span class="lineNum">     399</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L400"><span class="lineNum">     400</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L401"><span class="lineNum">     401</span>                 :             : </span>
+<span id="L402"><span class="lineNum">     402</span>                 :             : void (*WebPApplyAlphaMultiply)(uint8_t*, int, int, int, int);</span>
+<span id="L403"><span class="lineNum">     403</span>                 :             : void (*WebPApplyAlphaMultiply4444)(uint8_t*, int, int, int);</span>
+<span id="L404"><span class="lineNum">     404</span>                 :             : int (*WebPDispatchAlpha)(const uint8_t* WEBP_RESTRICT, int, int, int,</span>
+<span id="L405"><span class="lineNum">     405</span>                 :             :                          uint8_t* WEBP_RESTRICT, int);</span>
+<span id="L406"><span class="lineNum">     406</span>                 :             : void (*WebPDispatchAlphaToGreen)(const uint8_t* WEBP_RESTRICT, int, int, int,</span>
+<span id="L407"><span class="lineNum">     407</span>                 :             :                                  uint32_t* WEBP_RESTRICT, int);</span>
+<span id="L408"><span class="lineNum">     408</span>                 :             : int (*WebPExtractAlpha)(const uint8_t* WEBP_RESTRICT, int, int, int,</span>
+<span id="L409"><span class="lineNum">     409</span>                 :             :                         uint8_t* WEBP_RESTRICT, int);</span>
+<span id="L410"><span class="lineNum">     410</span>                 :             : void (*WebPExtractGreen)(const uint32_t* WEBP_RESTRICT argb,</span>
+<span id="L411"><span class="lineNum">     411</span>                 :             :                          uint8_t* WEBP_RESTRICT alpha, int size);</span>
+<span id="L412"><span class="lineNum">     412</span>                 :             : #ifdef WORDS_BIGENDIAN</span>
+<span id="L413"><span class="lineNum">     413</span>                 :             : void (*WebPPackARGB)(const uint8_t* a, const uint8_t* r, const uint8_t* g,</span>
+<span id="L414"><span class="lineNum">     414</span>                 :             :                      const uint8_t* b, int, uint32_t*);</span>
+<span id="L415"><span class="lineNum">     415</span>                 :             : #endif</span>
+<span id="L416"><span class="lineNum">     416</span>                 :             : void (*WebPPackRGB)(const uint8_t* WEBP_RESTRICT r,</span>
+<span id="L417"><span class="lineNum">     417</span>                 :             :                     const uint8_t* WEBP_RESTRICT g,</span>
+<span id="L418"><span class="lineNum">     418</span>                 :             :                     const uint8_t* WEBP_RESTRICT b,</span>
+<span id="L419"><span class="lineNum">     419</span>                 :             :                     int len, int step, uint32_t* WEBP_RESTRICT out);</span>
+<span id="L420"><span class="lineNum">     420</span>                 :             : </span>
+<span id="L421"><span class="lineNum">     421</span>                 :             : int (*WebPHasAlpha8b)(const uint8_t* src, int length);</span>
+<span id="L422"><span class="lineNum">     422</span>                 :             : int (*WebPHasAlpha32b)(const uint8_t* src, int length);</span>
+<span id="L423"><span class="lineNum">     423</span>                 :             : void (*WebPAlphaReplace)(uint32_t* src, int length, uint32_t color);</span>
+<span id="L424"><span class="lineNum">     424</span>                 :             : </span>
+<span id="L425"><span class="lineNum">     425</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L426"><span class="lineNum">     426</span>                 :             : // Init function</span>
+<span id="L427"><span class="lineNum">     427</span>                 :             : </span>
+<span id="L428"><span class="lineNum">     428</span>                 :             : extern VP8CPUInfo VP8GetCPUInfo;</span>
+<span id="L429"><span class="lineNum">     429</span>                 :             : extern void WebPInitAlphaProcessingMIPSdspR2(void);</span>
+<span id="L430"><span class="lineNum">     430</span>                 :             : extern void WebPInitAlphaProcessingSSE2(void);</span>
+<span id="L431"><span class="lineNum">     431</span>                 :             : extern void WebPInitAlphaProcessingSSE41(void);</span>
+<span id="L432"><span class="lineNum">     432</span>                 :             : extern void WebPInitAlphaProcessingNEON(void);</span>
+<span id="L433"><span class="lineNum">     433</span>                 :             : </span>
+<span id="L434"><span class="lineNum">     434</span>                 :<span class="tlaUNC">           0 : WEBP_DSP_INIT_FUNC(WebPInitAlphaProcessing) {</span></span>
+<span id="L435"><span class="lineNum">     435</span>                 :<span class="tlaUNC">           0 :   WebPMultARGBRow = WebPMultARGBRow_C;</span></span>
+<span id="L436"><span class="lineNum">     436</span>                 :<span class="tlaUNC">           0 :   WebPMultRow = WebPMultRow_C;</span></span>
+<span id="L437"><span class="lineNum">     437</span>                 :<span class="tlaUNC">           0 :   WebPApplyAlphaMultiply4444 = ApplyAlphaMultiply_16b_C;</span></span>
+<span id="L438"><span class="lineNum">     438</span>                 :             : </span>
+<span id="L439"><span class="lineNum">     439</span>                 :             : #ifdef WORDS_BIGENDIAN</span>
+<span id="L440"><span class="lineNum">     440</span>                 :             :   WebPPackARGB = PackARGB_C;</span>
+<span id="L441"><span class="lineNum">     441</span>                 :             : #endif</span>
+<span id="L442"><span class="lineNum">     442</span>                 :<span class="tlaUNC">           0 :   WebPPackRGB = PackRGB_C;</span></span>
+<span id="L443"><span class="lineNum">     443</span>                 :             : #if !WEBP_NEON_OMIT_C_CODE</span>
+<span id="L444"><span class="lineNum">     444</span>                 :<span class="tlaUNC">           0 :   WebPApplyAlphaMultiply = ApplyAlphaMultiply_C;</span></span>
+<span id="L445"><span class="lineNum">     445</span>                 :<span class="tlaUNC">           0 :   WebPDispatchAlpha = DispatchAlpha_C;</span></span>
+<span id="L446"><span class="lineNum">     446</span>                 :<span class="tlaUNC">           0 :   WebPDispatchAlphaToGreen = DispatchAlphaToGreen_C;</span></span>
+<span id="L447"><span class="lineNum">     447</span>                 :<span class="tlaUNC">           0 :   WebPExtractAlpha = ExtractAlpha_C;</span></span>
+<span id="L448"><span class="lineNum">     448</span>                 :<span class="tlaUNC">           0 :   WebPExtractGreen = ExtractGreen_C;</span></span>
+<span id="L449"><span class="lineNum">     449</span>                 :             : #endif</span>
+<span id="L450"><span class="lineNum">     450</span>                 :             : </span>
+<span id="L451"><span class="lineNum">     451</span>                 :<span class="tlaUNC">           0 :   WebPHasAlpha8b = HasAlpha8b_C;</span></span>
+<span id="L452"><span class="lineNum">     452</span>                 :<span class="tlaUNC">           0 :   WebPHasAlpha32b = HasAlpha32b_C;</span></span>
+<span id="L453"><span class="lineNum">     453</span>                 :<span class="tlaUNC">           0 :   WebPAlphaReplace = AlphaReplace_C;</span></span>
+<span id="L454"><span class="lineNum">     454</span>                 :             : </span>
+<span id="L455"><span class="lineNum">     455</span>                 :             :   // If defined, use CPUInfo() to overwrite some pointers with faster versions.</span>
+<span id="L456"><span class="lineNum">     456</span>                 :<span class="tlaUNC">           0 :   if (VP8GetCPUInfo != NULL) {</span></span>
+<span id="L457"><span class="lineNum">     457</span>                 :             : #if defined(WEBP_HAVE_SSE2)</span>
+<span id="L458"><span class="lineNum">     458</span>                 :<span class="tlaUNC">           0 :     if (VP8GetCPUInfo(kSSE2)) {</span></span>
+<span id="L459"><span class="lineNum">     459</span>                 :<span class="tlaUNC">           0 :       WebPInitAlphaProcessingSSE2();</span></span>
+<span id="L460"><span class="lineNum">     460</span>                 :             : #if defined(WEBP_HAVE_SSE41)</span>
+<span id="L461"><span class="lineNum">     461</span>                 :<span class="tlaUNC">           0 :       if (VP8GetCPUInfo(kSSE4_1)) {</span></span>
+<span id="L462"><span class="lineNum">     462</span>                 :<span class="tlaUNC">           0 :         WebPInitAlphaProcessingSSE41();</span></span>
+<span id="L463"><span class="lineNum">     463</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L464"><span class="lineNum">     464</span>                 :             : #endif</span>
+<span id="L465"><span class="lineNum">     465</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L466"><span class="lineNum">     466</span>                 :             : #endif</span>
+<span id="L467"><span class="lineNum">     467</span>                 :             : #if defined(WEBP_USE_MIPS_DSP_R2)</span>
+<span id="L468"><span class="lineNum">     468</span>                 :             :     if (VP8GetCPUInfo(kMIPSdspR2)) {</span>
+<span id="L469"><span class="lineNum">     469</span>                 :             :       WebPInitAlphaProcessingMIPSdspR2();</span>
+<span id="L470"><span class="lineNum">     470</span>                 :             :     }</span>
+<span id="L471"><span class="lineNum">     471</span>                 :             : #endif</span>
+<span id="L472"><span class="lineNum">     472</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L473"><span class="lineNum">     473</span>                 :             : </span>
+<span id="L474"><span class="lineNum">     474</span>                 :             : #if defined(WEBP_HAVE_NEON)</span>
+<span id="L475"><span class="lineNum">     475</span>                 :             :   if (WEBP_NEON_OMIT_C_CODE ||</span>
+<span id="L476"><span class="lineNum">     476</span>                 :             :       (VP8GetCPUInfo != NULL &amp;&amp; VP8GetCPUInfo(kNEON))) {</span>
+<span id="L477"><span class="lineNum">     477</span>                 :             :     WebPInitAlphaProcessingNEON();</span>
+<span id="L478"><span class="lineNum">     478</span>                 :             :   }</span>
+<span id="L479"><span class="lineNum">     479</span>                 :             : #endif</span>
+<span id="L480"><span class="lineNum">     480</span>                 :             : </span>
+<span id="L481"><span class="lineNum">     481</span>                 :             :   assert(WebPMultARGBRow != NULL);</span>
+<span id="L482"><span class="lineNum">     482</span>                 :             :   assert(WebPMultRow != NULL);</span>
+<span id="L483"><span class="lineNum">     483</span>                 :             :   assert(WebPApplyAlphaMultiply != NULL);</span>
+<span id="L484"><span class="lineNum">     484</span>                 :             :   assert(WebPApplyAlphaMultiply4444 != NULL);</span>
+<span id="L485"><span class="lineNum">     485</span>                 :             :   assert(WebPDispatchAlpha != NULL);</span>
+<span id="L486"><span class="lineNum">     486</span>                 :             :   assert(WebPDispatchAlphaToGreen != NULL);</span>
+<span id="L487"><span class="lineNum">     487</span>                 :             :   assert(WebPExtractAlpha != NULL);</span>
+<span id="L488"><span class="lineNum">     488</span>                 :             :   assert(WebPExtractGreen != NULL);</span>
+<span id="L489"><span class="lineNum">     489</span>                 :             : #ifdef WORDS_BIGENDIAN</span>
+<span id="L490"><span class="lineNum">     490</span>                 :             :   assert(WebPPackARGB != NULL);</span>
+<span id="L491"><span class="lineNum">     491</span>                 :             : #endif</span>
+<span id="L492"><span class="lineNum">     492</span>                 :             :   assert(WebPPackRGB != NULL);</span>
+<span id="L493"><span class="lineNum">     493</span>                 :             :   assert(WebPHasAlpha8b != NULL);</span>
+<span id="L494"><span class="lineNum">     494</span>                 :             :   assert(WebPHasAlpha32b != NULL);</span>
+<span id="L495"><span class="lineNum">     495</span>                 :             :   assert(WebPAlphaReplace != NULL);</span>
+<span id="L496"><span class="lineNum">     496</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

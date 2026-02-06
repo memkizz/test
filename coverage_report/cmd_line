@@ -1,0 +1,1 @@
+genhtml /home/kuzz/coverage_report/coverage.info --output-directory /home/kuzz/coverage_report --ignore-errors source --legend --function-coverage --branch-coverage

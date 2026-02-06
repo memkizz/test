@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libwebp-1.3.2/src/utils/quant_levels_utils.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libwebp-1.3.2/src/utils</a> - quant_levels_utils.c<span style="font-size: 80%;"> (source / <a href="quant_levels_utils.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">68</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // Copyright 2011 Google Inc. All Rights Reserved.</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : //</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : // Use of this source code is governed by a BSD-style license</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : // that can be found in the COPYING file in the root of the source</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : // tree. An additional intellectual property rights grant can be found</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : // in the file PATENTS. All contributing project authors may</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : // be found in the AUTHORS file in the root of the source tree.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : // Quantize levels for specified number of quantization-levels ([2, 256]).</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : // Min and max values are preserved (usual 0 and 255 for alpha plane).</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : //</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : // Author: Skal (pascal.massimino@gmail.com)</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &lt;assert.h&gt;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &quot;src/utils/quant_levels_utils.h&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : </span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #define NUM_SYMBOLS     256</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : </span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #define MAX_ITER  6             // Maximum number of convergence steps.</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #define ERROR_THRESHOLD 1e-4    // MSE stopping criterion.</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : </span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : // Quantize levels.</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : </span>
+<span id="L27"><span class="lineNum">      27</span>                 :<span class="tlaUNC tlaBgUNC">           0 : int QuantizeLevels(uint8_t* const data, int width, int height,</span></span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :                    int num_levels, uint64_t* const sse) {</span>
+<span id="L29"><span class="lineNum">      29</span>                 :<span class="tlaUNC">           0 :   int freq[NUM_SYMBOLS] = { 0 };</span></span>
+<span id="L30"><span class="lineNum">      30</span>                 :<span class="tlaUNC">           0 :   int q_level[NUM_SYMBOLS] = { 0 };</span></span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC">           0 :   double inv_q_level[NUM_SYMBOLS] = { 0 };</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :   int min_s = 255, max_s = 0;</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :<span class="tlaUNC">           0 :   const size_t data_size = height * width;</span></span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :   int i, num_levels_in, iter;</span>
+<span id="L35"><span class="lineNum">      35</span>                 :<span class="tlaUNC">           0 :   double last_err = 1.e38, err = 0.;</span></span>
+<span id="L36"><span class="lineNum">      36</span>                 :<span class="tlaUNC">           0 :   const double err_threshold = ERROR_THRESHOLD * data_size;</span></span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : </span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 :   if (data == NULL) {</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :   }</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : </span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 :   if (width &lt;= 0 || height &lt;= 0) {</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :   }</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : </span>
+<span id="L46"><span class="lineNum">      46</span>                 :<span class="tlaUNC">           0 :   if (num_levels &lt; 2 || num_levels &gt; 256) {</span></span>
+<span id="L47"><span class="lineNum">      47</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :   }</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : </span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :   {</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :     size_t n;</span>
+<span id="L52"><span class="lineNum">      52</span>                 :<span class="tlaUNC">           0 :     num_levels_in = 0;</span></span>
+<span id="L53"><span class="lineNum">      53</span>                 :<span class="tlaUNC">           0 :     for (n = 0; n &lt; data_size; ++n) {</span></span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 :       num_levels_in += (freq[data[n]] == 0);</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :<span class="tlaUNC">           0 :       if (min_s &gt; data[n]) min_s = data[n];</span></span>
+<span id="L56"><span class="lineNum">      56</span>                 :<span class="tlaUNC">           0 :       if (max_s &lt; data[n]) max_s = data[n];</span></span>
+<span id="L57"><span class="lineNum">      57</span>                 :<span class="tlaUNC">           0 :       ++freq[data[n]];</span></span>
+<span id="L58"><span class="lineNum">      58</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :   }</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : </span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 :   if (num_levels_in &lt;= num_levels) goto End;  // nothing to do!</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :             : </span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   // Start with uniformly spread centroids.</span>
+<span id="L64"><span class="lineNum">      64</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; num_levels; ++i) {</span></span>
+<span id="L65"><span class="lineNum">      65</span>                 :<span class="tlaUNC">           0 :     inv_q_level[i] = min_s + (double)(max_s - min_s) * i / (num_levels - 1);</span></span>
+<span id="L66"><span class="lineNum">      66</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : </span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :   // Fixed values. Won't be changed.</span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 :   q_level[min_s] = 0;</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 :   q_level[max_s] = num_levels - 1;</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   assert(inv_q_level[0] == min_s);</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   assert(inv_q_level[num_levels - 1] == max_s);</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : </span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   // k-Means iterations.</span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 :   for (iter = 0; iter &lt; MAX_ITER; ++iter) {</span></span>
+<span id="L76"><span class="lineNum">      76</span>                 :<span class="tlaUNC">           0 :     double q_sum[NUM_SYMBOLS] = { 0 };</span></span>
+<span id="L77"><span class="lineNum">      77</span>                 :<span class="tlaUNC">           0 :     double q_count[NUM_SYMBOLS] = { 0 };</span></span>
+<span id="L78"><span class="lineNum">      78</span>                 :<span class="tlaUNC">           0 :     int s, slot = 0;</span></span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : </span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :     // Assign classes to representatives.</span>
+<span id="L81"><span class="lineNum">      81</span>                 :<span class="tlaUNC">           0 :     for (s = min_s; s &lt;= max_s; ++s) {</span></span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :       // Keep track of the nearest neighbour 'slot'</span>
+<span id="L83"><span class="lineNum">      83</span>                 :<span class="tlaUNC">           0 :       while (slot &lt; num_levels - 1 &amp;&amp;</span></span>
+<span id="L84"><span class="lineNum">      84</span>                 :<span class="tlaUNC">           0 :              2 * s &gt; inv_q_level[slot] + inv_q_level[slot + 1]) {</span></span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :         ++slot;</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :       }</span>
+<span id="L87"><span class="lineNum">      87</span>                 :<span class="tlaUNC">           0 :       if (freq[s] &gt; 0) {</span></span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :         q_sum[slot] += s * freq[s];</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :<span class="tlaUNC">           0 :         q_count[slot] += freq[s];</span></span>
+<span id="L90"><span class="lineNum">      90</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L91"><span class="lineNum">      91</span>                 :<span class="tlaUNC">           0 :       q_level[s] = slot;</span></span>
+<span id="L92"><span class="lineNum">      92</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L93"><span class="lineNum">      93</span>                 :             : </span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :     // Assign new representatives to classes.</span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :     if (num_levels &gt; 2) {</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 :       for (slot = 1; slot &lt; num_levels - 1; ++slot) {</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :<span class="tlaUNC">           0 :         const double count = q_count[slot];</span></span>
+<span id="L98"><span class="lineNum">      98</span>                 :<span class="tlaUNC">           0 :         if (count &gt; 0.) {</span></span>
+<span id="L99"><span class="lineNum">      99</span>                 :<span class="tlaUNC">           0 :           inv_q_level[slot] = q_sum[slot] / count;</span></span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :             : </span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :     // Compute convergence error.</span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :     err = 0.;</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :<span class="tlaUNC">           0 :     for (s = min_s; s &lt;= max_s; ++s) {</span></span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :       const double error = s - inv_q_level[q_level[s]];</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :<span class="tlaUNC">           0 :       err += freq[s] * error * error;</span></span>
+<span id="L109"><span class="lineNum">     109</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L110"><span class="lineNum">     110</span>                 :             : </span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :     // Check for convergence: we stop as soon as the error is no</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :     // longer improving.</span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :     if (last_err - err &lt; err_threshold) break;</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :<span class="tlaUNC">           0 :     last_err = err;</span></span>
+<span id="L115"><span class="lineNum">     115</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L116"><span class="lineNum">     116</span>                 :             : </span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :   // Remap the alpha plane to quantized values.</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :   {</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :     // double-&gt;int rounding operation can be costly, so we do it</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :     // once for all before remapping. We also perform the data[] -&gt; slot</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :     // mapping, while at it (avoid one indirection in the final loop).</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :     uint8_t map[NUM_SYMBOLS];</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :     int s;</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :     size_t n;</span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaUNC">           0 :     for (s = min_s; s &lt;= max_s; ++s) {</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :<span class="tlaUNC">           0 :       const int slot = q_level[s];</span></span>
+<span id="L127"><span class="lineNum">     127</span>                 :<span class="tlaUNC">           0 :       map[s] = (uint8_t)(inv_q_level[slot] + .5);</span></span>
+<span id="L128"><span class="lineNum">     128</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :     // Final pass.</span>
+<span id="L130"><span class="lineNum">     130</span>                 :<span class="tlaUNC">           0 :     for (n = 0; n &lt; data_size; ++n) {</span></span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 :       data[n] = map[data[n]];</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L133"><span class="lineNum">     133</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :  End:</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :   // Store sum of squared error if needed.</span>
+<span id="L136"><span class="lineNum">     136</span>                 :<span class="tlaUNC">           0 :   if (sse != NULL) *sse = (uint64_t)err;</span></span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : </span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : </span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

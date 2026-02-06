@@ -1,0 +1,1112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libwebp-1.3.2/src/dsp/dec_msa.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libwebp-1.3.2/src/dsp</a> - dec_msa.c<span style="font-size: 80%;"> (source / <a href="dec_msa.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // Copyright 2016 Google Inc. All Rights Reserved.</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : //</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : // Use of this source code is governed by a BSD-style license</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : // that can be found in the COPYING file in the root of the source</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : // tree. An additional intellectual property rights grant can be found</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : // in the file PATENTS. All contributing project authors may</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : // be found in the AUTHORS file in the root of the source tree.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : // MSA version of dsp functions</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : //</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : // Author(s):  Prashant Patil   (prashant.patil@imgtec.com)</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;src/dsp/dsp.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #if defined(WEBP_USE_MSA)</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : </span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &quot;src/dsp/msa_macro.h&quot;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : </span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : // Transforms</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : </span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : #define IDCT_1D_W(in0, in1, in2, in3, out0, out1, out2, out3) {  \</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             :   v4i32 a1_m, b1_m, c1_m, d1_m;                                  \</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             :   v4i32 c_tmp1_m, c_tmp2_m, d_tmp1_m, d_tmp2_m;                  \</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             :   const v4i32 cospi8sqrt2minus1 = __msa_fill_w(20091);           \</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :   const v4i32 sinpi8sqrt2 = __msa_fill_w(35468);                 \</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :                                                                  \</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :   a1_m = in0 + in2;                                              \</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :   b1_m = in0 - in2;                                              \</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :   c_tmp1_m = (in1 * sinpi8sqrt2) &gt;&gt; 16;                          \</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :   c_tmp2_m = in3 + ((in3 * cospi8sqrt2minus1) &gt;&gt; 16);            \</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :   c1_m = c_tmp1_m - c_tmp2_m;                                    \</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :   d_tmp1_m = in1 + ((in1 * cospi8sqrt2minus1) &gt;&gt; 16);            \</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             :   d_tmp2_m = (in3 * sinpi8sqrt2) &gt;&gt; 16;                          \</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :   d1_m = d_tmp1_m + d_tmp2_m;                                    \</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :   BUTTERFLY_4(a1_m, b1_m, c1_m, d1_m, out0, out1, out2, out3);   \</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : }</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : #define MULT1(a) ((((a) * 20091) &gt;&gt; 16) + (a))</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : #define MULT2(a) (((a) * 35468) &gt;&gt; 16)</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : </span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : static void TransformOne(const int16_t* in, uint8_t* dst) {</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :   v8i16 input0, input1;</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :   v4i32 in0, in1, in2, in3, hz0, hz1, hz2, hz3, vt0, vt1, vt2, vt3;</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :   v4i32 res0, res1, res2, res3;</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :   const v16i8 zero = { 0 };</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :   v16i8 dest0, dest1, dest2, dest3;</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : </span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :   LD_SH2(in, 8, input0, input1);</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :   UNPCK_SH_SW(input0, in0, in1);</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   UNPCK_SH_SW(input1, in2, in3);</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :   IDCT_1D_W(in0, in1, in2, in3, hz0, hz1, hz2, hz3);</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :   TRANSPOSE4x4_SW_SW(hz0, hz1, hz2, hz3, hz0, hz1, hz2, hz3);</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :   IDCT_1D_W(hz0, hz1, hz2, hz3, vt0, vt1, vt2, vt3);</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :   SRARI_W4_SW(vt0, vt1, vt2, vt3, 3);</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :   TRANSPOSE4x4_SW_SW(vt0, vt1, vt2, vt3, vt0, vt1, vt2, vt3);</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :   LD_SB4(dst, BPS, dest0, dest1, dest2, dest3);</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :   ILVR_B4_SW(zero, dest0, zero, dest1, zero, dest2, zero, dest3,</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :              res0, res1, res2, res3);</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :   ILVR_H4_SW(zero, res0, zero, res1, zero, res2, zero, res3,</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :              res0, res1, res2, res3);</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   ADD4(res0, vt0, res1, vt1, res2, vt2, res3, vt3, res0, res1, res2, res3);</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   CLIP_SW4_0_255(res0, res1, res2, res3);</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   PCKEV_B2_SW(res0, res1, res2, res3, vt0, vt1);</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   res0 = (v4i32)__msa_pckev_b((v16i8)vt0, (v16i8)vt1);</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :   ST4x4_UB(res0, res0, 3, 2, 1, 0, dst, BPS);</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : }</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             : </span>
+<span id="L70"><span class="lineNum">      70</span>                 :             : static void TransformTwo(const int16_t* in, uint8_t* dst, int do_two) {</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   TransformOne(in, dst);</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   if (do_two) {</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :     TransformOne(in + 16, dst + 4);</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   }</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             : }</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : </span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : static void TransformWHT(const int16_t* in, int16_t* out) {</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   v8i16 input0, input1;</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :   const v8i16 mask0 = { 0, 1, 2, 3, 8, 9, 10, 11 };</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :   const v8i16 mask1 = { 4, 5, 6, 7, 12, 13, 14, 15 };</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :   const v8i16 mask2 = { 0, 4, 8, 12, 1, 5, 9, 13 };</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   const v8i16 mask3 = { 3, 7, 11, 15, 2, 6, 10, 14 };</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   v8i16 tmp0, tmp1, tmp2, tmp3;</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :   v8i16 out0, out1;</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : </span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :   LD_SH2(in, 8, input0, input1);</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :   input1 = SLDI_SH(input1, input1, 8);</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :   tmp0 = input0 + input1;</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :   tmp1 = input0 - input1;</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :   VSHF_H2_SH(tmp0, tmp1, tmp0, tmp1, mask0, mask1, tmp2, tmp3);</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :   out0 = tmp2 + tmp3;</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :   out1 = tmp2 - tmp3;</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :   VSHF_H2_SH(out0, out1, out0, out1, mask2, mask3, input0, input1);</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :   tmp0 = input0 + input1;</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :   tmp1 = input0 - input1;</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             :   VSHF_H2_SH(tmp0, tmp1, tmp0, tmp1, mask0, mask1, tmp2, tmp3);</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :   tmp0 = tmp2 + tmp3;</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :   tmp1 = tmp2 - tmp3;</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :   ADDVI_H2_SH(tmp0, 3, tmp1, 3, out0, out1);</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :   SRAI_H2_SH(out0, out1, 3);</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :   out[0] = __msa_copy_s_h(out0, 0);</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :   out[16] = __msa_copy_s_h(out0, 4);</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :   out[32] = __msa_copy_s_h(out1, 0);</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :   out[48] = __msa_copy_s_h(out1, 4);</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :   out[64] = __msa_copy_s_h(out0, 1);</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :   out[80] = __msa_copy_s_h(out0, 5);</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :   out[96] = __msa_copy_s_h(out1, 1);</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :   out[112] = __msa_copy_s_h(out1, 5);</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :   out[128] = __msa_copy_s_h(out0, 2);</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   out[144] = __msa_copy_s_h(out0, 6);</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :   out[160] = __msa_copy_s_h(out1, 2);</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :   out[176] = __msa_copy_s_h(out1, 6);</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :   out[192] = __msa_copy_s_h(out0, 3);</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :   out[208] = __msa_copy_s_h(out0, 7);</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :   out[224] = __msa_copy_s_h(out1, 3);</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :   out[240] = __msa_copy_s_h(out1, 7);</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             : }</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             : </span>
+<span id="L119"><span class="lineNum">     119</span>                 :             : static void TransformDC(const int16_t* in, uint8_t* dst) {</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :   const int DC = (in[0] + 4) &gt;&gt; 3;</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :   const v8i16 tmp0 = __msa_fill_h(DC);</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :   ADDBLK_ST4x4_UB(tmp0, tmp0, tmp0, tmp0, dst, BPS);</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             : }</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             : </span>
+<span id="L125"><span class="lineNum">     125</span>                 :             : static void TransformAC3(const int16_t* in, uint8_t* dst) {</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :   const int a = in[0] + 4;</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :   const int c4 = MULT2(in[4]);</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :   const int d4 = MULT1(in[4]);</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :   const int in2 = MULT2(in[1]);</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :   const int in3 = MULT1(in[1]);</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :   v4i32 tmp0 = { 0 };</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :   v4i32 out0 = __msa_fill_w(a + d4);</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :   v4i32 out1 = __msa_fill_w(a + c4);</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :   v4i32 out2 = __msa_fill_w(a - c4);</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :   v4i32 out3 = __msa_fill_w(a - d4);</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :   v4i32 res0, res1, res2, res3;</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :   const v4i32 zero = { 0 };</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :   v16u8 dest0, dest1, dest2, dest3;</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             : </span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :   INSERT_W4_SW(in3, in2, -in2, -in3, tmp0);</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   ADD4(out0, tmp0, out1, tmp0, out2, tmp0, out3, tmp0,</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :        out0, out1, out2, out3);</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :   SRAI_W4_SW(out0, out1, out2, out3, 3);</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :   LD_UB4(dst, BPS, dest0, dest1, dest2, dest3);</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :   ILVR_B4_SW(zero, dest0, zero, dest1, zero, dest2, zero, dest3,</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             :              res0, res1, res2, res3);</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :   ILVR_H4_SW(zero, res0, zero, res1, zero, res2, zero, res3,</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :              res0, res1, res2, res3);</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :   ADD4(res0, out0, res1, out1, res2, out2, res3, out3, res0, res1, res2, res3);</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :   CLIP_SW4_0_255(res0, res1, res2, res3);</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :   PCKEV_B2_SW(res0, res1, res2, res3, out0, out1);</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :   res0 = (v4i32)__msa_pckev_b((v16i8)out0, (v16i8)out1);</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :   ST4x4_UB(res0, res0, 3, 2, 1, 0, dst, BPS);</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             : }</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             : </span>
+<span id="L156"><span class="lineNum">     156</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             : // Edge filtering functions</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             : </span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : #define FLIP_SIGN2(in0, in1, out0, out1) {  \</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :   out0 = (v16i8)__msa_xori_b(in0, 0x80);    \</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :   out1 = (v16i8)__msa_xori_b(in1, 0x80);    \</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             : }</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : </span>
+<span id="L164"><span class="lineNum">     164</span>                 :             : #define FLIP_SIGN4(in0, in1, in2, in3, out0, out1, out2, out3) {  \</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :   FLIP_SIGN2(in0, in1, out0, out1);                               \</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :   FLIP_SIGN2(in2, in3, out2, out3);                               \</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             : }</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             : </span>
+<span id="L169"><span class="lineNum">     169</span>                 :             : #define FILT_VAL(q0_m, p0_m, mask, filt) do {  \</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :   v16i8 q0_sub_p0;                             \</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             :   q0_sub_p0 = __msa_subs_s_b(q0_m, p0_m);      \</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             :   filt = __msa_adds_s_b(filt, q0_sub_p0);      \</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             :   filt = __msa_adds_s_b(filt, q0_sub_p0);      \</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :   filt = __msa_adds_s_b(filt, q0_sub_p0);      \</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             :   filt = filt &amp; mask;                          \</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : } while (0)</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             : </span>
+<span id="L178"><span class="lineNum">     178</span>                 :             : #define FILT2(q_m, p_m, q, p) do {            \</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             :   u_r = SRAI_H(temp1, 7);                     \</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             :   u_r = __msa_sat_s_h(u_r, 7);                \</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :   u_l = SRAI_H(temp3, 7);                     \</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             :   u_l = __msa_sat_s_h(u_l, 7);                \</span>
+<span id="L183"><span class="lineNum">     183</span>                 :             :   u = __msa_pckev_b((v16i8)u_l, (v16i8)u_r);  \</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             :   q_m = __msa_subs_s_b(q_m, u);               \</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             :   p_m = __msa_adds_s_b(p_m, u);               \</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :   q = __msa_xori_b((v16u8)q_m, 0x80);         \</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :   p = __msa_xori_b((v16u8)p_m, 0x80);         \</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : } while (0)</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             : </span>
+<span id="L190"><span class="lineNum">     190</span>                 :             : #define LPF_FILTER4_4W(p1, p0, q0, q1, mask, hev) do {  \</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :   v16i8 p1_m, p0_m, q0_m, q1_m;                         \</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             :   v16i8 filt, t1, t2;                                   \</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             :   const v16i8 cnst4b = __msa_ldi_b(4);                  \</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             :   const v16i8 cnst3b = __msa_ldi_b(3);                  \</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :                                                         \</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :   FLIP_SIGN4(p1, p0, q0, q1, p1_m, p0_m, q0_m, q1_m);   \</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :   filt = __msa_subs_s_b(p1_m, q1_m);                    \</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :   filt = filt &amp; hev;                                    \</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :   FILT_VAL(q0_m, p0_m, mask, filt);                     \</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :   t1 = __msa_adds_s_b(filt, cnst4b);                    \</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :   t1 = SRAI_B(t1, 3);                                   \</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             :   t2 = __msa_adds_s_b(filt, cnst3b);                    \</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :   t2 = SRAI_B(t2, 3);                                   \</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :   q0_m = __msa_subs_s_b(q0_m, t1);                      \</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :   q0 = __msa_xori_b((v16u8)q0_m, 0x80);                 \</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :   p0_m = __msa_adds_s_b(p0_m, t2);                      \</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             :   p0 = __msa_xori_b((v16u8)p0_m, 0x80);                 \</span>
+<span id="L208"><span class="lineNum">     208</span>                 :             :   filt = __msa_srari_b(t1, 1);                          \</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             :   hev = __msa_xori_b(hev, 0xff);                        \</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :   filt = filt &amp; hev;                                    \</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             :   q1_m = __msa_subs_s_b(q1_m, filt);                    \</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             :   q1 = __msa_xori_b((v16u8)q1_m, 0x80);                 \</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :   p1_m = __msa_adds_s_b(p1_m, filt);                    \</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             :   p1 = __msa_xori_b((v16u8)p1_m, 0x80);                 \</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             : } while (0)</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             : </span>
+<span id="L217"><span class="lineNum">     217</span>                 :             : #define LPF_MBFILTER(p2, p1, p0, q0, q1, q2, mask, hev) do {  \</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :   v16i8 p2_m, p1_m, p0_m, q2_m, q1_m, q0_m;                   \</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :   v16i8 u, filt, t1, t2, filt_sign;                           \</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :   v8i16 filt_r, filt_l, u_r, u_l;                             \</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             :   v8i16 temp0, temp1, temp2, temp3;                           \</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             :   const v16i8 cnst4b = __msa_ldi_b(4);                        \</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             :   const v16i8 cnst3b = __msa_ldi_b(3);                        \</span>
+<span id="L224"><span class="lineNum">     224</span>                 :             :   const v8i16 cnst9h = __msa_ldi_h(9);                        \</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :   const v8i16 cnst63h = __msa_ldi_h(63);                      \</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :                                                               \</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             :   FLIP_SIGN4(p1, p0, q0, q1, p1_m, p0_m, q0_m, q1_m);         \</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :   filt = __msa_subs_s_b(p1_m, q1_m);                          \</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             :   FILT_VAL(q0_m, p0_m, mask, filt);                           \</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             :   FLIP_SIGN2(p2, q2, p2_m, q2_m);                             \</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             :   t2 = filt &amp; hev;                                            \</span>
+<span id="L232"><span class="lineNum">     232</span>                 :             :   /* filt_val &amp;= ~hev */                                      \</span>
+<span id="L233"><span class="lineNum">     233</span>                 :             :   hev = __msa_xori_b(hev, 0xff);                              \</span>
+<span id="L234"><span class="lineNum">     234</span>                 :             :   filt = filt &amp; hev;                                          \</span>
+<span id="L235"><span class="lineNum">     235</span>                 :             :   t1 = __msa_adds_s_b(t2, cnst4b);                            \</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             :   t1 = SRAI_B(t1, 3);                                         \</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             :   t2 = __msa_adds_s_b(t2, cnst3b);                            \</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :   t2 = SRAI_B(t2, 3);                                         \</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :   q0_m = __msa_subs_s_b(q0_m, t1);                            \</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             :   p0_m = __msa_adds_s_b(p0_m, t2);                            \</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :   filt_sign = __msa_clti_s_b(filt, 0);                        \</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :   ILVRL_B2_SH(filt_sign, filt, filt_r, filt_l);               \</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             :   /* update q2/p2 */                                          \</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :   temp0 = filt_r * cnst9h;                                    \</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :   temp1 = temp0 + cnst63h;                                    \</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             :   temp2 = filt_l * cnst9h;                                    \</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             :   temp3 = temp2 + cnst63h;                                    \</span>
+<span id="L248"><span class="lineNum">     248</span>                 :             :   FILT2(q2_m, p2_m, q2, p2);                                  \</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             :   /* update q1/p1 */                                          \</span>
+<span id="L250"><span class="lineNum">     250</span>                 :             :   temp1 = temp1 + temp0;                                      \</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :   temp3 = temp3 + temp2;                                      \</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             :   FILT2(q1_m, p1_m, q1, p1);                                  \</span>
+<span id="L253"><span class="lineNum">     253</span>                 :             :   /* update q0/p0 */                                          \</span>
+<span id="L254"><span class="lineNum">     254</span>                 :             :   temp1 = temp1 + temp0;                                      \</span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :   temp3 = temp3 + temp2;                                      \</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :   FILT2(q0_m, p0_m, q0, p0);                                  \</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             : } while (0)</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             : </span>
+<span id="L259"><span class="lineNum">     259</span>                 :             : #define LPF_MASK_HEV(p3_in, p2_in, p1_in, p0_in,                 \</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :                      q0_in, q1_in, q2_in, q3_in,                 \</span>
+<span id="L261"><span class="lineNum">     261</span>                 :             :                      limit_in, b_limit_in, thresh_in,            \</span>
+<span id="L262"><span class="lineNum">     262</span>                 :             :                      hev_out, mask_out) do {                     \</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :   v16u8 p3_asub_p2_m, p2_asub_p1_m, p1_asub_p0_m, q1_asub_q0_m;  \</span>
+<span id="L264"><span class="lineNum">     264</span>                 :             :   v16u8 p1_asub_q1_m, p0_asub_q0_m, q3_asub_q2_m, q2_asub_q1_m;  \</span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :   v16u8 flat_out;                                                \</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             :                                                                  \</span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :   /* absolute subtraction of pixel values */                     \</span>
+<span id="L268"><span class="lineNum">     268</span>                 :             :   p3_asub_p2_m = __msa_asub_u_b(p3_in, p2_in);                   \</span>
+<span id="L269"><span class="lineNum">     269</span>                 :             :   p2_asub_p1_m = __msa_asub_u_b(p2_in, p1_in);                   \</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             :   p1_asub_p0_m = __msa_asub_u_b(p1_in, p0_in);                   \</span>
+<span id="L271"><span class="lineNum">     271</span>                 :             :   q1_asub_q0_m = __msa_asub_u_b(q1_in, q0_in);                   \</span>
+<span id="L272"><span class="lineNum">     272</span>                 :             :   q2_asub_q1_m = __msa_asub_u_b(q2_in, q1_in);                   \</span>
+<span id="L273"><span class="lineNum">     273</span>                 :             :   q3_asub_q2_m = __msa_asub_u_b(q3_in, q2_in);                   \</span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :   p0_asub_q0_m = __msa_asub_u_b(p0_in, q0_in);                   \</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             :   p1_asub_q1_m = __msa_asub_u_b(p1_in, q1_in);                   \</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :   /* calculation of hev */                                       \</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             :   flat_out = __msa_max_u_b(p1_asub_p0_m, q1_asub_q0_m);          \</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :   hev_out = (thresh_in &lt; flat_out);                              \</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             :   /* calculation of mask */                                      \</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :   p0_asub_q0_m = __msa_adds_u_b(p0_asub_q0_m, p0_asub_q0_m);     \</span>
+<span id="L281"><span class="lineNum">     281</span>                 :             :   p1_asub_q1_m = SRAI_B(p1_asub_q1_m, 1);                        \</span>
+<span id="L282"><span class="lineNum">     282</span>                 :             :   p0_asub_q0_m = __msa_adds_u_b(p0_asub_q0_m, p1_asub_q1_m);     \</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             :   mask_out = (b_limit_in &lt; p0_asub_q0_m);                        \</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             :   mask_out = __msa_max_u_b(flat_out, mask_out);                  \</span>
+<span id="L285"><span class="lineNum">     285</span>                 :             :   p3_asub_p2_m = __msa_max_u_b(p3_asub_p2_m, p2_asub_p1_m);      \</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :   mask_out = __msa_max_u_b(p3_asub_p2_m, mask_out);              \</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             :   q2_asub_q1_m = __msa_max_u_b(q2_asub_q1_m, q3_asub_q2_m);      \</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :   mask_out = __msa_max_u_b(q2_asub_q1_m, mask_out);              \</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             :   mask_out = (limit_in &lt; mask_out);                              \</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             :   mask_out = __msa_xori_b(mask_out, 0xff);                       \</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             : } while (0)</span>
+<span id="L292"><span class="lineNum">     292</span>                 :             : </span>
+<span id="L293"><span class="lineNum">     293</span>                 :             : #define ST6x1_UB(in0, in0_idx, in1, in1_idx, pdst, stride) do { \</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :   const uint16_t tmp0_h = __msa_copy_s_h((v8i16)in1, in1_idx);  \</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             :   const uint32_t tmp0_w = __msa_copy_s_w((v4i32)in0, in0_idx);  \</span>
+<span id="L296"><span class="lineNum">     296</span>                 :             :   SW(tmp0_w, pdst);                                             \</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             :   SH(tmp0_h, pdst + stride);                                    \</span>
+<span id="L298"><span class="lineNum">     298</span>                 :             : } while (0)</span>
+<span id="L299"><span class="lineNum">     299</span>                 :             : </span>
+<span id="L300"><span class="lineNum">     300</span>                 :             : #define ST6x4_UB(in0, start_in0_idx, in1, start_in1_idx, pdst, stride) do { \</span>
+<span id="L301"><span class="lineNum">     301</span>                 :             :   uint8_t* ptmp1 = (uint8_t*)pdst;                                          \</span>
+<span id="L302"><span class="lineNum">     302</span>                 :             :   ST6x1_UB(in0, start_in0_idx, in1, start_in1_idx, ptmp1, 4);               \</span>
+<span id="L303"><span class="lineNum">     303</span>                 :             :   ptmp1 += stride;                                                          \</span>
+<span id="L304"><span class="lineNum">     304</span>                 :             :   ST6x1_UB(in0, start_in0_idx + 1, in1, start_in1_idx + 1, ptmp1, 4);       \</span>
+<span id="L305"><span class="lineNum">     305</span>                 :             :   ptmp1 += stride;                                                          \</span>
+<span id="L306"><span class="lineNum">     306</span>                 :             :   ST6x1_UB(in0, start_in0_idx + 2, in1, start_in1_idx + 2, ptmp1, 4);       \</span>
+<span id="L307"><span class="lineNum">     307</span>                 :             :   ptmp1 += stride;                                                          \</span>
+<span id="L308"><span class="lineNum">     308</span>                 :             :   ST6x1_UB(in0, start_in0_idx + 3, in1, start_in1_idx + 3, ptmp1, 4);       \</span>
+<span id="L309"><span class="lineNum">     309</span>                 :             : } while (0)</span>
+<span id="L310"><span class="lineNum">     310</span>                 :             : </span>
+<span id="L311"><span class="lineNum">     311</span>                 :             : #define LPF_SIMPLE_FILT(p1_in, p0_in, q0_in, q1_in, mask) do {       \</span>
+<span id="L312"><span class="lineNum">     312</span>                 :             :     v16i8 p1_m, p0_m, q0_m, q1_m, filt, filt1, filt2;                \</span>
+<span id="L313"><span class="lineNum">     313</span>                 :             :     const v16i8 cnst4b = __msa_ldi_b(4);                             \</span>
+<span id="L314"><span class="lineNum">     314</span>                 :             :     const v16i8 cnst3b =  __msa_ldi_b(3);                            \</span>
+<span id="L315"><span class="lineNum">     315</span>                 :             :                                                                      \</span>
+<span id="L316"><span class="lineNum">     316</span>                 :             :     FLIP_SIGN4(p1_in, p0_in, q0_in, q1_in, p1_m, p0_m, q0_m, q1_m);  \</span>
+<span id="L317"><span class="lineNum">     317</span>                 :             :     filt = __msa_subs_s_b(p1_m, q1_m);                               \</span>
+<span id="L318"><span class="lineNum">     318</span>                 :             :     FILT_VAL(q0_m, p0_m, mask, filt);                                \</span>
+<span id="L319"><span class="lineNum">     319</span>                 :             :     filt1 = __msa_adds_s_b(filt, cnst4b);                            \</span>
+<span id="L320"><span class="lineNum">     320</span>                 :             :     filt1 = SRAI_B(filt1, 3);                                        \</span>
+<span id="L321"><span class="lineNum">     321</span>                 :             :     filt2 = __msa_adds_s_b(filt, cnst3b);                            \</span>
+<span id="L322"><span class="lineNum">     322</span>                 :             :     filt2 = SRAI_B(filt2, 3);                                        \</span>
+<span id="L323"><span class="lineNum">     323</span>                 :             :     q0_m = __msa_subs_s_b(q0_m, filt1);                              \</span>
+<span id="L324"><span class="lineNum">     324</span>                 :             :     p0_m = __msa_adds_s_b(p0_m, filt2);                              \</span>
+<span id="L325"><span class="lineNum">     325</span>                 :             :     q0_in = __msa_xori_b((v16u8)q0_m, 0x80);                         \</span>
+<span id="L326"><span class="lineNum">     326</span>                 :             :     p0_in = __msa_xori_b((v16u8)p0_m, 0x80);                         \</span>
+<span id="L327"><span class="lineNum">     327</span>                 :             : } while (0)</span>
+<span id="L328"><span class="lineNum">     328</span>                 :             : </span>
+<span id="L329"><span class="lineNum">     329</span>                 :             : #define LPF_SIMPLE_MASK(p1, p0, q0, q1, b_limit, mask) do {    \</span>
+<span id="L330"><span class="lineNum">     330</span>                 :             :     v16u8 p1_a_sub_q1, p0_a_sub_q0;                            \</span>
+<span id="L331"><span class="lineNum">     331</span>                 :             :                                                                \</span>
+<span id="L332"><span class="lineNum">     332</span>                 :             :     p0_a_sub_q0 = __msa_asub_u_b(p0, q0);                      \</span>
+<span id="L333"><span class="lineNum">     333</span>                 :             :     p1_a_sub_q1 = __msa_asub_u_b(p1, q1);                      \</span>
+<span id="L334"><span class="lineNum">     334</span>                 :             :     p1_a_sub_q1 = (v16u8)__msa_srli_b((v16i8)p1_a_sub_q1, 1);  \</span>
+<span id="L335"><span class="lineNum">     335</span>                 :             :     p0_a_sub_q0 = __msa_adds_u_b(p0_a_sub_q0, p0_a_sub_q0);    \</span>
+<span id="L336"><span class="lineNum">     336</span>                 :             :     mask = __msa_adds_u_b(p0_a_sub_q0, p1_a_sub_q1);           \</span>
+<span id="L337"><span class="lineNum">     337</span>                 :             :     mask = (mask &lt;= b_limit);                                  \</span>
+<span id="L338"><span class="lineNum">     338</span>                 :             : } while (0)</span>
+<span id="L339"><span class="lineNum">     339</span>                 :             : </span>
+<span id="L340"><span class="lineNum">     340</span>                 :             : static void VFilter16(uint8_t* src, int stride,</span>
+<span id="L341"><span class="lineNum">     341</span>                 :             :                       int b_limit_in, int limit_in, int thresh_in) {</span>
+<span id="L342"><span class="lineNum">     342</span>                 :             :   uint8_t* ptemp = src - 4 * stride;</span>
+<span id="L343"><span class="lineNum">     343</span>                 :             :   v16u8 p3, p2, p1, p0, q3, q2, q1, q0;</span>
+<span id="L344"><span class="lineNum">     344</span>                 :             :   v16u8 mask, hev;</span>
+<span id="L345"><span class="lineNum">     345</span>                 :             :   const v16u8 thresh = (v16u8)__msa_fill_b(thresh_in);</span>
+<span id="L346"><span class="lineNum">     346</span>                 :             :   const v16u8 limit = (v16u8)__msa_fill_b(limit_in);</span>
+<span id="L347"><span class="lineNum">     347</span>                 :             :   const v16u8 b_limit = (v16u8)__msa_fill_b(b_limit_in);</span>
+<span id="L348"><span class="lineNum">     348</span>                 :             : </span>
+<span id="L349"><span class="lineNum">     349</span>                 :             :   LD_UB8(ptemp, stride, p3, p2, p1, p0, q0, q1, q2, q3);</span>
+<span id="L350"><span class="lineNum">     350</span>                 :             :   LPF_MASK_HEV(p3, p2, p1, p0, q0, q1, q2, q3, limit, b_limit, thresh,</span>
+<span id="L351"><span class="lineNum">     351</span>                 :             :                hev, mask);</span>
+<span id="L352"><span class="lineNum">     352</span>                 :             :   LPF_MBFILTER(p2, p1, p0, q0, q1, q2, mask, hev);</span>
+<span id="L353"><span class="lineNum">     353</span>                 :             :   ptemp = src - 3 * stride;</span>
+<span id="L354"><span class="lineNum">     354</span>                 :             :   ST_UB4(p2, p1, p0, q0, ptemp, stride);</span>
+<span id="L355"><span class="lineNum">     355</span>                 :             :   ptemp += (4 * stride);</span>
+<span id="L356"><span class="lineNum">     356</span>                 :             :   ST_UB2(q1, q2, ptemp, stride);</span>
+<span id="L357"><span class="lineNum">     357</span>                 :             : }</span>
+<span id="L358"><span class="lineNum">     358</span>                 :             : </span>
+<span id="L359"><span class="lineNum">     359</span>                 :             : static void HFilter16(uint8_t* src, int stride,</span>
+<span id="L360"><span class="lineNum">     360</span>                 :             :                       int b_limit_in, int limit_in, int thresh_in) {</span>
+<span id="L361"><span class="lineNum">     361</span>                 :             :   uint8_t* ptmp  = src - 4;</span>
+<span id="L362"><span class="lineNum">     362</span>                 :             :   v16u8 p3, p2, p1, p0, q3, q2, q1, q0;</span>
+<span id="L363"><span class="lineNum">     363</span>                 :             :   v16u8 mask, hev;</span>
+<span id="L364"><span class="lineNum">     364</span>                 :             :   v16u8 row0, row1, row2, row3, row4, row5, row6, row7, row8;</span>
+<span id="L365"><span class="lineNum">     365</span>                 :             :   v16u8 row9, row10, row11, row12, row13, row14, row15;</span>
+<span id="L366"><span class="lineNum">     366</span>                 :             :   v8i16 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;</span>
+<span id="L367"><span class="lineNum">     367</span>                 :             :   const v16u8 b_limit = (v16u8)__msa_fill_b(b_limit_in);</span>
+<span id="L368"><span class="lineNum">     368</span>                 :             :   const v16u8 limit = (v16u8)__msa_fill_b(limit_in);</span>
+<span id="L369"><span class="lineNum">     369</span>                 :             :   const v16u8 thresh = (v16u8)__msa_fill_b(thresh_in);</span>
+<span id="L370"><span class="lineNum">     370</span>                 :             : </span>
+<span id="L371"><span class="lineNum">     371</span>                 :             :   LD_UB8(ptmp, stride, row0, row1, row2, row3, row4, row5, row6, row7);</span>
+<span id="L372"><span class="lineNum">     372</span>                 :             :   ptmp += (8 * stride);</span>
+<span id="L373"><span class="lineNum">     373</span>                 :             :   LD_UB8(ptmp, stride, row8, row9, row10, row11, row12, row13, row14, row15);</span>
+<span id="L374"><span class="lineNum">     374</span>                 :             :   TRANSPOSE16x8_UB_UB(row0, row1, row2, row3, row4, row5, row6, row7,</span>
+<span id="L375"><span class="lineNum">     375</span>                 :             :                       row8, row9, row10, row11, row12, row13, row14, row15,</span>
+<span id="L376"><span class="lineNum">     376</span>                 :             :                       p3, p2, p1, p0, q0, q1, q2, q3);</span>
+<span id="L377"><span class="lineNum">     377</span>                 :             :   LPF_MASK_HEV(p3, p2, p1, p0, q0, q1, q2, q3, limit, b_limit, thresh,</span>
+<span id="L378"><span class="lineNum">     378</span>                 :             :                hev, mask);</span>
+<span id="L379"><span class="lineNum">     379</span>                 :             :   LPF_MBFILTER(p2, p1, p0, q0, q1, q2, mask, hev);</span>
+<span id="L380"><span class="lineNum">     380</span>                 :             :   ILVR_B2_SH(p1, p2, q0, p0, tmp0, tmp1);</span>
+<span id="L381"><span class="lineNum">     381</span>                 :             :   ILVRL_H2_SH(tmp1, tmp0, tmp3, tmp4);</span>
+<span id="L382"><span class="lineNum">     382</span>                 :             :   ILVL_B2_SH(p1, p2, q0, p0, tmp0, tmp1);</span>
+<span id="L383"><span class="lineNum">     383</span>                 :             :   ILVRL_H2_SH(tmp1, tmp0, tmp6, tmp7);</span>
+<span id="L384"><span class="lineNum">     384</span>                 :             :   ILVRL_B2_SH(q2, q1, tmp2, tmp5);</span>
+<span id="L385"><span class="lineNum">     385</span>                 :             :   ptmp = src - 3;</span>
+<span id="L386"><span class="lineNum">     386</span>                 :             :   ST6x1_UB(tmp3, 0, tmp2, 0, ptmp, 4);</span>
+<span id="L387"><span class="lineNum">     387</span>                 :             :   ptmp += stride;</span>
+<span id="L388"><span class="lineNum">     388</span>                 :             :   ST6x1_UB(tmp3, 1, tmp2, 1, ptmp, 4);</span>
+<span id="L389"><span class="lineNum">     389</span>                 :             :   ptmp += stride;</span>
+<span id="L390"><span class="lineNum">     390</span>                 :             :   ST6x1_UB(tmp3, 2, tmp2, 2, ptmp, 4);</span>
+<span id="L391"><span class="lineNum">     391</span>                 :             :   ptmp += stride;</span>
+<span id="L392"><span class="lineNum">     392</span>                 :             :   ST6x1_UB(tmp3, 3, tmp2, 3, ptmp, 4);</span>
+<span id="L393"><span class="lineNum">     393</span>                 :             :   ptmp += stride;</span>
+<span id="L394"><span class="lineNum">     394</span>                 :             :   ST6x1_UB(tmp4, 0, tmp2, 4, ptmp, 4);</span>
+<span id="L395"><span class="lineNum">     395</span>                 :             :   ptmp += stride;</span>
+<span id="L396"><span class="lineNum">     396</span>                 :             :   ST6x1_UB(tmp4, 1, tmp2, 5, ptmp, 4);</span>
+<span id="L397"><span class="lineNum">     397</span>                 :             :   ptmp += stride;</span>
+<span id="L398"><span class="lineNum">     398</span>                 :             :   ST6x1_UB(tmp4, 2, tmp2, 6, ptmp, 4);</span>
+<span id="L399"><span class="lineNum">     399</span>                 :             :   ptmp += stride;</span>
+<span id="L400"><span class="lineNum">     400</span>                 :             :   ST6x1_UB(tmp4, 3, tmp2, 7, ptmp, 4);</span>
+<span id="L401"><span class="lineNum">     401</span>                 :             :   ptmp += stride;</span>
+<span id="L402"><span class="lineNum">     402</span>                 :             :   ST6x1_UB(tmp6, 0, tmp5, 0, ptmp, 4);</span>
+<span id="L403"><span class="lineNum">     403</span>                 :             :   ptmp += stride;</span>
+<span id="L404"><span class="lineNum">     404</span>                 :             :   ST6x1_UB(tmp6, 1, tmp5, 1, ptmp, 4);</span>
+<span id="L405"><span class="lineNum">     405</span>                 :             :   ptmp += stride;</span>
+<span id="L406"><span class="lineNum">     406</span>                 :             :   ST6x1_UB(tmp6, 2, tmp5, 2, ptmp, 4);</span>
+<span id="L407"><span class="lineNum">     407</span>                 :             :   ptmp += stride;</span>
+<span id="L408"><span class="lineNum">     408</span>                 :             :   ST6x1_UB(tmp6, 3, tmp5, 3, ptmp, 4);</span>
+<span id="L409"><span class="lineNum">     409</span>                 :             :   ptmp += stride;</span>
+<span id="L410"><span class="lineNum">     410</span>                 :             :   ST6x1_UB(tmp7, 0, tmp5, 4, ptmp, 4);</span>
+<span id="L411"><span class="lineNum">     411</span>                 :             :   ptmp += stride;</span>
+<span id="L412"><span class="lineNum">     412</span>                 :             :   ST6x1_UB(tmp7, 1, tmp5, 5, ptmp, 4);</span>
+<span id="L413"><span class="lineNum">     413</span>                 :             :   ptmp += stride;</span>
+<span id="L414"><span class="lineNum">     414</span>                 :             :   ST6x1_UB(tmp7, 2, tmp5, 6, ptmp, 4);</span>
+<span id="L415"><span class="lineNum">     415</span>                 :             :   ptmp += stride;</span>
+<span id="L416"><span class="lineNum">     416</span>                 :             :   ST6x1_UB(tmp7, 3, tmp5, 7, ptmp, 4);</span>
+<span id="L417"><span class="lineNum">     417</span>                 :             : }</span>
+<span id="L418"><span class="lineNum">     418</span>                 :             : </span>
+<span id="L419"><span class="lineNum">     419</span>                 :             : // on three inner edges</span>
+<span id="L420"><span class="lineNum">     420</span>                 :             : static void VFilterHorEdge16i(uint8_t* src, int stride,</span>
+<span id="L421"><span class="lineNum">     421</span>                 :             :                               int b_limit, int limit, int thresh) {</span>
+<span id="L422"><span class="lineNum">     422</span>                 :             :   v16u8 mask, hev;</span>
+<span id="L423"><span class="lineNum">     423</span>                 :             :   v16u8 p3, p2, p1, p0, q3, q2, q1, q0;</span>
+<span id="L424"><span class="lineNum">     424</span>                 :             :   const v16u8 thresh0 = (v16u8)__msa_fill_b(thresh);</span>
+<span id="L425"><span class="lineNum">     425</span>                 :             :   const v16u8 b_limit0 = (v16u8)__msa_fill_b(b_limit);</span>
+<span id="L426"><span class="lineNum">     426</span>                 :             :   const v16u8 limit0 = (v16u8)__msa_fill_b(limit);</span>
+<span id="L427"><span class="lineNum">     427</span>                 :             : </span>
+<span id="L428"><span class="lineNum">     428</span>                 :             :   LD_UB8((src - 4 * stride), stride, p3, p2, p1, p0, q0, q1, q2, q3);</span>
+<span id="L429"><span class="lineNum">     429</span>                 :             :   LPF_MASK_HEV(p3, p2, p1, p0, q0, q1, q2, q3, limit0, b_limit0, thresh0,</span>
+<span id="L430"><span class="lineNum">     430</span>                 :             :                hev, mask);</span>
+<span id="L431"><span class="lineNum">     431</span>                 :             :   LPF_FILTER4_4W(p1, p0, q0, q1, mask, hev);</span>
+<span id="L432"><span class="lineNum">     432</span>                 :             :   ST_UB4(p1, p0, q0, q1, (src - 2 * stride), stride);</span>
+<span id="L433"><span class="lineNum">     433</span>                 :             : }</span>
+<span id="L434"><span class="lineNum">     434</span>                 :             : </span>
+<span id="L435"><span class="lineNum">     435</span>                 :             : static void VFilter16i(uint8_t* src_y, int stride,</span>
+<span id="L436"><span class="lineNum">     436</span>                 :             :                        int b_limit, int limit, int thresh) {</span>
+<span id="L437"><span class="lineNum">     437</span>                 :             :   VFilterHorEdge16i(src_y +  4 * stride, stride, b_limit, limit, thresh);</span>
+<span id="L438"><span class="lineNum">     438</span>                 :             :   VFilterHorEdge16i(src_y +  8 * stride, stride, b_limit, limit, thresh);</span>
+<span id="L439"><span class="lineNum">     439</span>                 :             :   VFilterHorEdge16i(src_y + 12 * stride, stride, b_limit, limit, thresh);</span>
+<span id="L440"><span class="lineNum">     440</span>                 :             : }</span>
+<span id="L441"><span class="lineNum">     441</span>                 :             : </span>
+<span id="L442"><span class="lineNum">     442</span>                 :             : static void HFilterVertEdge16i(uint8_t* src, int stride,</span>
+<span id="L443"><span class="lineNum">     443</span>                 :             :                                int b_limit, int limit, int thresh) {</span>
+<span id="L444"><span class="lineNum">     444</span>                 :             :   v16u8 mask, hev;</span>
+<span id="L445"><span class="lineNum">     445</span>                 :             :   v16u8 p3, p2, p1, p0, q3, q2, q1, q0;</span>
+<span id="L446"><span class="lineNum">     446</span>                 :             :   v16u8 row0, row1, row2, row3, row4, row5, row6, row7;</span>
+<span id="L447"><span class="lineNum">     447</span>                 :             :   v16u8 row8, row9, row10, row11, row12, row13, row14, row15;</span>
+<span id="L448"><span class="lineNum">     448</span>                 :             :   v8i16 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5;</span>
+<span id="L449"><span class="lineNum">     449</span>                 :             :   const v16u8 thresh0 = (v16u8)__msa_fill_b(thresh);</span>
+<span id="L450"><span class="lineNum">     450</span>                 :             :   const v16u8 b_limit0 = (v16u8)__msa_fill_b(b_limit);</span>
+<span id="L451"><span class="lineNum">     451</span>                 :             :   const v16u8 limit0 = (v16u8)__msa_fill_b(limit);</span>
+<span id="L452"><span class="lineNum">     452</span>                 :             : </span>
+<span id="L453"><span class="lineNum">     453</span>                 :             :   LD_UB8(src - 4, stride, row0, row1, row2, row3, row4, row5, row6, row7);</span>
+<span id="L454"><span class="lineNum">     454</span>                 :             :   LD_UB8(src - 4 + (8 * stride), stride,</span>
+<span id="L455"><span class="lineNum">     455</span>                 :             :          row8, row9, row10, row11, row12, row13, row14, row15);</span>
+<span id="L456"><span class="lineNum">     456</span>                 :             :   TRANSPOSE16x8_UB_UB(row0, row1, row2, row3, row4, row5, row6, row7,</span>
+<span id="L457"><span class="lineNum">     457</span>                 :             :                       row8, row9, row10, row11, row12, row13, row14, row15,</span>
+<span id="L458"><span class="lineNum">     458</span>                 :             :                       p3, p2, p1, p0, q0, q1, q2, q3);</span>
+<span id="L459"><span class="lineNum">     459</span>                 :             :   LPF_MASK_HEV(p3, p2, p1, p0, q0, q1, q2, q3, limit0, b_limit0, thresh0,</span>
+<span id="L460"><span class="lineNum">     460</span>                 :             :                hev, mask);</span>
+<span id="L461"><span class="lineNum">     461</span>                 :             :   LPF_FILTER4_4W(p1, p0, q0, q1, mask, hev);</span>
+<span id="L462"><span class="lineNum">     462</span>                 :             :   ILVR_B2_SH(p0, p1, q1, q0, tmp0, tmp1);</span>
+<span id="L463"><span class="lineNum">     463</span>                 :             :   ILVRL_H2_SH(tmp1, tmp0, tmp2, tmp3);</span>
+<span id="L464"><span class="lineNum">     464</span>                 :             :   ILVL_B2_SH(p0, p1, q1, q0, tmp0, tmp1);</span>
+<span id="L465"><span class="lineNum">     465</span>                 :             :   ILVRL_H2_SH(tmp1, tmp0, tmp4, tmp5);</span>
+<span id="L466"><span class="lineNum">     466</span>                 :             :   src -= 2;</span>
+<span id="L467"><span class="lineNum">     467</span>                 :             :   ST4x8_UB(tmp2, tmp3, src, stride);</span>
+<span id="L468"><span class="lineNum">     468</span>                 :             :   src += (8 * stride);</span>
+<span id="L469"><span class="lineNum">     469</span>                 :             :   ST4x8_UB(tmp4, tmp5, src, stride);</span>
+<span id="L470"><span class="lineNum">     470</span>                 :             : }</span>
+<span id="L471"><span class="lineNum">     471</span>                 :             : </span>
+<span id="L472"><span class="lineNum">     472</span>                 :             : static void HFilter16i(uint8_t* src_y, int stride,</span>
+<span id="L473"><span class="lineNum">     473</span>                 :             :                        int b_limit, int limit, int thresh) {</span>
+<span id="L474"><span class="lineNum">     474</span>                 :             :   HFilterVertEdge16i(src_y +  4, stride, b_limit, limit, thresh);</span>
+<span id="L475"><span class="lineNum">     475</span>                 :             :   HFilterVertEdge16i(src_y +  8, stride, b_limit, limit, thresh);</span>
+<span id="L476"><span class="lineNum">     476</span>                 :             :   HFilterVertEdge16i(src_y + 12, stride, b_limit, limit, thresh);</span>
+<span id="L477"><span class="lineNum">     477</span>                 :             : }</span>
+<span id="L478"><span class="lineNum">     478</span>                 :             : </span>
+<span id="L479"><span class="lineNum">     479</span>                 :             : // 8-pixels wide variants, for chroma filtering</span>
+<span id="L480"><span class="lineNum">     480</span>                 :             : static void VFilter8(uint8_t* src_u, uint8_t* src_v, int stride,</span>
+<span id="L481"><span class="lineNum">     481</span>                 :             :                      int b_limit_in, int limit_in, int thresh_in) {</span>
+<span id="L482"><span class="lineNum">     482</span>                 :             :   uint8_t* ptmp_src_u = src_u - 4 * stride;</span>
+<span id="L483"><span class="lineNum">     483</span>                 :             :   uint8_t* ptmp_src_v = src_v - 4 * stride;</span>
+<span id="L484"><span class="lineNum">     484</span>                 :             :   uint64_t p2_d, p1_d, p0_d, q0_d, q1_d, q2_d;</span>
+<span id="L485"><span class="lineNum">     485</span>                 :             :   v16u8 p3, p2, p1, p0, q3, q2, q1, q0, mask, hev;</span>
+<span id="L486"><span class="lineNum">     486</span>                 :             :   v16u8 p3_u, p2_u, p1_u, p0_u, q3_u, q2_u, q1_u, q0_u;</span>
+<span id="L487"><span class="lineNum">     487</span>                 :             :   v16u8 p3_v, p2_v, p1_v, p0_v, q3_v, q2_v, q1_v, q0_v;</span>
+<span id="L488"><span class="lineNum">     488</span>                 :             :   const v16u8 b_limit = (v16u8)__msa_fill_b(b_limit_in);</span>
+<span id="L489"><span class="lineNum">     489</span>                 :             :   const v16u8 limit = (v16u8)__msa_fill_b(limit_in);</span>
+<span id="L490"><span class="lineNum">     490</span>                 :             :   const v16u8 thresh = (v16u8)__msa_fill_b(thresh_in);</span>
+<span id="L491"><span class="lineNum">     491</span>                 :             : </span>
+<span id="L492"><span class="lineNum">     492</span>                 :             :   LD_UB8(ptmp_src_u, stride, p3_u, p2_u, p1_u, p0_u, q0_u, q1_u, q2_u, q3_u);</span>
+<span id="L493"><span class="lineNum">     493</span>                 :             :   LD_UB8(ptmp_src_v, stride, p3_v, p2_v, p1_v, p0_v, q0_v, q1_v, q2_v, q3_v);</span>
+<span id="L494"><span class="lineNum">     494</span>                 :             :   ILVR_D4_UB(p3_v, p3_u, p2_v, p2_u, p1_v, p1_u, p0_v, p0_u, p3, p2, p1, p0);</span>
+<span id="L495"><span class="lineNum">     495</span>                 :             :   ILVR_D4_UB(q0_v, q0_u, q1_v, q1_u, q2_v, q2_u, q3_v, q3_u, q0, q1, q2, q3);</span>
+<span id="L496"><span class="lineNum">     496</span>                 :             :   LPF_MASK_HEV(p3, p2, p1, p0, q0, q1, q2, q3, limit, b_limit, thresh,</span>
+<span id="L497"><span class="lineNum">     497</span>                 :             :                hev, mask);</span>
+<span id="L498"><span class="lineNum">     498</span>                 :             :   LPF_MBFILTER(p2, p1, p0, q0, q1, q2, mask, hev);</span>
+<span id="L499"><span class="lineNum">     499</span>                 :             :   p2_d = __msa_copy_s_d((v2i64)p2, 0);</span>
+<span id="L500"><span class="lineNum">     500</span>                 :             :   p1_d = __msa_copy_s_d((v2i64)p1, 0);</span>
+<span id="L501"><span class="lineNum">     501</span>                 :             :   p0_d = __msa_copy_s_d((v2i64)p0, 0);</span>
+<span id="L502"><span class="lineNum">     502</span>                 :             :   q0_d = __msa_copy_s_d((v2i64)q0, 0);</span>
+<span id="L503"><span class="lineNum">     503</span>                 :             :   q1_d = __msa_copy_s_d((v2i64)q1, 0);</span>
+<span id="L504"><span class="lineNum">     504</span>                 :             :   q2_d = __msa_copy_s_d((v2i64)q2, 0);</span>
+<span id="L505"><span class="lineNum">     505</span>                 :             :   ptmp_src_u += stride;</span>
+<span id="L506"><span class="lineNum">     506</span>                 :             :   SD4(p2_d, p1_d, p0_d, q0_d, ptmp_src_u, stride);</span>
+<span id="L507"><span class="lineNum">     507</span>                 :             :   ptmp_src_u += (4 * stride);</span>
+<span id="L508"><span class="lineNum">     508</span>                 :             :   SD(q1_d, ptmp_src_u);</span>
+<span id="L509"><span class="lineNum">     509</span>                 :             :   ptmp_src_u += stride;</span>
+<span id="L510"><span class="lineNum">     510</span>                 :             :   SD(q2_d, ptmp_src_u);</span>
+<span id="L511"><span class="lineNum">     511</span>                 :             :   p2_d = __msa_copy_s_d((v2i64)p2, 1);</span>
+<span id="L512"><span class="lineNum">     512</span>                 :             :   p1_d = __msa_copy_s_d((v2i64)p1, 1);</span>
+<span id="L513"><span class="lineNum">     513</span>                 :             :   p0_d = __msa_copy_s_d((v2i64)p0, 1);</span>
+<span id="L514"><span class="lineNum">     514</span>                 :             :   q0_d = __msa_copy_s_d((v2i64)q0, 1);</span>
+<span id="L515"><span class="lineNum">     515</span>                 :             :   q1_d = __msa_copy_s_d((v2i64)q1, 1);</span>
+<span id="L516"><span class="lineNum">     516</span>                 :             :   q2_d = __msa_copy_s_d((v2i64)q2, 1);</span>
+<span id="L517"><span class="lineNum">     517</span>                 :             :   ptmp_src_v += stride;</span>
+<span id="L518"><span class="lineNum">     518</span>                 :             :   SD4(p2_d, p1_d, p0_d, q0_d, ptmp_src_v, stride);</span>
+<span id="L519"><span class="lineNum">     519</span>                 :             :   ptmp_src_v += (4 * stride);</span>
+<span id="L520"><span class="lineNum">     520</span>                 :             :   SD(q1_d, ptmp_src_v);</span>
+<span id="L521"><span class="lineNum">     521</span>                 :             :   ptmp_src_v += stride;</span>
+<span id="L522"><span class="lineNum">     522</span>                 :             :   SD(q2_d, ptmp_src_v);</span>
+<span id="L523"><span class="lineNum">     523</span>                 :             : }</span>
+<span id="L524"><span class="lineNum">     524</span>                 :             : </span>
+<span id="L525"><span class="lineNum">     525</span>                 :             : static void HFilter8(uint8_t* src_u, uint8_t* src_v, int stride,</span>
+<span id="L526"><span class="lineNum">     526</span>                 :             :                      int b_limit_in, int limit_in, int thresh_in) {</span>
+<span id="L527"><span class="lineNum">     527</span>                 :             :   uint8_t* ptmp_src_u = src_u - 4;</span>
+<span id="L528"><span class="lineNum">     528</span>                 :             :   uint8_t* ptmp_src_v = src_v - 4;</span>
+<span id="L529"><span class="lineNum">     529</span>                 :             :   v16u8 p3, p2, p1, p0, q3, q2, q1, q0, mask, hev;</span>
+<span id="L530"><span class="lineNum">     530</span>                 :             :   v16u8 row0, row1, row2, row3, row4, row5, row6, row7, row8;</span>
+<span id="L531"><span class="lineNum">     531</span>                 :             :   v16u8 row9, row10, row11, row12, row13, row14, row15;</span>
+<span id="L532"><span class="lineNum">     532</span>                 :             :   v8i16 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;</span>
+<span id="L533"><span class="lineNum">     533</span>                 :             :   const v16u8 b_limit = (v16u8)__msa_fill_b(b_limit_in);</span>
+<span id="L534"><span class="lineNum">     534</span>                 :             :   const v16u8 limit = (v16u8)__msa_fill_b(limit_in);</span>
+<span id="L535"><span class="lineNum">     535</span>                 :             :   const v16u8 thresh = (v16u8)__msa_fill_b(thresh_in);</span>
+<span id="L536"><span class="lineNum">     536</span>                 :             : </span>
+<span id="L537"><span class="lineNum">     537</span>                 :             :   LD_UB8(ptmp_src_u, stride, row0, row1, row2, row3, row4, row5, row6, row7);</span>
+<span id="L538"><span class="lineNum">     538</span>                 :             :   LD_UB8(ptmp_src_v, stride,</span>
+<span id="L539"><span class="lineNum">     539</span>                 :             :          row8, row9, row10, row11, row12, row13, row14, row15);</span>
+<span id="L540"><span class="lineNum">     540</span>                 :             :   TRANSPOSE16x8_UB_UB(row0, row1, row2, row3, row4, row5, row6, row7,</span>
+<span id="L541"><span class="lineNum">     541</span>                 :             :                       row8, row9, row10, row11, row12, row13, row14, row15,</span>
+<span id="L542"><span class="lineNum">     542</span>                 :             :                       p3, p2, p1, p0, q0, q1, q2, q3);</span>
+<span id="L543"><span class="lineNum">     543</span>                 :             :   LPF_MASK_HEV(p3, p2, p1, p0, q0, q1, q2, q3, limit, b_limit, thresh,</span>
+<span id="L544"><span class="lineNum">     544</span>                 :             :                hev, mask);</span>
+<span id="L545"><span class="lineNum">     545</span>                 :             :   LPF_MBFILTER(p2, p1, p0, q0, q1, q2, mask, hev);</span>
+<span id="L546"><span class="lineNum">     546</span>                 :             :   ILVR_B2_SH(p1, p2, q0, p0, tmp0, tmp1);</span>
+<span id="L547"><span class="lineNum">     547</span>                 :             :   ILVRL_H2_SH(tmp1, tmp0, tmp3, tmp4);</span>
+<span id="L548"><span class="lineNum">     548</span>                 :             :   ILVL_B2_SH(p1, p2, q0, p0, tmp0, tmp1);</span>
+<span id="L549"><span class="lineNum">     549</span>                 :             :   ILVRL_H2_SH(tmp1, tmp0, tmp6, tmp7);</span>
+<span id="L550"><span class="lineNum">     550</span>                 :             :   ILVRL_B2_SH(q2, q1, tmp2, tmp5);</span>
+<span id="L551"><span class="lineNum">     551</span>                 :             :   ptmp_src_u += 1;</span>
+<span id="L552"><span class="lineNum">     552</span>                 :             :   ST6x4_UB(tmp3, 0, tmp2, 0, ptmp_src_u, stride);</span>
+<span id="L553"><span class="lineNum">     553</span>                 :             :   ptmp_src_u += 4 * stride;</span>
+<span id="L554"><span class="lineNum">     554</span>                 :             :   ST6x4_UB(tmp4, 0, tmp2, 4, ptmp_src_u, stride);</span>
+<span id="L555"><span class="lineNum">     555</span>                 :             :   ptmp_src_v += 1;</span>
+<span id="L556"><span class="lineNum">     556</span>                 :             :   ST6x4_UB(tmp6, 0, tmp5, 0, ptmp_src_v, stride);</span>
+<span id="L557"><span class="lineNum">     557</span>                 :             :   ptmp_src_v += 4 * stride;</span>
+<span id="L558"><span class="lineNum">     558</span>                 :             :   ST6x4_UB(tmp7, 0, tmp5, 4, ptmp_src_v, stride);</span>
+<span id="L559"><span class="lineNum">     559</span>                 :             : }</span>
+<span id="L560"><span class="lineNum">     560</span>                 :             : </span>
+<span id="L561"><span class="lineNum">     561</span>                 :             : static void VFilter8i(uint8_t* src_u, uint8_t* src_v, int stride,</span>
+<span id="L562"><span class="lineNum">     562</span>                 :             :                       int b_limit_in, int limit_in, int thresh_in) {</span>
+<span id="L563"><span class="lineNum">     563</span>                 :             :   uint64_t p1_d, p0_d, q0_d, q1_d;</span>
+<span id="L564"><span class="lineNum">     564</span>                 :             :   v16u8 p3, p2, p1, p0, q3, q2, q1, q0, mask, hev;</span>
+<span id="L565"><span class="lineNum">     565</span>                 :             :   v16u8 p3_u, p2_u, p1_u, p0_u, q3_u, q2_u, q1_u, q0_u;</span>
+<span id="L566"><span class="lineNum">     566</span>                 :             :   v16u8 p3_v, p2_v, p1_v, p0_v, q3_v, q2_v, q1_v, q0_v;</span>
+<span id="L567"><span class="lineNum">     567</span>                 :             :   const v16u8 thresh = (v16u8)__msa_fill_b(thresh_in);</span>
+<span id="L568"><span class="lineNum">     568</span>                 :             :   const v16u8 limit = (v16u8)__msa_fill_b(limit_in);</span>
+<span id="L569"><span class="lineNum">     569</span>                 :             :   const v16u8 b_limit = (v16u8)__msa_fill_b(b_limit_in);</span>
+<span id="L570"><span class="lineNum">     570</span>                 :             : </span>
+<span id="L571"><span class="lineNum">     571</span>                 :             :   LD_UB8(src_u, stride, p3_u, p2_u, p1_u, p0_u, q0_u, q1_u, q2_u, q3_u);</span>
+<span id="L572"><span class="lineNum">     572</span>                 :             :   src_u += (5 * stride);</span>
+<span id="L573"><span class="lineNum">     573</span>                 :             :   LD_UB8(src_v, stride, p3_v, p2_v, p1_v, p0_v, q0_v, q1_v, q2_v, q3_v);</span>
+<span id="L574"><span class="lineNum">     574</span>                 :             :   src_v += (5 * stride);</span>
+<span id="L575"><span class="lineNum">     575</span>                 :             :   ILVR_D4_UB(p3_v, p3_u, p2_v, p2_u, p1_v, p1_u, p0_v, p0_u, p3, p2, p1, p0);</span>
+<span id="L576"><span class="lineNum">     576</span>                 :             :   ILVR_D4_UB(q0_v, q0_u, q1_v, q1_u, q2_v, q2_u, q3_v, q3_u, q0, q1, q2, q3);</span>
+<span id="L577"><span class="lineNum">     577</span>                 :             :   LPF_MASK_HEV(p3, p2, p1, p0, q0, q1, q2, q3, limit, b_limit, thresh,</span>
+<span id="L578"><span class="lineNum">     578</span>                 :             :                hev, mask);</span>
+<span id="L579"><span class="lineNum">     579</span>                 :             :   LPF_FILTER4_4W(p1, p0, q0, q1, mask, hev);</span>
+<span id="L580"><span class="lineNum">     580</span>                 :             :   p1_d = __msa_copy_s_d((v2i64)p1, 0);</span>
+<span id="L581"><span class="lineNum">     581</span>                 :             :   p0_d = __msa_copy_s_d((v2i64)p0, 0);</span>
+<span id="L582"><span class="lineNum">     582</span>                 :             :   q0_d = __msa_copy_s_d((v2i64)q0, 0);</span>
+<span id="L583"><span class="lineNum">     583</span>                 :             :   q1_d = __msa_copy_s_d((v2i64)q1, 0);</span>
+<span id="L584"><span class="lineNum">     584</span>                 :             :   SD4(q1_d, q0_d, p0_d, p1_d, src_u, -stride);</span>
+<span id="L585"><span class="lineNum">     585</span>                 :             :   p1_d = __msa_copy_s_d((v2i64)p1, 1);</span>
+<span id="L586"><span class="lineNum">     586</span>                 :             :   p0_d = __msa_copy_s_d((v2i64)p0, 1);</span>
+<span id="L587"><span class="lineNum">     587</span>                 :             :   q0_d = __msa_copy_s_d((v2i64)q0, 1);</span>
+<span id="L588"><span class="lineNum">     588</span>                 :             :   q1_d = __msa_copy_s_d((v2i64)q1, 1);</span>
+<span id="L589"><span class="lineNum">     589</span>                 :             :   SD4(q1_d, q0_d, p0_d, p1_d, src_v, -stride);</span>
+<span id="L590"><span class="lineNum">     590</span>                 :             : }</span>
+<span id="L591"><span class="lineNum">     591</span>                 :             : </span>
+<span id="L592"><span class="lineNum">     592</span>                 :             : static void HFilter8i(uint8_t* src_u, uint8_t* src_v, int stride,</span>
+<span id="L593"><span class="lineNum">     593</span>                 :             :                       int b_limit_in, int limit_in, int thresh_in) {</span>
+<span id="L594"><span class="lineNum">     594</span>                 :             :   v16u8 p3, p2, p1, p0, q3, q2, q1, q0, mask, hev;</span>
+<span id="L595"><span class="lineNum">     595</span>                 :             :   v16u8 row0, row1, row2, row3, row4, row5, row6, row7, row8;</span>
+<span id="L596"><span class="lineNum">     596</span>                 :             :   v16u8 row9, row10, row11, row12, row13, row14, row15;</span>
+<span id="L597"><span class="lineNum">     597</span>                 :             :   v4i32 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5;</span>
+<span id="L598"><span class="lineNum">     598</span>                 :             :   const v16u8 thresh = (v16u8)__msa_fill_b(thresh_in);</span>
+<span id="L599"><span class="lineNum">     599</span>                 :             :   const v16u8 limit = (v16u8)__msa_fill_b(limit_in);</span>
+<span id="L600"><span class="lineNum">     600</span>                 :             :   const v16u8 b_limit = (v16u8)__msa_fill_b(b_limit_in);</span>
+<span id="L601"><span class="lineNum">     601</span>                 :             : </span>
+<span id="L602"><span class="lineNum">     602</span>                 :             :   LD_UB8(src_u, stride, row0, row1, row2, row3, row4, row5, row6, row7);</span>
+<span id="L603"><span class="lineNum">     603</span>                 :             :   LD_UB8(src_v, stride,</span>
+<span id="L604"><span class="lineNum">     604</span>                 :             :          row8, row9, row10, row11, row12, row13, row14, row15);</span>
+<span id="L605"><span class="lineNum">     605</span>                 :             :   TRANSPOSE16x8_UB_UB(row0, row1, row2, row3, row4, row5, row6, row7,</span>
+<span id="L606"><span class="lineNum">     606</span>                 :             :                       row8, row9, row10, row11, row12, row13, row14, row15,</span>
+<span id="L607"><span class="lineNum">     607</span>                 :             :                       p3, p2, p1, p0, q0, q1, q2, q3);</span>
+<span id="L608"><span class="lineNum">     608</span>                 :             :   LPF_MASK_HEV(p3, p2, p1, p0, q0, q1, q2, q3, limit, b_limit, thresh,</span>
+<span id="L609"><span class="lineNum">     609</span>                 :             :                hev, mask);</span>
+<span id="L610"><span class="lineNum">     610</span>                 :             :   LPF_FILTER4_4W(p1, p0, q0, q1, mask, hev);</span>
+<span id="L611"><span class="lineNum">     611</span>                 :             :   ILVR_B2_SW(p0, p1, q1, q0, tmp0, tmp1);</span>
+<span id="L612"><span class="lineNum">     612</span>                 :             :   ILVRL_H2_SW(tmp1, tmp0, tmp2, tmp3);</span>
+<span id="L613"><span class="lineNum">     613</span>                 :             :   ILVL_B2_SW(p0, p1, q1, q0, tmp0, tmp1);</span>
+<span id="L614"><span class="lineNum">     614</span>                 :             :   ILVRL_H2_SW(tmp1, tmp0, tmp4, tmp5);</span>
+<span id="L615"><span class="lineNum">     615</span>                 :             :   src_u += 2;</span>
+<span id="L616"><span class="lineNum">     616</span>                 :             :   ST4x4_UB(tmp2, tmp2, 0, 1, 2, 3, src_u, stride);</span>
+<span id="L617"><span class="lineNum">     617</span>                 :             :   src_u += 4 * stride;</span>
+<span id="L618"><span class="lineNum">     618</span>                 :             :   ST4x4_UB(tmp3, tmp3, 0, 1, 2, 3, src_u, stride);</span>
+<span id="L619"><span class="lineNum">     619</span>                 :             :   src_v += 2;</span>
+<span id="L620"><span class="lineNum">     620</span>                 :             :   ST4x4_UB(tmp4, tmp4, 0, 1, 2, 3, src_v, stride);</span>
+<span id="L621"><span class="lineNum">     621</span>                 :             :   src_v += 4 * stride;</span>
+<span id="L622"><span class="lineNum">     622</span>                 :             :   ST4x4_UB(tmp5, tmp5, 0, 1, 2, 3, src_v, stride);</span>
+<span id="L623"><span class="lineNum">     623</span>                 :             : }</span>
+<span id="L624"><span class="lineNum">     624</span>                 :             : </span>
+<span id="L625"><span class="lineNum">     625</span>                 :             : static void SimpleVFilter16(uint8_t* src, int stride, int b_limit_in) {</span>
+<span id="L626"><span class="lineNum">     626</span>                 :             :   v16u8 p1, p0, q1, q0, mask;</span>
+<span id="L627"><span class="lineNum">     627</span>                 :             :   const v16u8 b_limit = (v16u8)__msa_fill_b(b_limit_in);</span>
+<span id="L628"><span class="lineNum">     628</span>                 :             : </span>
+<span id="L629"><span class="lineNum">     629</span>                 :             :   LD_UB4(src - 2 * stride, stride, p1, p0, q0, q1);</span>
+<span id="L630"><span class="lineNum">     630</span>                 :             :   LPF_SIMPLE_MASK(p1, p0, q0, q1, b_limit, mask);</span>
+<span id="L631"><span class="lineNum">     631</span>                 :             :   LPF_SIMPLE_FILT(p1, p0, q0, q1, mask);</span>
+<span id="L632"><span class="lineNum">     632</span>                 :             :   ST_UB2(p0, q0, src - stride, stride);</span>
+<span id="L633"><span class="lineNum">     633</span>                 :             : }</span>
+<span id="L634"><span class="lineNum">     634</span>                 :             : </span>
+<span id="L635"><span class="lineNum">     635</span>                 :             : static void SimpleHFilter16(uint8_t* src, int stride, int b_limit_in) {</span>
+<span id="L636"><span class="lineNum">     636</span>                 :             :   v16u8 p1, p0, q1, q0, mask, row0, row1, row2, row3, row4, row5, row6, row7;</span>
+<span id="L637"><span class="lineNum">     637</span>                 :             :   v16u8 row8, row9, row10, row11, row12, row13, row14, row15;</span>
+<span id="L638"><span class="lineNum">     638</span>                 :             :   v8i16 tmp0, tmp1;</span>
+<span id="L639"><span class="lineNum">     639</span>                 :             :   const v16u8 b_limit = (v16u8)__msa_fill_b(b_limit_in);</span>
+<span id="L640"><span class="lineNum">     640</span>                 :             :   uint8_t* ptemp_src = src - 2;</span>
+<span id="L641"><span class="lineNum">     641</span>                 :             : </span>
+<span id="L642"><span class="lineNum">     642</span>                 :             :   LD_UB8(ptemp_src, stride, row0, row1, row2, row3, row4, row5, row6, row7);</span>
+<span id="L643"><span class="lineNum">     643</span>                 :             :   LD_UB8(ptemp_src + 8 * stride, stride,</span>
+<span id="L644"><span class="lineNum">     644</span>                 :             :          row8, row9, row10, row11, row12, row13, row14, row15);</span>
+<span id="L645"><span class="lineNum">     645</span>                 :             :   TRANSPOSE16x4_UB_UB(row0, row1, row2, row3, row4, row5, row6, row7,</span>
+<span id="L646"><span class="lineNum">     646</span>                 :             :                       row8, row9, row10, row11, row12, row13, row14, row15,</span>
+<span id="L647"><span class="lineNum">     647</span>                 :             :                       p1, p0, q0, q1);</span>
+<span id="L648"><span class="lineNum">     648</span>                 :             :   LPF_SIMPLE_MASK(p1, p0, q0, q1, b_limit, mask);</span>
+<span id="L649"><span class="lineNum">     649</span>                 :             :   LPF_SIMPLE_FILT(p1, p0, q0, q1, mask);</span>
+<span id="L650"><span class="lineNum">     650</span>                 :             :   ILVRL_B2_SH(q0, p0, tmp1, tmp0);</span>
+<span id="L651"><span class="lineNum">     651</span>                 :             :   ptemp_src += 1;</span>
+<span id="L652"><span class="lineNum">     652</span>                 :             :   ST2x4_UB(tmp1, 0, ptemp_src, stride);</span>
+<span id="L653"><span class="lineNum">     653</span>                 :             :   ptemp_src += 4 * stride;</span>
+<span id="L654"><span class="lineNum">     654</span>                 :             :   ST2x4_UB(tmp1, 4, ptemp_src, stride);</span>
+<span id="L655"><span class="lineNum">     655</span>                 :             :   ptemp_src += 4 * stride;</span>
+<span id="L656"><span class="lineNum">     656</span>                 :             :   ST2x4_UB(tmp0, 0, ptemp_src, stride);</span>
+<span id="L657"><span class="lineNum">     657</span>                 :             :   ptemp_src += 4 * stride;</span>
+<span id="L658"><span class="lineNum">     658</span>                 :             :   ST2x4_UB(tmp0, 4, ptemp_src, stride);</span>
+<span id="L659"><span class="lineNum">     659</span>                 :             :   ptemp_src += 4 * stride;</span>
+<span id="L660"><span class="lineNum">     660</span>                 :             : }</span>
+<span id="L661"><span class="lineNum">     661</span>                 :             : </span>
+<span id="L662"><span class="lineNum">     662</span>                 :             : static void SimpleVFilter16i(uint8_t* src_y, int stride, int b_limit_in) {</span>
+<span id="L663"><span class="lineNum">     663</span>                 :             :   SimpleVFilter16(src_y +  4 * stride, stride, b_limit_in);</span>
+<span id="L664"><span class="lineNum">     664</span>                 :             :   SimpleVFilter16(src_y +  8 * stride, stride, b_limit_in);</span>
+<span id="L665"><span class="lineNum">     665</span>                 :             :   SimpleVFilter16(src_y + 12 * stride, stride, b_limit_in);</span>
+<span id="L666"><span class="lineNum">     666</span>                 :             : }</span>
+<span id="L667"><span class="lineNum">     667</span>                 :             : </span>
+<span id="L668"><span class="lineNum">     668</span>                 :             : static void SimpleHFilter16i(uint8_t* src_y, int stride, int b_limit_in) {</span>
+<span id="L669"><span class="lineNum">     669</span>                 :             :   SimpleHFilter16(src_y +  4, stride, b_limit_in);</span>
+<span id="L670"><span class="lineNum">     670</span>                 :             :   SimpleHFilter16(src_y +  8, stride, b_limit_in);</span>
+<span id="L671"><span class="lineNum">     671</span>                 :             :   SimpleHFilter16(src_y + 12, stride, b_limit_in);</span>
+<span id="L672"><span class="lineNum">     672</span>                 :             : }</span>
+<span id="L673"><span class="lineNum">     673</span>                 :             : </span>
+<span id="L674"><span class="lineNum">     674</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L675"><span class="lineNum">     675</span>                 :             : // Intra predictions</span>
+<span id="L676"><span class="lineNum">     676</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L677"><span class="lineNum">     677</span>                 :             : </span>
+<span id="L678"><span class="lineNum">     678</span>                 :             : // 4x4</span>
+<span id="L679"><span class="lineNum">     679</span>                 :             : </span>
+<span id="L680"><span class="lineNum">     680</span>                 :             : static void DC4(uint8_t* dst) {   // DC</span>
+<span id="L681"><span class="lineNum">     681</span>                 :             :   uint32_t dc = 4;</span>
+<span id="L682"><span class="lineNum">     682</span>                 :             :   int i;</span>
+<span id="L683"><span class="lineNum">     683</span>                 :             :   for (i = 0; i &lt; 4; ++i) dc += dst[i - BPS] + dst[-1 + i * BPS];</span>
+<span id="L684"><span class="lineNum">     684</span>                 :             :   dc &gt;&gt;= 3;</span>
+<span id="L685"><span class="lineNum">     685</span>                 :             :   dc = dc | (dc &lt;&lt; 8) | (dc &lt;&lt; 16) | (dc &lt;&lt; 24);</span>
+<span id="L686"><span class="lineNum">     686</span>                 :             :   SW4(dc, dc, dc, dc, dst, BPS);</span>
+<span id="L687"><span class="lineNum">     687</span>                 :             : }</span>
+<span id="L688"><span class="lineNum">     688</span>                 :             : </span>
+<span id="L689"><span class="lineNum">     689</span>                 :             : static void TM4(uint8_t* dst) {</span>
+<span id="L690"><span class="lineNum">     690</span>                 :             :   const uint8_t* const ptemp = dst - BPS - 1;</span>
+<span id="L691"><span class="lineNum">     691</span>                 :             :   v8i16 T, d, r0, r1, r2, r3;</span>
+<span id="L692"><span class="lineNum">     692</span>                 :             :   const v16i8 zero = { 0 };</span>
+<span id="L693"><span class="lineNum">     693</span>                 :             :   const v8i16 TL = (v8i16)__msa_fill_h(ptemp[0 * BPS]);</span>
+<span id="L694"><span class="lineNum">     694</span>                 :             :   const v8i16 L0 = (v8i16)__msa_fill_h(ptemp[1 * BPS]);</span>
+<span id="L695"><span class="lineNum">     695</span>                 :             :   const v8i16 L1 = (v8i16)__msa_fill_h(ptemp[2 * BPS]);</span>
+<span id="L696"><span class="lineNum">     696</span>                 :             :   const v8i16 L2 = (v8i16)__msa_fill_h(ptemp[3 * BPS]);</span>
+<span id="L697"><span class="lineNum">     697</span>                 :             :   const v8i16 L3 = (v8i16)__msa_fill_h(ptemp[4 * BPS]);</span>
+<span id="L698"><span class="lineNum">     698</span>                 :             :   const v16u8 T1 = LD_UB(ptemp + 1);</span>
+<span id="L699"><span class="lineNum">     699</span>                 :             : </span>
+<span id="L700"><span class="lineNum">     700</span>                 :             :   T  = (v8i16)__msa_ilvr_b(zero, (v16i8)T1);</span>
+<span id="L701"><span class="lineNum">     701</span>                 :             :   d = T - TL;</span>
+<span id="L702"><span class="lineNum">     702</span>                 :             :   ADD4(d, L0, d, L1, d, L2, d, L3, r0, r1, r2, r3);</span>
+<span id="L703"><span class="lineNum">     703</span>                 :             :   CLIP_SH4_0_255(r0, r1, r2, r3);</span>
+<span id="L704"><span class="lineNum">     704</span>                 :             :   PCKEV_ST4x4_UB(r0, r1, r2, r3, dst, BPS);</span>
+<span id="L705"><span class="lineNum">     705</span>                 :             : }</span>
+<span id="L706"><span class="lineNum">     706</span>                 :             : </span>
+<span id="L707"><span class="lineNum">     707</span>                 :             : static void VE4(uint8_t* dst) {    // vertical</span>
+<span id="L708"><span class="lineNum">     708</span>                 :             :   const uint8_t* const ptop = dst - BPS - 1;</span>
+<span id="L709"><span class="lineNum">     709</span>                 :             :   const uint32_t val0 = LW(ptop + 0);</span>
+<span id="L710"><span class="lineNum">     710</span>                 :             :   const uint32_t val1 = LW(ptop + 4);</span>
+<span id="L711"><span class="lineNum">     711</span>                 :             :   uint32_t out;</span>
+<span id="L712"><span class="lineNum">     712</span>                 :             :   v16u8 A = { 0 }, B, C, AC, B2, R;</span>
+<span id="L713"><span class="lineNum">     713</span>                 :             : </span>
+<span id="L714"><span class="lineNum">     714</span>                 :             :   INSERT_W2_UB(val0, val1, A);</span>
+<span id="L715"><span class="lineNum">     715</span>                 :             :   B = SLDI_UB(A, A, 1);</span>
+<span id="L716"><span class="lineNum">     716</span>                 :             :   C = SLDI_UB(A, A, 2);</span>
+<span id="L717"><span class="lineNum">     717</span>                 :             :   AC = __msa_ave_u_b(A, C);</span>
+<span id="L718"><span class="lineNum">     718</span>                 :             :   B2 = __msa_ave_u_b(B, B);</span>
+<span id="L719"><span class="lineNum">     719</span>                 :             :   R = __msa_aver_u_b(AC, B2);</span>
+<span id="L720"><span class="lineNum">     720</span>                 :             :   out = __msa_copy_s_w((v4i32)R, 0);</span>
+<span id="L721"><span class="lineNum">     721</span>                 :             :   SW4(out, out, out, out, dst, BPS);</span>
+<span id="L722"><span class="lineNum">     722</span>                 :             : }</span>
+<span id="L723"><span class="lineNum">     723</span>                 :             : </span>
+<span id="L724"><span class="lineNum">     724</span>                 :             : static void RD4(uint8_t* dst) {   // Down-right</span>
+<span id="L725"><span class="lineNum">     725</span>                 :             :   const uint8_t* const ptop = dst - 1 - BPS;</span>
+<span id="L726"><span class="lineNum">     726</span>                 :             :   uint32_t val0 = LW(ptop + 0);</span>
+<span id="L727"><span class="lineNum">     727</span>                 :             :   uint32_t val1 = LW(ptop + 4);</span>
+<span id="L728"><span class="lineNum">     728</span>                 :             :   uint32_t val2, val3;</span>
+<span id="L729"><span class="lineNum">     729</span>                 :             :   v16u8 A, B, C, AC, B2, R, A1 = { 0 };</span>
+<span id="L730"><span class="lineNum">     730</span>                 :             : </span>
+<span id="L731"><span class="lineNum">     731</span>                 :             :   INSERT_W2_UB(val0, val1, A1);</span>
+<span id="L732"><span class="lineNum">     732</span>                 :             :   A = SLDI_UB(A1, A1, 12);</span>
+<span id="L733"><span class="lineNum">     733</span>                 :             :   A = (v16u8)__msa_insert_b((v16i8)A, 3, ptop[1 * BPS]);</span>
+<span id="L734"><span class="lineNum">     734</span>                 :             :   A = (v16u8)__msa_insert_b((v16i8)A, 2, ptop[2 * BPS]);</span>
+<span id="L735"><span class="lineNum">     735</span>                 :             :   A = (v16u8)__msa_insert_b((v16i8)A, 1, ptop[3 * BPS]);</span>
+<span id="L736"><span class="lineNum">     736</span>                 :             :   A = (v16u8)__msa_insert_b((v16i8)A, 0, ptop[4 * BPS]);</span>
+<span id="L737"><span class="lineNum">     737</span>                 :             :   B = SLDI_UB(A, A, 1);</span>
+<span id="L738"><span class="lineNum">     738</span>                 :             :   C = SLDI_UB(A, A, 2);</span>
+<span id="L739"><span class="lineNum">     739</span>                 :             :   AC = __msa_ave_u_b(A, C);</span>
+<span id="L740"><span class="lineNum">     740</span>                 :             :   B2 = __msa_ave_u_b(B, B);</span>
+<span id="L741"><span class="lineNum">     741</span>                 :             :   R = __msa_aver_u_b(AC, B2);</span>
+<span id="L742"><span class="lineNum">     742</span>                 :             :   val3 = __msa_copy_s_w((v4i32)R, 0);</span>
+<span id="L743"><span class="lineNum">     743</span>                 :             :   R = SLDI_UB(R, R, 1);</span>
+<span id="L744"><span class="lineNum">     744</span>                 :             :   val2 = __msa_copy_s_w((v4i32)R, 0);</span>
+<span id="L745"><span class="lineNum">     745</span>                 :             :   R = SLDI_UB(R, R, 1);</span>
+<span id="L746"><span class="lineNum">     746</span>                 :             :   val1 = __msa_copy_s_w((v4i32)R, 0);</span>
+<span id="L747"><span class="lineNum">     747</span>                 :             :   R = SLDI_UB(R, R, 1);</span>
+<span id="L748"><span class="lineNum">     748</span>                 :             :   val0 = __msa_copy_s_w((v4i32)R, 0);</span>
+<span id="L749"><span class="lineNum">     749</span>                 :             :   SW4(val0, val1, val2, val3, dst, BPS);</span>
+<span id="L750"><span class="lineNum">     750</span>                 :             : }</span>
+<span id="L751"><span class="lineNum">     751</span>                 :             : </span>
+<span id="L752"><span class="lineNum">     752</span>                 :             : static void LD4(uint8_t* dst) {   // Down-Left</span>
+<span id="L753"><span class="lineNum">     753</span>                 :             :   const uint8_t* const ptop = dst - BPS;</span>
+<span id="L754"><span class="lineNum">     754</span>                 :             :   uint32_t val0 = LW(ptop + 0);</span>
+<span id="L755"><span class="lineNum">     755</span>                 :             :   uint32_t val1 = LW(ptop + 4);</span>
+<span id="L756"><span class="lineNum">     756</span>                 :             :   uint32_t val2, val3;</span>
+<span id="L757"><span class="lineNum">     757</span>                 :             :   v16u8 A = { 0 }, B, C, AC, B2, R;</span>
+<span id="L758"><span class="lineNum">     758</span>                 :             : </span>
+<span id="L759"><span class="lineNum">     759</span>                 :             :   INSERT_W2_UB(val0, val1, A);</span>
+<span id="L760"><span class="lineNum">     760</span>                 :             :   B = SLDI_UB(A, A, 1);</span>
+<span id="L761"><span class="lineNum">     761</span>                 :             :   C = SLDI_UB(A, A, 2);</span>
+<span id="L762"><span class="lineNum">     762</span>                 :             :   C = (v16u8)__msa_insert_b((v16i8)C, 6, ptop[7]);</span>
+<span id="L763"><span class="lineNum">     763</span>                 :             :   AC = __msa_ave_u_b(A, C);</span>
+<span id="L764"><span class="lineNum">     764</span>                 :             :   B2 = __msa_ave_u_b(B, B);</span>
+<span id="L765"><span class="lineNum">     765</span>                 :             :   R = __msa_aver_u_b(AC, B2);</span>
+<span id="L766"><span class="lineNum">     766</span>                 :             :   val0 = __msa_copy_s_w((v4i32)R, 0);</span>
+<span id="L767"><span class="lineNum">     767</span>                 :             :   R = SLDI_UB(R, R, 1);</span>
+<span id="L768"><span class="lineNum">     768</span>                 :             :   val1 = __msa_copy_s_w((v4i32)R, 0);</span>
+<span id="L769"><span class="lineNum">     769</span>                 :             :   R = SLDI_UB(R, R, 1);</span>
+<span id="L770"><span class="lineNum">     770</span>                 :             :   val2 = __msa_copy_s_w((v4i32)R, 0);</span>
+<span id="L771"><span class="lineNum">     771</span>                 :             :   R = SLDI_UB(R, R, 1);</span>
+<span id="L772"><span class="lineNum">     772</span>                 :             :   val3 = __msa_copy_s_w((v4i32)R, 0);</span>
+<span id="L773"><span class="lineNum">     773</span>                 :             :   SW4(val0, val1, val2, val3, dst, BPS);</span>
+<span id="L774"><span class="lineNum">     774</span>                 :             : }</span>
+<span id="L775"><span class="lineNum">     775</span>                 :             : </span>
+<span id="L776"><span class="lineNum">     776</span>                 :             : // 16x16</span>
+<span id="L777"><span class="lineNum">     777</span>                 :             : </span>
+<span id="L778"><span class="lineNum">     778</span>                 :             : static void DC16(uint8_t* dst) {   // DC</span>
+<span id="L779"><span class="lineNum">     779</span>                 :             :   uint32_t dc = 16;</span>
+<span id="L780"><span class="lineNum">     780</span>                 :             :   int i;</span>
+<span id="L781"><span class="lineNum">     781</span>                 :             :   const v16u8 rtop = LD_UB(dst - BPS);</span>
+<span id="L782"><span class="lineNum">     782</span>                 :             :   const v8u16 dctop = __msa_hadd_u_h(rtop, rtop);</span>
+<span id="L783"><span class="lineNum">     783</span>                 :             :   v16u8 out;</span>
+<span id="L784"><span class="lineNum">     784</span>                 :             : </span>
+<span id="L785"><span class="lineNum">     785</span>                 :             :   for (i = 0; i &lt; 16; ++i) {</span>
+<span id="L786"><span class="lineNum">     786</span>                 :             :     dc += dst[-1 + i * BPS];</span>
+<span id="L787"><span class="lineNum">     787</span>                 :             :   }</span>
+<span id="L788"><span class="lineNum">     788</span>                 :             :   dc += HADD_UH_U32(dctop);</span>
+<span id="L789"><span class="lineNum">     789</span>                 :             :   out = (v16u8)__msa_fill_b(dc &gt;&gt; 5);</span>
+<span id="L790"><span class="lineNum">     790</span>                 :             :   ST_UB8(out, out, out, out, out, out, out, out, dst, BPS);</span>
+<span id="L791"><span class="lineNum">     791</span>                 :             :   ST_UB8(out, out, out, out, out, out, out, out, dst + 8 * BPS, BPS);</span>
+<span id="L792"><span class="lineNum">     792</span>                 :             : }</span>
+<span id="L793"><span class="lineNum">     793</span>                 :             : </span>
+<span id="L794"><span class="lineNum">     794</span>                 :             : static void TM16(uint8_t* dst) {</span>
+<span id="L795"><span class="lineNum">     795</span>                 :             :   int j;</span>
+<span id="L796"><span class="lineNum">     796</span>                 :             :   v8i16 d1, d2;</span>
+<span id="L797"><span class="lineNum">     797</span>                 :             :   const v16i8 zero = { 0 };</span>
+<span id="L798"><span class="lineNum">     798</span>                 :             :   const v8i16 TL = (v8i16)__msa_fill_h(dst[-1 - BPS]);</span>
+<span id="L799"><span class="lineNum">     799</span>                 :             :   const v16i8 T = LD_SB(dst - BPS);</span>
+<span id="L800"><span class="lineNum">     800</span>                 :             : </span>
+<span id="L801"><span class="lineNum">     801</span>                 :             :   ILVRL_B2_SH(zero, T, d1, d2);</span>
+<span id="L802"><span class="lineNum">     802</span>                 :             :   SUB2(d1, TL, d2, TL, d1, d2);</span>
+<span id="L803"><span class="lineNum">     803</span>                 :             :   for (j = 0; j &lt; 16; j += 4) {</span>
+<span id="L804"><span class="lineNum">     804</span>                 :             :     v16i8 t0, t1, t2, t3;</span>
+<span id="L805"><span class="lineNum">     805</span>                 :             :     v8i16 r0, r1, r2, r3, r4, r5, r6, r7;</span>
+<span id="L806"><span class="lineNum">     806</span>                 :             :     const v8i16 L0 = (v8i16)__msa_fill_h(dst[-1 + 0 * BPS]);</span>
+<span id="L807"><span class="lineNum">     807</span>                 :             :     const v8i16 L1 = (v8i16)__msa_fill_h(dst[-1 + 1 * BPS]);</span>
+<span id="L808"><span class="lineNum">     808</span>                 :             :     const v8i16 L2 = (v8i16)__msa_fill_h(dst[-1 + 2 * BPS]);</span>
+<span id="L809"><span class="lineNum">     809</span>                 :             :     const v8i16 L3 = (v8i16)__msa_fill_h(dst[-1 + 3 * BPS]);</span>
+<span id="L810"><span class="lineNum">     810</span>                 :             :     ADD4(d1, L0, d1, L1, d1, L2, d1, L3, r0, r1, r2, r3);</span>
+<span id="L811"><span class="lineNum">     811</span>                 :             :     ADD4(d2, L0, d2, L1, d2, L2, d2, L3, r4, r5, r6, r7);</span>
+<span id="L812"><span class="lineNum">     812</span>                 :             :     CLIP_SH4_0_255(r0, r1, r2, r3);</span>
+<span id="L813"><span class="lineNum">     813</span>                 :             :     CLIP_SH4_0_255(r4, r5, r6, r7);</span>
+<span id="L814"><span class="lineNum">     814</span>                 :             :     PCKEV_B4_SB(r4, r0, r5, r1, r6, r2, r7, r3, t0, t1, t2, t3);</span>
+<span id="L815"><span class="lineNum">     815</span>                 :             :     ST_SB4(t0, t1, t2, t3, dst, BPS);</span>
+<span id="L816"><span class="lineNum">     816</span>                 :             :     dst += 4 * BPS;</span>
+<span id="L817"><span class="lineNum">     817</span>                 :             :   }</span>
+<span id="L818"><span class="lineNum">     818</span>                 :             : }</span>
+<span id="L819"><span class="lineNum">     819</span>                 :             : </span>
+<span id="L820"><span class="lineNum">     820</span>                 :             : static void VE16(uint8_t* dst) {   // vertical</span>
+<span id="L821"><span class="lineNum">     821</span>                 :             :   const v16u8 rtop = LD_UB(dst - BPS);</span>
+<span id="L822"><span class="lineNum">     822</span>                 :             :   ST_UB8(rtop, rtop, rtop, rtop, rtop, rtop, rtop, rtop, dst, BPS);</span>
+<span id="L823"><span class="lineNum">     823</span>                 :             :   ST_UB8(rtop, rtop, rtop, rtop, rtop, rtop, rtop, rtop, dst + 8 * BPS, BPS);</span>
+<span id="L824"><span class="lineNum">     824</span>                 :             : }</span>
+<span id="L825"><span class="lineNum">     825</span>                 :             : </span>
+<span id="L826"><span class="lineNum">     826</span>                 :             : static void HE16(uint8_t* dst) {   // horizontal</span>
+<span id="L827"><span class="lineNum">     827</span>                 :             :   int j;</span>
+<span id="L828"><span class="lineNum">     828</span>                 :             :   for (j = 16; j &gt; 0; j -= 4) {</span>
+<span id="L829"><span class="lineNum">     829</span>                 :             :     const v16u8 L0 = (v16u8)__msa_fill_b(dst[-1 + 0 * BPS]);</span>
+<span id="L830"><span class="lineNum">     830</span>                 :             :     const v16u8 L1 = (v16u8)__msa_fill_b(dst[-1 + 1 * BPS]);</span>
+<span id="L831"><span class="lineNum">     831</span>                 :             :     const v16u8 L2 = (v16u8)__msa_fill_b(dst[-1 + 2 * BPS]);</span>
+<span id="L832"><span class="lineNum">     832</span>                 :             :     const v16u8 L3 = (v16u8)__msa_fill_b(dst[-1 + 3 * BPS]);</span>
+<span id="L833"><span class="lineNum">     833</span>                 :             :     ST_UB4(L0, L1, L2, L3, dst, BPS);</span>
+<span id="L834"><span class="lineNum">     834</span>                 :             :     dst += 4 * BPS;</span>
+<span id="L835"><span class="lineNum">     835</span>                 :             :   }</span>
+<span id="L836"><span class="lineNum">     836</span>                 :             : }</span>
+<span id="L837"><span class="lineNum">     837</span>                 :             : </span>
+<span id="L838"><span class="lineNum">     838</span>                 :             : static void DC16NoTop(uint8_t* dst) {   // DC with top samples not available</span>
+<span id="L839"><span class="lineNum">     839</span>                 :             :   int j;</span>
+<span id="L840"><span class="lineNum">     840</span>                 :             :   uint32_t dc = 8;</span>
+<span id="L841"><span class="lineNum">     841</span>                 :             :   v16u8 out;</span>
+<span id="L842"><span class="lineNum">     842</span>                 :             : </span>
+<span id="L843"><span class="lineNum">     843</span>                 :             :   for (j = 0; j &lt; 16; ++j) {</span>
+<span id="L844"><span class="lineNum">     844</span>                 :             :     dc += dst[-1 + j * BPS];</span>
+<span id="L845"><span class="lineNum">     845</span>                 :             :   }</span>
+<span id="L846"><span class="lineNum">     846</span>                 :             :   out = (v16u8)__msa_fill_b(dc &gt;&gt; 4);</span>
+<span id="L847"><span class="lineNum">     847</span>                 :             :   ST_UB8(out, out, out, out, out, out, out, out, dst, BPS);</span>
+<span id="L848"><span class="lineNum">     848</span>                 :             :   ST_UB8(out, out, out, out, out, out, out, out, dst + 8 * BPS, BPS);</span>
+<span id="L849"><span class="lineNum">     849</span>                 :             : }</span>
+<span id="L850"><span class="lineNum">     850</span>                 :             : </span>
+<span id="L851"><span class="lineNum">     851</span>                 :             : static void DC16NoLeft(uint8_t* dst) {   // DC with left samples not available</span>
+<span id="L852"><span class="lineNum">     852</span>                 :             :   uint32_t dc = 8;</span>
+<span id="L853"><span class="lineNum">     853</span>                 :             :   const v16u8 rtop = LD_UB(dst - BPS);</span>
+<span id="L854"><span class="lineNum">     854</span>                 :             :   const v8u16 dctop = __msa_hadd_u_h(rtop, rtop);</span>
+<span id="L855"><span class="lineNum">     855</span>                 :             :   v16u8 out;</span>
+<span id="L856"><span class="lineNum">     856</span>                 :             : </span>
+<span id="L857"><span class="lineNum">     857</span>                 :             :   dc += HADD_UH_U32(dctop);</span>
+<span id="L858"><span class="lineNum">     858</span>                 :             :   out = (v16u8)__msa_fill_b(dc &gt;&gt; 4);</span>
+<span id="L859"><span class="lineNum">     859</span>                 :             :   ST_UB8(out, out, out, out, out, out, out, out, dst, BPS);</span>
+<span id="L860"><span class="lineNum">     860</span>                 :             :   ST_UB8(out, out, out, out, out, out, out, out, dst + 8 * BPS, BPS);</span>
+<span id="L861"><span class="lineNum">     861</span>                 :             : }</span>
+<span id="L862"><span class="lineNum">     862</span>                 :             : </span>
+<span id="L863"><span class="lineNum">     863</span>                 :             : static void DC16NoTopLeft(uint8_t* dst) {   // DC with nothing</span>
+<span id="L864"><span class="lineNum">     864</span>                 :             :   const v16u8 out = (v16u8)__msa_fill_b(0x80);</span>
+<span id="L865"><span class="lineNum">     865</span>                 :             :   ST_UB8(out, out, out, out, out, out, out, out, dst, BPS);</span>
+<span id="L866"><span class="lineNum">     866</span>                 :             :   ST_UB8(out, out, out, out, out, out, out, out, dst + 8 * BPS, BPS);</span>
+<span id="L867"><span class="lineNum">     867</span>                 :             : }</span>
+<span id="L868"><span class="lineNum">     868</span>                 :             : </span>
+<span id="L869"><span class="lineNum">     869</span>                 :             : // Chroma</span>
+<span id="L870"><span class="lineNum">     870</span>                 :             : </span>
+<span id="L871"><span class="lineNum">     871</span>                 :             : #define STORE8x8(out, dst) do {                 \</span>
+<span id="L872"><span class="lineNum">     872</span>                 :             :   SD4(out, out, out, out, dst + 0 * BPS, BPS);  \</span>
+<span id="L873"><span class="lineNum">     873</span>                 :             :   SD4(out, out, out, out, dst + 4 * BPS, BPS);  \</span>
+<span id="L874"><span class="lineNum">     874</span>                 :             : } while (0)</span>
+<span id="L875"><span class="lineNum">     875</span>                 :             : </span>
+<span id="L876"><span class="lineNum">     876</span>                 :             : static void DC8uv(uint8_t* dst) {   // DC</span>
+<span id="L877"><span class="lineNum">     877</span>                 :             :   uint32_t dc = 8;</span>
+<span id="L878"><span class="lineNum">     878</span>                 :             :   int i;</span>
+<span id="L879"><span class="lineNum">     879</span>                 :             :   uint64_t out;</span>
+<span id="L880"><span class="lineNum">     880</span>                 :             :   const v16u8 rtop = LD_UB(dst - BPS);</span>
+<span id="L881"><span class="lineNum">     881</span>                 :             :   const v8u16 temp0 = __msa_hadd_u_h(rtop, rtop);</span>
+<span id="L882"><span class="lineNum">     882</span>                 :             :   const v4u32 temp1 = __msa_hadd_u_w(temp0, temp0);</span>
+<span id="L883"><span class="lineNum">     883</span>                 :             :   const v2u64 temp2 = __msa_hadd_u_d(temp1, temp1);</span>
+<span id="L884"><span class="lineNum">     884</span>                 :             :   v16u8 dctemp;</span>
+<span id="L885"><span class="lineNum">     885</span>                 :             : </span>
+<span id="L886"><span class="lineNum">     886</span>                 :             :   for (i = 0; i &lt; 8; ++i) {</span>
+<span id="L887"><span class="lineNum">     887</span>                 :             :     dc += dst[-1 + i * BPS];</span>
+<span id="L888"><span class="lineNum">     888</span>                 :             :   }</span>
+<span id="L889"><span class="lineNum">     889</span>                 :             :   dc += __msa_copy_s_w((v4i32)temp2, 0);</span>
+<span id="L890"><span class="lineNum">     890</span>                 :             :   dctemp = (v16u8)__msa_fill_b(dc &gt;&gt; 4);</span>
+<span id="L891"><span class="lineNum">     891</span>                 :             :   out = __msa_copy_s_d((v2i64)dctemp, 0);</span>
+<span id="L892"><span class="lineNum">     892</span>                 :             :   STORE8x8(out, dst);</span>
+<span id="L893"><span class="lineNum">     893</span>                 :             : }</span>
+<span id="L894"><span class="lineNum">     894</span>                 :             : </span>
+<span id="L895"><span class="lineNum">     895</span>                 :             : static void TM8uv(uint8_t* dst) {</span>
+<span id="L896"><span class="lineNum">     896</span>                 :             :   int j;</span>
+<span id="L897"><span class="lineNum">     897</span>                 :             :   const v16i8 T1 = LD_SB(dst - BPS);</span>
+<span id="L898"><span class="lineNum">     898</span>                 :             :   const v16i8 zero = { 0 };</span>
+<span id="L899"><span class="lineNum">     899</span>                 :             :   const v8i16 T  = (v8i16)__msa_ilvr_b(zero, T1);</span>
+<span id="L900"><span class="lineNum">     900</span>                 :             :   const v8i16 TL = (v8i16)__msa_fill_h(dst[-1 - BPS]);</span>
+<span id="L901"><span class="lineNum">     901</span>                 :             :   const v8i16 d = T - TL;</span>
+<span id="L902"><span class="lineNum">     902</span>                 :             : </span>
+<span id="L903"><span class="lineNum">     903</span>                 :             :   for (j = 0; j &lt; 8; j += 4) {</span>
+<span id="L904"><span class="lineNum">     904</span>                 :             :     v16i8 t0, t1;</span>
+<span id="L905"><span class="lineNum">     905</span>                 :             :     v8i16 r0 = (v8i16)__msa_fill_h(dst[-1 + 0 * BPS]);</span>
+<span id="L906"><span class="lineNum">     906</span>                 :             :     v8i16 r1 = (v8i16)__msa_fill_h(dst[-1 + 1 * BPS]);</span>
+<span id="L907"><span class="lineNum">     907</span>                 :             :     v8i16 r2 = (v8i16)__msa_fill_h(dst[-1 + 2 * BPS]);</span>
+<span id="L908"><span class="lineNum">     908</span>                 :             :     v8i16 r3 = (v8i16)__msa_fill_h(dst[-1 + 3 * BPS]);</span>
+<span id="L909"><span class="lineNum">     909</span>                 :             :     ADD4(d, r0, d, r1, d, r2, d, r3, r0, r1, r2, r3);</span>
+<span id="L910"><span class="lineNum">     910</span>                 :             :     CLIP_SH4_0_255(r0, r1, r2, r3);</span>
+<span id="L911"><span class="lineNum">     911</span>                 :             :     PCKEV_B2_SB(r1, r0, r3, r2, t0, t1);</span>
+<span id="L912"><span class="lineNum">     912</span>                 :             :     ST4x4_UB(t0, t1, 0, 2, 0, 2, dst, BPS);</span>
+<span id="L913"><span class="lineNum">     913</span>                 :             :     ST4x4_UB(t0, t1, 1, 3, 1, 3, dst + 4, BPS);</span>
+<span id="L914"><span class="lineNum">     914</span>                 :             :     dst += 4 * BPS;</span>
+<span id="L915"><span class="lineNum">     915</span>                 :             :   }</span>
+<span id="L916"><span class="lineNum">     916</span>                 :             : }</span>
+<span id="L917"><span class="lineNum">     917</span>                 :             : </span>
+<span id="L918"><span class="lineNum">     918</span>                 :             : static void VE8uv(uint8_t* dst) {   // vertical</span>
+<span id="L919"><span class="lineNum">     919</span>                 :             :   const v16u8 rtop = LD_UB(dst - BPS);</span>
+<span id="L920"><span class="lineNum">     920</span>                 :             :   const uint64_t out = __msa_copy_s_d((v2i64)rtop, 0);</span>
+<span id="L921"><span class="lineNum">     921</span>                 :             :   STORE8x8(out, dst);</span>
+<span id="L922"><span class="lineNum">     922</span>                 :             : }</span>
+<span id="L923"><span class="lineNum">     923</span>                 :             : </span>
+<span id="L924"><span class="lineNum">     924</span>                 :             : static void HE8uv(uint8_t* dst) {   // horizontal</span>
+<span id="L925"><span class="lineNum">     925</span>                 :             :   int j;</span>
+<span id="L926"><span class="lineNum">     926</span>                 :             :   for (j = 0; j &lt; 8; j += 4) {</span>
+<span id="L927"><span class="lineNum">     927</span>                 :             :     const v16u8 L0 = (v16u8)__msa_fill_b(dst[-1 + 0 * BPS]);</span>
+<span id="L928"><span class="lineNum">     928</span>                 :             :     const v16u8 L1 = (v16u8)__msa_fill_b(dst[-1 + 1 * BPS]);</span>
+<span id="L929"><span class="lineNum">     929</span>                 :             :     const v16u8 L2 = (v16u8)__msa_fill_b(dst[-1 + 2 * BPS]);</span>
+<span id="L930"><span class="lineNum">     930</span>                 :             :     const v16u8 L3 = (v16u8)__msa_fill_b(dst[-1 + 3 * BPS]);</span>
+<span id="L931"><span class="lineNum">     931</span>                 :             :     const uint64_t out0 = __msa_copy_s_d((v2i64)L0, 0);</span>
+<span id="L932"><span class="lineNum">     932</span>                 :             :     const uint64_t out1 = __msa_copy_s_d((v2i64)L1, 0);</span>
+<span id="L933"><span class="lineNum">     933</span>                 :             :     const uint64_t out2 = __msa_copy_s_d((v2i64)L2, 0);</span>
+<span id="L934"><span class="lineNum">     934</span>                 :             :     const uint64_t out3 = __msa_copy_s_d((v2i64)L3, 0);</span>
+<span id="L935"><span class="lineNum">     935</span>                 :             :     SD4(out0, out1, out2, out3, dst, BPS);</span>
+<span id="L936"><span class="lineNum">     936</span>                 :             :     dst += 4 * BPS;</span>
+<span id="L937"><span class="lineNum">     937</span>                 :             :   }</span>
+<span id="L938"><span class="lineNum">     938</span>                 :             : }</span>
+<span id="L939"><span class="lineNum">     939</span>                 :             : </span>
+<span id="L940"><span class="lineNum">     940</span>                 :             : static void DC8uvNoLeft(uint8_t* dst) {   // DC with no left samples</span>
+<span id="L941"><span class="lineNum">     941</span>                 :             :   const uint32_t dc = 4;</span>
+<span id="L942"><span class="lineNum">     942</span>                 :             :   const v16u8 rtop = LD_UB(dst - BPS);</span>
+<span id="L943"><span class="lineNum">     943</span>                 :             :   const v8u16 temp0 = __msa_hadd_u_h(rtop, rtop);</span>
+<span id="L944"><span class="lineNum">     944</span>                 :             :   const v4u32 temp1 = __msa_hadd_u_w(temp0, temp0);</span>
+<span id="L945"><span class="lineNum">     945</span>                 :             :   const v2u64 temp2 = __msa_hadd_u_d(temp1, temp1);</span>
+<span id="L946"><span class="lineNum">     946</span>                 :             :   const uint32_t sum_m = __msa_copy_s_w((v4i32)temp2, 0);</span>
+<span id="L947"><span class="lineNum">     947</span>                 :             :   const v16u8 dcval = (v16u8)__msa_fill_b((dc + sum_m) &gt;&gt; 3);</span>
+<span id="L948"><span class="lineNum">     948</span>                 :             :   const uint64_t out = __msa_copy_s_d((v2i64)dcval, 0);</span>
+<span id="L949"><span class="lineNum">     949</span>                 :             :   STORE8x8(out, dst);</span>
+<span id="L950"><span class="lineNum">     950</span>                 :             : }</span>
+<span id="L951"><span class="lineNum">     951</span>                 :             : </span>
+<span id="L952"><span class="lineNum">     952</span>                 :             : static void DC8uvNoTop(uint8_t* dst) {   // DC with no top samples</span>
+<span id="L953"><span class="lineNum">     953</span>                 :             :   uint32_t dc = 4;</span>
+<span id="L954"><span class="lineNum">     954</span>                 :             :   int i;</span>
+<span id="L955"><span class="lineNum">     955</span>                 :             :   uint64_t out;</span>
+<span id="L956"><span class="lineNum">     956</span>                 :             :   v16u8 dctemp;</span>
+<span id="L957"><span class="lineNum">     957</span>                 :             : </span>
+<span id="L958"><span class="lineNum">     958</span>                 :             :   for (i = 0; i &lt; 8; ++i) {</span>
+<span id="L959"><span class="lineNum">     959</span>                 :             :     dc += dst[-1 + i * BPS];</span>
+<span id="L960"><span class="lineNum">     960</span>                 :             :   }</span>
+<span id="L961"><span class="lineNum">     961</span>                 :             :   dctemp = (v16u8)__msa_fill_b(dc &gt;&gt; 3);</span>
+<span id="L962"><span class="lineNum">     962</span>                 :             :   out = __msa_copy_s_d((v2i64)dctemp, 0);</span>
+<span id="L963"><span class="lineNum">     963</span>                 :             :   STORE8x8(out, dst);</span>
+<span id="L964"><span class="lineNum">     964</span>                 :             : }</span>
+<span id="L965"><span class="lineNum">     965</span>                 :             : </span>
+<span id="L966"><span class="lineNum">     966</span>                 :             : static void DC8uvNoTopLeft(uint8_t* dst) {   // DC with nothing</span>
+<span id="L967"><span class="lineNum">     967</span>                 :             :   const uint64_t out = 0x8080808080808080ULL;</span>
+<span id="L968"><span class="lineNum">     968</span>                 :             :   STORE8x8(out, dst);</span>
+<span id="L969"><span class="lineNum">     969</span>                 :             : }</span>
+<span id="L970"><span class="lineNum">     970</span>                 :             : </span>
+<span id="L971"><span class="lineNum">     971</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L972"><span class="lineNum">     972</span>                 :             : // Entry point</span>
+<span id="L973"><span class="lineNum">     973</span>                 :             : </span>
+<span id="L974"><span class="lineNum">     974</span>                 :             : extern void VP8DspInitMSA(void);</span>
+<span id="L975"><span class="lineNum">     975</span>                 :             : </span>
+<span id="L976"><span class="lineNum">     976</span>                 :             : WEBP_TSAN_IGNORE_FUNCTION void VP8DspInitMSA(void) {</span>
+<span id="L977"><span class="lineNum">     977</span>                 :             :   VP8TransformWHT = TransformWHT;</span>
+<span id="L978"><span class="lineNum">     978</span>                 :             :   VP8Transform = TransformTwo;</span>
+<span id="L979"><span class="lineNum">     979</span>                 :             :   VP8TransformDC = TransformDC;</span>
+<span id="L980"><span class="lineNum">     980</span>                 :             :   VP8TransformAC3 = TransformAC3;</span>
+<span id="L981"><span class="lineNum">     981</span>                 :             : </span>
+<span id="L982"><span class="lineNum">     982</span>                 :             :   VP8VFilter16  = VFilter16;</span>
+<span id="L983"><span class="lineNum">     983</span>                 :             :   VP8HFilter16  = HFilter16;</span>
+<span id="L984"><span class="lineNum">     984</span>                 :             :   VP8VFilter16i = VFilter16i;</span>
+<span id="L985"><span class="lineNum">     985</span>                 :             :   VP8HFilter16i = HFilter16i;</span>
+<span id="L986"><span class="lineNum">     986</span>                 :             :   VP8VFilter8  = VFilter8;</span>
+<span id="L987"><span class="lineNum">     987</span>                 :             :   VP8HFilter8  = HFilter8;</span>
+<span id="L988"><span class="lineNum">     988</span>                 :             :   VP8VFilter8i = VFilter8i;</span>
+<span id="L989"><span class="lineNum">     989</span>                 :             :   VP8HFilter8i = HFilter8i;</span>
+<span id="L990"><span class="lineNum">     990</span>                 :             :   VP8SimpleVFilter16  = SimpleVFilter16;</span>
+<span id="L991"><span class="lineNum">     991</span>                 :             :   VP8SimpleHFilter16  = SimpleHFilter16;</span>
+<span id="L992"><span class="lineNum">     992</span>                 :             :   VP8SimpleVFilter16i = SimpleVFilter16i;</span>
+<span id="L993"><span class="lineNum">     993</span>                 :             :   VP8SimpleHFilter16i = SimpleHFilter16i;</span>
+<span id="L994"><span class="lineNum">     994</span>                 :             : </span>
+<span id="L995"><span class="lineNum">     995</span>                 :             :   VP8PredLuma4[0] = DC4;</span>
+<span id="L996"><span class="lineNum">     996</span>                 :             :   VP8PredLuma4[1] = TM4;</span>
+<span id="L997"><span class="lineNum">     997</span>                 :             :   VP8PredLuma4[2] = VE4;</span>
+<span id="L998"><span class="lineNum">     998</span>                 :             :   VP8PredLuma4[4] = RD4;</span>
+<span id="L999"><span class="lineNum">     999</span>                 :             :   VP8PredLuma4[6] = LD4;</span>
+<span id="L1000"><span class="lineNum">    1000</span>                 :             :   VP8PredLuma16[0] = DC16;</span>
+<span id="L1001"><span class="lineNum">    1001</span>                 :             :   VP8PredLuma16[1] = TM16;</span>
+<span id="L1002"><span class="lineNum">    1002</span>                 :             :   VP8PredLuma16[2] = VE16;</span>
+<span id="L1003"><span class="lineNum">    1003</span>                 :             :   VP8PredLuma16[3] = HE16;</span>
+<span id="L1004"><span class="lineNum">    1004</span>                 :             :   VP8PredLuma16[4] = DC16NoTop;</span>
+<span id="L1005"><span class="lineNum">    1005</span>                 :             :   VP8PredLuma16[5] = DC16NoLeft;</span>
+<span id="L1006"><span class="lineNum">    1006</span>                 :             :   VP8PredLuma16[6] = DC16NoTopLeft;</span>
+<span id="L1007"><span class="lineNum">    1007</span>                 :             :   VP8PredChroma8[0] = DC8uv;</span>
+<span id="L1008"><span class="lineNum">    1008</span>                 :             :   VP8PredChroma8[1] = TM8uv;</span>
+<span id="L1009"><span class="lineNum">    1009</span>                 :             :   VP8PredChroma8[2] = VE8uv;</span>
+<span id="L1010"><span class="lineNum">    1010</span>                 :             :   VP8PredChroma8[3] = HE8uv;</span>
+<span id="L1011"><span class="lineNum">    1011</span>                 :             :   VP8PredChroma8[4] = DC8uvNoTop;</span>
+<span id="L1012"><span class="lineNum">    1012</span>                 :             :   VP8PredChroma8[5] = DC8uvNoLeft;</span>
+<span id="L1013"><span class="lineNum">    1013</span>                 :             :   VP8PredChroma8[6] = DC8uvNoTopLeft;</span>
+<span id="L1014"><span class="lineNum">    1014</span>                 :             : }</span>
+<span id="L1015"><span class="lineNum">    1015</span>                 :             : </span>
+<span id="L1016"><span class="lineNum">    1016</span>                 :             : #else  // !WEBP_USE_MSA</span>
+<span id="L1017"><span class="lineNum">    1017</span>                 :             : </span>
+<span id="L1018"><span class="lineNum">    1018</span>                 :<span class="tlaUNC tlaBgUNC">           0 : WEBP_DSP_INIT_STUB(VP8DspInitMSA)</span></span>
+<span id="L1019"><span class="lineNum">    1019</span>                 :             : </span>
+<span id="L1020"><span class="lineNum">    1020</span>                 :             : #endif  // WEBP_USE_MSA</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

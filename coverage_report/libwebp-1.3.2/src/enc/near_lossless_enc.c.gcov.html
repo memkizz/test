@@ -1,0 +1,243 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libwebp-1.3.2/src/enc/near_lossless_enc.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libwebp-1.3.2/src/enc</a> - near_lossless_enc.c<span style="font-size: 80%;"> (source / <a href="near_lossless_enc.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">78</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // Copyright 2014 Google Inc. All Rights Reserved.</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : //</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : // Use of this source code is governed by a BSD-style license</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : // that can be found in the COPYING file in the root of the source</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : // tree. An additional intellectual property rights grant can be found</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : // in the file PATENTS. All contributing project authors may</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : // be found in the AUTHORS file in the root of the source tree.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : // Near-lossless image preprocessing adjusts pixel values to help</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : // compressibility with a guarantee of maximum deviation between original and</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : // resulting pixel values.</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : //</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : // Author: Jyrki Alakuijala (jyrki@google.com)</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : // Converted to C by Aleksander Kramarz (akramarz@google.com)</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &lt;assert.h&gt;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &lt;stdlib.h&gt;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : </span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #include &quot;src/dsp/lossless_common.h&quot;</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #include &quot;src/utils/utils.h&quot;</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #include &quot;src/enc/vp8li_enc.h&quot;</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : </span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : #if (WEBP_NEAR_LOSSLESS == 1)</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : </span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : #define MIN_DIM_FOR_NEAR_LOSSLESS 64</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : #define MAX_LIMIT_BITS             5</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : </span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : // Quantizes the value up or down to a multiple of 1&lt;&lt;bits (or to 255),</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : // choosing the closer one, resolving ties using bankers' rounding.</span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static uint32_t FindClosestDiscretized(uint32_t a, int bits) {</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :   const uint32_t mask = (1u &lt;&lt; bits) - 1;</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :<span class="tlaUNC">           0 :   const uint32_t biased = a + (mask &gt;&gt; 1) + ((a &gt;&gt; bits) &amp; 1);</span></span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :   assert(bits &gt; 0);</span>
+<span id="L35"><span class="lineNum">      35</span>                 :<span class="tlaUNC">           0 :   if (biased &gt; 0xff) return 0xff;</span></span>
+<span id="L36"><span class="lineNum">      36</span>                 :<span class="tlaUNC">           0 :   return biased &amp; ~mask;</span></span>
+<span id="L37"><span class="lineNum">      37</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : </span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : // Applies FindClosestDiscretized to all channels of pixel.</span>
+<span id="L40"><span class="lineNum">      40</span>                 :<span class="tlaUNC">           0 : static uint32_t ClosestDiscretizedArgb(uint32_t a, int bits) {</span></span>
+<span id="L41"><span class="lineNum">      41</span>                 :<span class="tlaUNC">           0 :   return</span></span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 :       (FindClosestDiscretized(a &gt;&gt; 24, bits) &lt;&lt; 24) |</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :<span class="tlaUNC">           0 :       (FindClosestDiscretized((a &gt;&gt; 16) &amp; 0xff, bits) &lt;&lt; 16) |</span></span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 :       (FindClosestDiscretized((a &gt;&gt; 8) &amp; 0xff, bits) &lt;&lt; 8) |</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :<span class="tlaUNC">           0 :       (FindClosestDiscretized(a &amp; 0xff, bits));</span></span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : }</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : </span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : // Checks if distance between corresponding channel values of pixels a and b</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : // is within the given limit.</span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 : static int IsNear(uint32_t a, uint32_t b, int limit) {</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :   int k;</span>
+<span id="L52"><span class="lineNum">      52</span>                 :<span class="tlaUNC">           0 :   for (k = 0; k &lt; 4; ++k) {</span></span>
+<span id="L53"><span class="lineNum">      53</span>                 :<span class="tlaUNC">           0 :     const int delta =</span></span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 :         (int)((a &gt;&gt; (k * 8)) &amp; 0xff) - (int)((b &gt;&gt; (k * 8)) &amp; 0xff);</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :<span class="tlaUNC">           0 :     if (delta &gt;= limit || delta &lt;= -limit) {</span></span>
+<span id="L56"><span class="lineNum">      56</span>                 :<span class="tlaUNC">           0 :       return 0;</span></span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :     }</span>
+<span id="L58"><span class="lineNum">      58</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L61"><span class="lineNum">      61</span>                 :             : </span>
+<span id="L62"><span class="lineNum">      62</span>                 :<span class="tlaUNC">           0 : static int IsSmooth(const uint32_t* const prev_row,</span></span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :                     const uint32_t* const curr_row,</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :                     const uint32_t* const next_row,</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :                     int ix, int limit) {</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   // Check that all pixels in 4-connected neighborhood are smooth.</span>
+<span id="L67"><span class="lineNum">      67</span>                 :<span class="tlaUNC">           0 :   return (IsNear(curr_row[ix], curr_row[ix - 1], limit) &amp;&amp;</span></span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 :           IsNear(curr_row[ix], curr_row[ix + 1], limit) &amp;&amp;</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 :           IsNear(curr_row[ix], prev_row[ix], limit) &amp;&amp;</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 :           IsNear(curr_row[ix], next_row[ix], limit));</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :             : }</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             : </span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : // Adjusts pixel values of image with given maximum error.</span>
+<span id="L74"><span class="lineNum">      74</span>                 :<span class="tlaUNC">           0 : static void NearLossless(int xsize, int ysize, const uint32_t* argb_src,</span></span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :                          int stride, int limit_bits, uint32_t* copy_buffer,</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :                          uint32_t* argb_dst) {</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :   int x, y;</span>
+<span id="L78"><span class="lineNum">      78</span>                 :<span class="tlaUNC">           0 :   const int limit = 1 &lt;&lt; limit_bits;</span></span>
+<span id="L79"><span class="lineNum">      79</span>                 :<span class="tlaUNC">           0 :   uint32_t* prev_row = copy_buffer;</span></span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 :   uint32_t* curr_row = prev_row + xsize;</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :<span class="tlaUNC">           0 :   uint32_t* next_row = curr_row + xsize;</span></span>
+<span id="L82"><span class="lineNum">      82</span>                 :<span class="tlaUNC">           0 :   memcpy(curr_row, argb_src, xsize * sizeof(argb_src[0]));</span></span>
+<span id="L83"><span class="lineNum">      83</span>                 :<span class="tlaUNC">           0 :   memcpy(next_row, argb_src + stride, xsize * sizeof(argb_src[0]));</span></span>
+<span id="L84"><span class="lineNum">      84</span>                 :             : </span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :   for (y = 0; y &lt; ysize; ++y, argb_src += stride, argb_dst += xsize) {</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :     if (y == 0 || y == ysize - 1) {</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :<span class="tlaUNC">           0 :       memcpy(argb_dst, argb_src, xsize * sizeof(argb_src[0]));</span></span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :     } else {</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :<span class="tlaUNC">           0 :       memcpy(next_row, argb_src + stride, xsize * sizeof(argb_src[0]));</span></span>
+<span id="L90"><span class="lineNum">      90</span>                 :<span class="tlaUNC">           0 :       argb_dst[0] = argb_src[0];</span></span>
+<span id="L91"><span class="lineNum">      91</span>                 :<span class="tlaUNC">           0 :       argb_dst[xsize - 1] = argb_src[xsize - 1];</span></span>
+<span id="L92"><span class="lineNum">      92</span>                 :<span class="tlaUNC">           0 :       for (x = 1; x &lt; xsize - 1; ++x) {</span></span>
+<span id="L93"><span class="lineNum">      93</span>                 :<span class="tlaUNC">           0 :         if (IsSmooth(prev_row, curr_row, next_row, x, limit)) {</span></span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :           argb_dst[x] = curr_row[x];</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :         } else {</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 :           argb_dst[x] = ClosestDiscretizedArgb(curr_row[x], limit_bits);</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :         }</span>
+<span id="L98"><span class="lineNum">      98</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :     }</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :     {</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :       // Three-way swap.</span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 :       uint32_t* const temp = prev_row;</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :       prev_row = curr_row;</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :<span class="tlaUNC">           0 :       curr_row = next_row;</span></span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :       next_row = temp;</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :     }</span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L109"><span class="lineNum">     109</span>                 :             : </span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 : int VP8ApplyNearLossless(const WebPPicture* const picture, int quality,</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :                          uint32_t* const argb_dst) {</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :   int i;</span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :   const int xsize = picture-&gt;width;</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :<span class="tlaUNC">           0 :   const int ysize = picture-&gt;height;</span></span>
+<span id="L115"><span class="lineNum">     115</span>                 :<span class="tlaUNC">           0 :   const int stride = picture-&gt;argb_stride;</span></span>
+<span id="L116"><span class="lineNum">     116</span>                 :<span class="tlaUNC">           0 :   uint32_t* const copy_buffer =</span></span>
+<span id="L117"><span class="lineNum">     117</span>                 :<span class="tlaUNC">           0 :       (uint32_t*)WebPSafeMalloc(xsize * 3, sizeof(*copy_buffer));</span></span>
+<span id="L118"><span class="lineNum">     118</span>                 :<span class="tlaUNC">           0 :   const int limit_bits = VP8LNearLosslessBits(quality);</span></span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :   assert(argb_dst != NULL);</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :   assert(limit_bits &gt; 0);</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :   assert(limit_bits &lt;= MAX_LIMIT_BITS);</span>
+<span id="L122"><span class="lineNum">     122</span>                 :<span class="tlaUNC">           0 :   if (copy_buffer == NULL) {</span></span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :   }</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :   // For small icon images, don't attempt to apply near-lossless compression.</span>
+<span id="L126"><span class="lineNum">     126</span>                 :<span class="tlaUNC">           0 :   if ((xsize &lt; MIN_DIM_FOR_NEAR_LOSSLESS &amp;&amp;</span></span>
+<span id="L127"><span class="lineNum">     127</span>                 :<span class="tlaUNC">           0 :        ysize &lt; MIN_DIM_FOR_NEAR_LOSSLESS) ||</span></span>
+<span id="L128"><span class="lineNum">     128</span>                 :<span class="tlaUNC">           0 :       ysize &lt; 3) {</span></span>
+<span id="L129"><span class="lineNum">     129</span>                 :<span class="tlaUNC">           0 :     for (i = 0; i &lt; ysize; ++i) {</span></span>
+<span id="L130"><span class="lineNum">     130</span>                 :<span class="tlaUNC">           0 :       memcpy(argb_dst + i * xsize, picture-&gt;argb + i * picture-&gt;argb_stride,</span></span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 :              xsize * sizeof(*argb_dst));</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L133"><span class="lineNum">     133</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(copy_buffer);</span></span>
+<span id="L134"><span class="lineNum">     134</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :   }</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : </span>
+<span id="L137"><span class="lineNum">     137</span>                 :<span class="tlaUNC">           0 :   NearLossless(xsize, ysize, picture-&gt;argb, stride, limit_bits, copy_buffer,</span></span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 :                argb_dst);</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :   for (i = limit_bits - 1; i != 0; --i) {</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :<span class="tlaUNC">           0 :     NearLossless(xsize, ysize, argb_dst, xsize, i, copy_buffer, argb_dst);</span></span>
+<span id="L141"><span class="lineNum">     141</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :   WebPSafeFree(copy_buffer);</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :             : #else  // (WEBP_NEAR_LOSSLESS == 1)</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : </span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : // Define a stub to suppress compiler warnings.</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             : extern void VP8LNearLosslessStub(void);</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             : void VP8LNearLosslessStub(void) {}</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             : </span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : #endif  // (WEBP_NEAR_LOSSLESS == 1)</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

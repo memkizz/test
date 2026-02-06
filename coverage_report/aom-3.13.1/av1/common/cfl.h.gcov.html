@@ -1,0 +1,389 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/common/cfl.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/common</a> - cfl.h<span style="font-size: 80%;"> (source / <a href="cfl.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">31</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2016, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #ifndef AOM_AV1_COMMON_CFL_H_</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #define AOM_AV1_COMMON_CFL_H_</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;av1/common/av1_common_int.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;av1/common/blockd.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : </span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : // Can we use CfL for the current block?</span>
+<span id="L19"><span class="lineNum">      19</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static inline CFL_ALLOWED_TYPE is_cfl_allowed(const MACROBLOCKD *xd) {</span></span>
+<span id="L20"><span class="lineNum">      20</span>                 :<span class="tlaUNC">           0 :   const MB_MODE_INFO *mbmi = xd-&gt;mi[0];</span></span>
+<span id="L21"><span class="lineNum">      21</span>                 :<span class="tlaUNC">           0 :   const BLOCK_SIZE bsize = mbmi-&gt;bsize;</span></span>
+<span id="L22"><span class="lineNum">      22</span>                 :             :   assert(bsize &lt; BLOCK_SIZES_ALL);</span>
+<span id="L23"><span class="lineNum">      23</span>                 :<span class="tlaUNC">           0 :   if (xd-&gt;lossless[mbmi-&gt;segment_id]) {</span></span>
+<span id="L24"><span class="lineNum">      24</span>                 :             :     // In lossless, CfL is available when the partition size is equal to the</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             :     // transform size.</span>
+<span id="L26"><span class="lineNum">      26</span>                 :<span class="tlaUNC">           0 :     const int ssx = xd-&gt;plane[AOM_PLANE_U].subsampling_x;</span></span>
+<span id="L27"><span class="lineNum">      27</span>                 :<span class="tlaUNC">           0 :     const int ssy = xd-&gt;plane[AOM_PLANE_U].subsampling_y;</span></span>
+<span id="L28"><span class="lineNum">      28</span>                 :<span class="tlaUNC">           0 :     const int plane_bsize = get_plane_block_size(bsize, ssx, ssy);</span></span>
+<span id="L29"><span class="lineNum">      29</span>                 :<span class="tlaUNC">           0 :     return (CFL_ALLOWED_TYPE)(plane_bsize == BLOCK_4X4);</span></span>
+<span id="L30"><span class="lineNum">      30</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :   // Spec: CfL is available to luma partitions lesser than or equal to 32x32</span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :   return (CFL_ALLOWED_TYPE)(block_size_wide[bsize] &lt;= 32 &amp;&amp;</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :<span class="tlaUNC">           0 :                             block_size_high[bsize] &lt;= 32);</span></span>
+<span id="L34"><span class="lineNum">      34</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : </span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : // Do we need to save the luma pixels from the current block,</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : // for a possible future CfL prediction?</span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 : static inline CFL_ALLOWED_TYPE store_cfl_required(const AV1_COMMON *cm,</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :                                                   const MACROBLOCKD *xd) {</span>
+<span id="L40"><span class="lineNum">      40</span>                 :<span class="tlaUNC">           0 :   const MB_MODE_INFO *mbmi = xd-&gt;mi[0];</span></span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : </span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 :   if (cm-&gt;seq_params-&gt;monochrome) return CFL_DISALLOWED;</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : </span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 :   if (!xd-&gt;is_chroma_ref) {</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :     // For non-chroma-reference blocks, we should always store the luma pixels,</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :     // in case the corresponding chroma-reference block uses CfL.</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :     // Note that this can only happen for block sizes which are &lt;8 on</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :     // their shortest side, as otherwise they would be chroma reference</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :     // blocks.</span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 :     return CFL_ALLOWED;</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :   }</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : </span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :   // If this block has chroma information, we know whether we're</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :   // actually going to perform a CfL prediction</span>
+<span id="L55"><span class="lineNum">      55</span>                 :<span class="tlaUNC">           0 :   return (CFL_ALLOWED_TYPE)(!is_inter_block(mbmi) &amp;&amp;</span></span>
+<span id="L56"><span class="lineNum">      56</span>                 :<span class="tlaUNC">           0 :                             mbmi-&gt;uv_mode == UV_CFL_PRED);</span></span>
+<span id="L57"><span class="lineNum">      57</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : </span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 : static inline int get_scaled_luma_q0(int alpha_q3, int16_t pred_buf_q3) {</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :<span class="tlaUNC">           0 :   int scaled_luma_q6 = alpha_q3 * pred_buf_q3;</span></span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 :   return ROUND_POWER_OF_TWO_SIGNED(scaled_luma_q6, 6);</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L63"><span class="lineNum">      63</span>                 :             : </span>
+<span id="L64"><span class="lineNum">      64</span>                 :<span class="tlaUNC">           0 : static inline CFL_PRED_TYPE get_cfl_pred_type(int plane) {</span></span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   assert(plane &gt; 0);</span>
+<span id="L66"><span class="lineNum">      66</span>                 :<span class="tlaUNC">           0 :   return (CFL_PRED_TYPE)(plane - 1);</span></span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : }</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : </span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 : static inline void clear_cfl_dc_pred_cache_flags(CFL_CTX *cfl) {</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 :   cfl-&gt;use_dc_pred_cache = false;</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :<span class="tlaUNC">           0 :   cfl-&gt;dc_pred_is_cached[CFL_PRED_U] = false;</span></span>
+<span id="L72"><span class="lineNum">      72</span>                 :<span class="tlaUNC">           0 :   cfl-&gt;dc_pred_is_cached[CFL_PRED_V] = false;</span></span>
+<span id="L73"><span class="lineNum">      73</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L74"><span class="lineNum">      74</span>                 :             : </span>
+<span id="L75"><span class="lineNum">      75</span>                 :             : void av1_cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :                            TX_SIZE tx_size, int plane);</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : </span>
+<span id="L78"><span class="lineNum">      78</span>                 :             : void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size);</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : </span>
+<span id="L80"><span class="lineNum">      80</span>                 :             : void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :                   BLOCK_SIZE bsize);</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             : </span>
+<span id="L83"><span class="lineNum">      83</span>                 :             : void cfl_store_dc_pred(MACROBLOCKD *const xd, const uint8_t *input,</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :                        CFL_PRED_TYPE pred_plane, int width);</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : </span>
+<span id="L86"><span class="lineNum">      86</span>                 :             : void cfl_load_dc_pred(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :                       TX_SIZE tx_size, CFL_PRED_TYPE pred_plane);</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : </span>
+<span id="L89"><span class="lineNum">      89</span>                 :             : // Allows the CFL_SUBSAMPLE function to switch types depending on the bitdepth.</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : #define CFL_lbd_TYPE uint8_t *cfl_type</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             : #define CFL_hbd_TYPE uint16_t *cfl_type</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             : </span>
+<span id="L93"><span class="lineNum">      93</span>                 :             : // Declare a size-specific wrapper for the size-generic function. The compiler</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             : // will inline the size generic function in here, the advantage is that the size</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             : // will be constant allowing for loop unrolling and other constant propagated</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : // goodness.</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : #define CFL_SUBSAMPLE(arch, sub, bd, width, height)                       \</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :   void cfl_subsample_##bd##_##sub##_##width##x##height##_##arch(          \</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :       const CFL_##bd##_TYPE, int input_stride, uint16_t *output_q3);      \</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :   void cfl_subsample_##bd##_##sub##_##width##x##height##_##arch(          \</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :       const CFL_##bd##_TYPE, int input_stride, uint16_t *output_q3) {     \</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :     cfl_luma_subsampling_##sub##_##bd##_##arch(cfl_type, input_stride,    \</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :                                                output_q3, width, height); \</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :   }</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : </span>
+<span id="L106"><span class="lineNum">     106</span>                 :             : // Declare size-specific wrappers for all valid CfL sizes.</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             : #define CFL_SUBSAMPLE_FUNCTIONS(arch, sub, bd)                            \</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 4, 4)                                      \</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 8, 8)                                      \</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 16, 16)                                    \</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 32, 32)                                    \</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 4, 8)                                      \</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 8, 4)                                      \</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 8, 16)                                     \</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 16, 8)                                     \</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 16, 32)                                    \</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 32, 16)                                    \</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 4, 16)                                     \</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 16, 4)                                     \</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 8, 32)                                     \</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :   CFL_SUBSAMPLE(arch, sub, bd, 32, 8)                                     \</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :   cfl_subsample_##bd##_fn cfl_get_luma_subsampling_##sub##_##bd##_##arch( \</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :       TX_SIZE tx_size) {                                                  \</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :     CFL_SUBSAMPLE_FUNCTION_ARRAY(arch, sub, bd)                           \</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :     return subfn_##sub[tx_size];                                          \</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :   }</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : </span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : // Declare an architecture-specific array of function pointers for size-specific</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : // wrappers.</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : #define CFL_SUBSAMPLE_FUNCTION_ARRAY(arch, sub, bd)                           \</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :   static const cfl_subsample_##bd##_fn subfn_##sub[TX_SIZES_ALL] = {          \</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :     cfl_subsample_##bd##_##sub##_4x4_##arch,   /* 4x4 */                      \</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :     cfl_subsample_##bd##_##sub##_8x8_##arch,   /* 8x8 */                      \</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :     cfl_subsample_##bd##_##sub##_16x16_##arch, /* 16x16 */                    \</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :     cfl_subsample_##bd##_##sub##_32x32_##arch, /* 32x32 */                    \</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :     NULL,                                      /* 64x64 (invalid CFL size) */ \</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :     cfl_subsample_##bd##_##sub##_4x8_##arch,   /* 4x8 */                      \</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :     cfl_subsample_##bd##_##sub##_8x4_##arch,   /* 8x4 */                      \</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :     cfl_subsample_##bd##_##sub##_8x16_##arch,  /* 8x16 */                     \</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :     cfl_subsample_##bd##_##sub##_16x8_##arch,  /* 16x8 */                     \</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :     cfl_subsample_##bd##_##sub##_16x32_##arch, /* 16x32 */                    \</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :     cfl_subsample_##bd##_##sub##_32x16_##arch, /* 32x16 */                    \</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :     NULL,                                      /* 32x64 (invalid CFL size) */ \</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :     NULL,                                      /* 64x32 (invalid CFL size) */ \</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :     cfl_subsample_##bd##_##sub##_4x16_##arch,  /* 4x16  */                    \</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             :     cfl_subsample_##bd##_##sub##_16x4_##arch,  /* 16x4  */                    \</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :     cfl_subsample_##bd##_##sub##_8x32_##arch,  /* 8x32  */                    \</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :     cfl_subsample_##bd##_##sub##_32x8_##arch,  /* 32x8  */                    \</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :     NULL,                                      /* 16x64 (invalid CFL size) */ \</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :     NULL,                                      /* 64x16 (invalid CFL size) */ \</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :   };</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             : </span>
+<span id="L153"><span class="lineNum">     153</span>                 :             : // The RTCD script does not support passing in an array, so we wrap it in this</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             : // function.</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             : #if CONFIG_AV1_HIGHBITDEPTH</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             : #define CFL_GET_SUBSAMPLE_FUNCTION(arch)  \</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :   CFL_SUBSAMPLE_FUNCTIONS(arch, 420, lbd) \</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :   CFL_SUBSAMPLE_FUNCTIONS(arch, 422, lbd) \</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             :   CFL_SUBSAMPLE_FUNCTIONS(arch, 444, lbd) \</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :   CFL_SUBSAMPLE_FUNCTIONS(arch, 420, hbd) \</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :   CFL_SUBSAMPLE_FUNCTIONS(arch, 422, hbd) \</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :   CFL_SUBSAMPLE_FUNCTIONS(arch, 444, hbd)</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : #else</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             : #define CFL_GET_SUBSAMPLE_FUNCTION(arch)  \</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :   CFL_SUBSAMPLE_FUNCTIONS(arch, 420, lbd) \</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :   CFL_SUBSAMPLE_FUNCTIONS(arch, 422, lbd) \</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             :   CFL_SUBSAMPLE_FUNCTIONS(arch, 444, lbd)</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             : #endif</span>
+<span id="L169"><span class="lineNum">     169</span>                 :             : </span>
+<span id="L170"><span class="lineNum">     170</span>                 :             : // Declare a size-specific wrapper for the size-generic function. The compiler</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             : // will inline the size generic function in here, the advantage is that the size</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             : // will be constant allowing for loop unrolling and other constant propagated</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             : // goodness.</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             : #define CFL_SUB_AVG_X(arch, width, height, round_offset, num_pel_log2)       \</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             :   void cfl_subtract_average_##width##x##height##_##arch(const uint16_t *src, \</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             :                                                         int16_t *dst);       \</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             :   void cfl_subtract_average_##width##x##height##_##arch(const uint16_t *src, \</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :                                                         int16_t *dst) {      \</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             :     subtract_average_##arch(src, dst, width, height, round_offset,           \</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             :                             num_pel_log2);                                   \</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :   }</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : </span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : // Declare size-specific wrappers for all valid CfL sizes.</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : #define CFL_SUB_AVG_FN(arch)                                              \</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             :   CFL_SUB_AVG_X(arch, 4, 4, 8, 4)                                         \</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :   CFL_SUB_AVG_X(arch, 4, 8, 16, 5)                                        \</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :   CFL_SUB_AVG_X(arch, 4, 16, 32, 6)                                       \</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             :   CFL_SUB_AVG_X(arch, 8, 4, 16, 5)                                        \</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             :   CFL_SUB_AVG_X(arch, 8, 8, 32, 6)                                        \</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :   CFL_SUB_AVG_X(arch, 8, 16, 64, 7)                                       \</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :   CFL_SUB_AVG_X(arch, 8, 32, 128, 8)                                      \</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             :   CFL_SUB_AVG_X(arch, 16, 4, 32, 6)                                       \</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             :   CFL_SUB_AVG_X(arch, 16, 8, 64, 7)                                       \</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             :   CFL_SUB_AVG_X(arch, 16, 16, 128, 8)                                     \</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :   CFL_SUB_AVG_X(arch, 16, 32, 256, 9)                                     \</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :   CFL_SUB_AVG_X(arch, 32, 8, 128, 8)                                      \</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :   CFL_SUB_AVG_X(arch, 32, 16, 256, 9)                                     \</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :   CFL_SUB_AVG_X(arch, 32, 32, 512, 10)                                    \</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             :   cfl_subtract_average_fn cfl_get_subtract_average_fn_##arch(             \</span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :       TX_SIZE tx_size) {                                                  \</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :     static const cfl_subtract_average_fn sub_avg[TX_SIZES_ALL] = {        \</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             :       cfl_subtract_average_4x4_##arch,   /* 4x4 */                        \</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :       cfl_subtract_average_8x8_##arch,   /* 8x8 */                        \</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :       cfl_subtract_average_16x16_##arch, /* 16x16 */                      \</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :       cfl_subtract_average_32x32_##arch, /* 32x32 */                      \</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :       NULL,                              /* 64x64 (invalid CFL size) */   \</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             :       cfl_subtract_average_4x8_##arch,   /* 4x8 */                        \</span>
+<span id="L208"><span class="lineNum">     208</span>                 :             :       cfl_subtract_average_8x4_##arch,   /* 8x4 */                        \</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             :       cfl_subtract_average_8x16_##arch,  /* 8x16 */                       \</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :       cfl_subtract_average_16x8_##arch,  /* 16x8 */                       \</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             :       cfl_subtract_average_16x32_##arch, /* 16x32 */                      \</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             :       cfl_subtract_average_32x16_##arch, /* 32x16 */                      \</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :       NULL,                              /* 32x64 (invalid CFL size) */   \</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             :       NULL,                              /* 64x32 (invalid CFL size) */   \</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             :       cfl_subtract_average_4x16_##arch,  /* 4x16 (invalid CFL size) */    \</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :       cfl_subtract_average_16x4_##arch,  /* 16x4 (invalid CFL size) */    \</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             :       cfl_subtract_average_8x32_##arch,  /* 8x32 (invalid CFL size) */    \</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :       cfl_subtract_average_32x8_##arch,  /* 32x8 (invalid CFL size) */    \</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :       NULL,                              /* 16x64 (invalid CFL size) */   \</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :       NULL,                              /* 64x16 (invalid CFL size) */   \</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             :     };                                                                    \</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             :     /* Modulo TX_SIZES_ALL to ensure that an attacker won't be able to */ \</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             :     /* index the function pointer array out of bounds. */                 \</span>
+<span id="L224"><span class="lineNum">     224</span>                 :             :     return sub_avg[tx_size % TX_SIZES_ALL];                               \</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :   }</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             : </span>
+<span id="L227"><span class="lineNum">     227</span>                 :             : #define CFL_PREDICT_lbd(arch, width, height)                                   \</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :   void cfl_predict_lbd_##width##x##height##_##arch(                            \</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             :       const int16_t *pred_buf_q3, uint8_t *dst, int dst_stride, int alpha_q3); \</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             :   void cfl_predict_lbd_##width##x##height##_##arch(                            \</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             :       const int16_t *pred_buf_q3, uint8_t *dst, int dst_stride,                \</span>
+<span id="L232"><span class="lineNum">     232</span>                 :             :       int alpha_q3) {                                                          \</span>
+<span id="L233"><span class="lineNum">     233</span>                 :             :     cfl_predict_lbd_##arch(pred_buf_q3, dst, dst_stride, alpha_q3, width,      \</span>
+<span id="L234"><span class="lineNum">     234</span>                 :             :                            height);                                            \</span>
+<span id="L235"><span class="lineNum">     235</span>                 :             :   }</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             : </span>
+<span id="L237"><span class="lineNum">     237</span>                 :             : #if CONFIG_AV1_HIGHBITDEPTH</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             : #define CFL_PREDICT_hbd(arch, width, height)                                   \</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :   void cfl_predict_hbd_##width##x##height##_##arch(                            \</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             :       const int16_t *pred_buf_q3, uint16_t *dst, int dst_stride, int alpha_q3, \</span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :       int bd);                                                                 \</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :   void cfl_predict_hbd_##width##x##height##_##arch(                            \</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             :       const int16_t *pred_buf_q3, uint16_t *dst, int dst_stride, int alpha_q3, \</span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :       int bd) {                                                                \</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :     cfl_predict_hbd_##arch(pred_buf_q3, dst, dst_stride, alpha_q3, bd, width,  \</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             :                            height);                                            \</span>
+<span id="L247"><span class="lineNum">     247</span>                 :             :   }</span>
+<span id="L248"><span class="lineNum">     248</span>                 :             : #endif</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             : </span>
+<span id="L250"><span class="lineNum">     250</span>                 :             : // This wrapper exists because clang format does not like calling macros with</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             : // lowercase letters.</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             : #define CFL_PREDICT_X(arch, width, height, bd) \</span>
+<span id="L253"><span class="lineNum">     253</span>                 :             :   CFL_PREDICT_##bd(arch, width, height)</span>
+<span id="L254"><span class="lineNum">     254</span>                 :             : </span>
+<span id="L255"><span class="lineNum">     255</span>                 :             : #define CFL_PREDICT_FN(arch, bd)                                            \</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :   CFL_PREDICT_X(arch, 4, 4, bd)                                             \</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             :   CFL_PREDICT_X(arch, 4, 8, bd)                                             \</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             :   CFL_PREDICT_X(arch, 4, 16, bd)                                            \</span>
+<span id="L259"><span class="lineNum">     259</span>                 :             :   CFL_PREDICT_X(arch, 8, 4, bd)                                             \</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :   CFL_PREDICT_X(arch, 8, 8, bd)                                             \</span>
+<span id="L261"><span class="lineNum">     261</span>                 :             :   CFL_PREDICT_X(arch, 8, 16, bd)                                            \</span>
+<span id="L262"><span class="lineNum">     262</span>                 :             :   CFL_PREDICT_X(arch, 8, 32, bd)                                            \</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :   CFL_PREDICT_X(arch, 16, 4, bd)                                            \</span>
+<span id="L264"><span class="lineNum">     264</span>                 :             :   CFL_PREDICT_X(arch, 16, 8, bd)                                            \</span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :   CFL_PREDICT_X(arch, 16, 16, bd)                                           \</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             :   CFL_PREDICT_X(arch, 16, 32, bd)                                           \</span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :   CFL_PREDICT_X(arch, 32, 8, bd)                                            \</span>
+<span id="L268"><span class="lineNum">     268</span>                 :             :   CFL_PREDICT_X(arch, 32, 16, bd)                                           \</span>
+<span id="L269"><span class="lineNum">     269</span>                 :             :   CFL_PREDICT_X(arch, 32, 32, bd)                                           \</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             :   cfl_predict_##bd##_fn cfl_get_predict_##bd##_fn_##arch(TX_SIZE tx_size) { \</span>
+<span id="L271"><span class="lineNum">     271</span>                 :             :     static const cfl_predict_##bd##_fn pred[TX_SIZES_ALL] = {               \</span>
+<span id="L272"><span class="lineNum">     272</span>                 :             :       cfl_predict_##bd##_4x4_##arch,   /* 4x4 */                            \</span>
+<span id="L273"><span class="lineNum">     273</span>                 :             :       cfl_predict_##bd##_8x8_##arch,   /* 8x8 */                            \</span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :       cfl_predict_##bd##_16x16_##arch, /* 16x16 */                          \</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             :       cfl_predict_##bd##_32x32_##arch, /* 32x32 */                          \</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :       NULL,                            /* 64x64 (invalid CFL size) */       \</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             :       cfl_predict_##bd##_4x8_##arch,   /* 4x8 */                            \</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :       cfl_predict_##bd##_8x4_##arch,   /* 8x4 */                            \</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             :       cfl_predict_##bd##_8x16_##arch,  /* 8x16 */                           \</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             :       cfl_predict_##bd##_16x8_##arch,  /* 16x8 */                           \</span>
+<span id="L281"><span class="lineNum">     281</span>                 :             :       cfl_predict_##bd##_16x32_##arch, /* 16x32 */                          \</span>
+<span id="L282"><span class="lineNum">     282</span>                 :             :       cfl_predict_##bd##_32x16_##arch, /* 32x16 */                          \</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             :       NULL,                            /* 32x64 (invalid CFL size) */       \</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             :       NULL,                            /* 64x32 (invalid CFL size) */       \</span>
+<span id="L285"><span class="lineNum">     285</span>                 :             :       cfl_predict_##bd##_4x16_##arch,  /* 4x16  */                          \</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :       cfl_predict_##bd##_16x4_##arch,  /* 16x4  */                          \</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             :       cfl_predict_##bd##_8x32_##arch,  /* 8x32  */                          \</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :       cfl_predict_##bd##_32x8_##arch,  /* 32x8  */                          \</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             :       NULL,                            /* 16x64 (invalid CFL size) */       \</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             :       NULL,                            /* 64x16 (invalid CFL size) */       \</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             :     };                                                                      \</span>
+<span id="L292"><span class="lineNum">     292</span>                 :             :     /* Modulo TX_SIZES_ALL to ensure that an attacker won't be able to */   \</span>
+<span id="L293"><span class="lineNum">     293</span>                 :             :     /* index the function pointer array out of bounds. */                   \</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :     return pred[tx_size % TX_SIZES_ALL];                                    \</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             :   }</span>
+<span id="L296"><span class="lineNum">     296</span>                 :             : </span>
+<span id="L297"><span class="lineNum">     297</span>                 :             : #endif  // AOM_AV1_COMMON_CFL_H_</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libwebp-1.3.2/src/dsp/upsampling_sse2.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libwebp-1.3.2/src/dsp</a> - upsampling_sse2.c<span style="font-size: 80%;"> (source / <a href="upsampling_sse2.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">43</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">17</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // Copyright 2011 Google Inc. All Rights Reserved.</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : //</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : // Use of this source code is governed by a BSD-style license</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : // that can be found in the COPYING file in the root of the source</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : // tree. An additional intellectual property rights grant can be found</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : // in the file PATENTS. All contributing project authors may</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : // be found in the AUTHORS file in the root of the source tree.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : // SSE2 version of YUV to RGB upsampling functions.</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : //</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : // Author: somnath@google.com (Somnath Banerjee)</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #include &quot;src/dsp/dsp.h&quot;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : </span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #if defined(WEBP_USE_SSE2)</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : </span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &lt;assert.h&gt;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &lt;emmintrin.h&gt;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #include &lt;string.h&gt;</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #include &quot;src/dsp/yuv.h&quot;</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : </span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : #ifdef FANCY_UPSAMPLING</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : </span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : // We compute (9*a + 3*b + 3*c + d + 8) / 16 as follows</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : // u = (9*a + 3*b + 3*c + d + 8) / 16</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : //   = (a + (a + 3*b + 3*c + d) / 8 + 1) / 2</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : //   = (a + m + 1) / 2</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : // where m = (a + 3*b + 3*c + d) / 8</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : //         = ((a + b + c + d) / 2 + b + c) / 4</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             : //</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : // Let's say  k = (a + b + c + d) / 4.</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : // We can compute k as</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : // k = (s + t + 1) / 2 - ((a^d) | (b^c) | (s^t)) &amp; 1</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : // where s = (a + d + 1) / 2 and t = (b + c + 1) / 2</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : //</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : // Then m can be written as</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : // m = (k + t + 1) / 2 - (((b^c) &amp; (s^t)) | (k^t)) &amp; 1</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : </span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : // Computes out = (k + in + 1) / 2 - ((ij &amp; (s^t)) | (k^in)) &amp; 1</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : #define GET_M(ij, in, out) do {                                                \</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :   const __m128i tmp0 = _mm_avg_epu8(k, (in));     /* (k + in + 1) / 2 */       \</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :   const __m128i tmp1 = _mm_and_si128((ij), st);   /* (ij) &amp; (s^t) */           \</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :   const __m128i tmp2 = _mm_xor_si128(k, (in));    /* (k^in) */                 \</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :   const __m128i tmp3 = _mm_or_si128(tmp1, tmp2);  /* ((ij) &amp; (s^t)) | (k^in) */\</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :   const __m128i tmp4 = _mm_and_si128(tmp3, one);  /* &amp; 1 -&gt; lsb_correction */  \</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :   (out) = _mm_sub_epi8(tmp0, tmp4);    /* (k + in + 1) / 2 - lsb_correction */ \</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : } while (0)</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : </span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : // pack and store two alternating pixel rows</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : #define PACK_AND_STORE(a, b, da, db, out) do {                                 \</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   const __m128i t_a = _mm_avg_epu8(a, da);  /* (9a + 3b + 3c +  d + 8) / 16 */ \</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :   const __m128i t_b = _mm_avg_epu8(b, db);  /* (3a + 9b +  c + 3d + 8) / 16 */ \</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :   const __m128i t_1 = _mm_unpacklo_epi8(t_a, t_b);                             \</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :   const __m128i t_2 = _mm_unpackhi_epi8(t_a, t_b);                             \</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :   _mm_store_si128(((__m128i*)(out)) + 0, t_1);                                 \</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :   _mm_store_si128(((__m128i*)(out)) + 1, t_2);                                 \</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : } while (0)</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : </span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : // Loads 17 pixels each from rows r1 and r2 and generates 32 pixels.</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             : #define UPSAMPLE_32PIXELS(r1, r2, out) {                                       \</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   const __m128i one = _mm_set1_epi8(1);                                        \</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   const __m128i a = _mm_loadu_si128((const __m128i*)&amp;(r1)[0]);                 \</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   const __m128i b = _mm_loadu_si128((const __m128i*)&amp;(r1)[1]);                 \</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   const __m128i c = _mm_loadu_si128((const __m128i*)&amp;(r2)[0]);                 \</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   const __m128i d = _mm_loadu_si128((const __m128i*)&amp;(r2)[1]);                 \</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :                                                                                \</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :   const __m128i s = _mm_avg_epu8(a, d);        /* s = (a + d + 1) / 2 */       \</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :   const __m128i t = _mm_avg_epu8(b, c);        /* t = (b + c + 1) / 2 */       \</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :   const __m128i st = _mm_xor_si128(s, t);      /* st = s^t */                  \</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :                                                                                \</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   const __m128i ad = _mm_xor_si128(a, d);      /* ad = a^d */                  \</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :   const __m128i bc = _mm_xor_si128(b, c);      /* bc = b^c */                  \</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :                                                                                \</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :   const __m128i t1 = _mm_or_si128(ad, bc);     /* (a^d) | (b^c) */             \</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :   const __m128i t2 = _mm_or_si128(t1, st);     /* (a^d) | (b^c) | (s^t) */     \</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :   const __m128i t3 = _mm_and_si128(t2, one);   /* (a^d) | (b^c) | (s^t) &amp; 1 */ \</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   const __m128i t4 = _mm_avg_epu8(s, t);                                       \</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :   const __m128i k = _mm_sub_epi8(t4, t3);      /* k = (a + b + c + d) / 4 */   \</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :   __m128i diag1, diag2;                                                        \</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :                                                                                \</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   GET_M(bc, t, diag1);                  /* diag1 = (a + 3b + 3c + d) / 8 */    \</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   GET_M(ad, s, diag2);                  /* diag2 = (3a + b + c + 3d) / 8 */    \</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :                                                                                \</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :   /* pack the alternate pixels */                                              \</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :   PACK_AND_STORE(a, b, diag1, diag2, (out) +      0);  /* store top */         \</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :   PACK_AND_STORE(c, d, diag2, diag1, (out) + 2 * 32);  /* store bottom */      \</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : }</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             : </span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : // Turn the macro into a function for reducing code-size when non-critical</span>
+<span id="L91"><span class="lineNum">      91</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static void Upsample32Pixels_SSE2(const uint8_t r1[], const uint8_t r2[],</span></span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :                                   uint8_t* const out) {</span>
+<span id="L93"><span class="lineNum">      93</span>                 :<span class="tlaUNC">           0 :   UPSAMPLE_32PIXELS(r1, r2, out);</span></span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :             : </span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : #define UPSAMPLE_LAST_BLOCK(tb, bb, num_pixels, out) {                         \</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :   uint8_t r1[17], r2[17];                                                      \</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :   memcpy(r1, (tb), (num_pixels));                                              \</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :   memcpy(r2, (bb), (num_pixels));                                              \</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :   /* replicate last byte */                                                    \</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :   memset(r1 + (num_pixels), r1[(num_pixels) - 1], 17 - (num_pixels));          \</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :   memset(r2 + (num_pixels), r2[(num_pixels) - 1], 17 - (num_pixels));          \</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :   /* using the shared function instead of the macro saves ~3k code size */     \</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :   Upsample32Pixels_SSE2(r1, r2, out);                                          \</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : }</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             : </span>
+<span id="L107"><span class="lineNum">     107</span>                 :             : #define CONVERT2RGB_32(FUNC, XSTEP, top_y, bottom_y,                           \</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :                        top_dst, bottom_dst, cur_x) do {                        \</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :   FUNC##32_SSE2((top_y) + (cur_x), r_u, r_v, (top_dst) + (cur_x) * (XSTEP));   \</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   if ((bottom_y) != NULL) {                                                    \</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :     FUNC##32_SSE2((bottom_y) + (cur_x), r_u + 64, r_v + 64,                    \</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :                   (bottom_dst) + (cur_x) * (XSTEP));                           \</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :   }                                                                            \</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : } while (0)</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : </span>
+<span id="L116"><span class="lineNum">     116</span>                 :             : #define SSE2_UPSAMPLE_FUNC(FUNC_NAME, FUNC, XSTEP)                             \</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             : static void FUNC_NAME(const uint8_t* top_y, const uint8_t* bottom_y,           \</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :                       const uint8_t* top_u, const uint8_t* top_v,              \</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :                       const uint8_t* cur_u, const uint8_t* cur_v,              \</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :                       uint8_t* top_dst, uint8_t* bottom_dst, int len) {        \</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :   int uv_pos, pos;                                                             \</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :   /* 16byte-aligned array to cache reconstructed u and v */                    \</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :   uint8_t uv_buf[14 * 32 + 15] = { 0 };                                        \</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :   uint8_t* const r_u = (uint8_t*)((uintptr_t)(uv_buf + 15) &amp; ~(uintptr_t)15);  \</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :   uint8_t* const r_v = r_u + 32;                                               \</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :                                                                                \</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :   assert(top_y != NULL);                                                       \</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :   {   /* Treat the first pixel in regular way */                               \</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :     const int u_diag = ((top_u[0] + cur_u[0]) &gt;&gt; 1) + 1;                       \</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :     const int v_diag = ((top_v[0] + cur_v[0]) &gt;&gt; 1) + 1;                       \</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :     const int u0_t = (top_u[0] + u_diag) &gt;&gt; 1;                                 \</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :     const int v0_t = (top_v[0] + v_diag) &gt;&gt; 1;                                 \</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :     FUNC(top_y[0], u0_t, v0_t, top_dst);                                       \</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :     if (bottom_y != NULL) {                                                    \</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :       const int u0_b = (cur_u[0] + u_diag) &gt;&gt; 1;                               \</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :       const int v0_b = (cur_v[0] + v_diag) &gt;&gt; 1;                               \</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :       FUNC(bottom_y[0], u0_b, v0_b, bottom_dst);                               \</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :     }                                                                          \</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :   }                                                                            \</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :   /* For UPSAMPLE_32PIXELS, 17 u/v values must be read-able for each block */  \</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   for (pos = 1, uv_pos = 0; pos + 32 + 1 &lt;= len; pos += 32, uv_pos += 16) {    \</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :     UPSAMPLE_32PIXELS(top_u + uv_pos, cur_u + uv_pos, r_u);                    \</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :     UPSAMPLE_32PIXELS(top_v + uv_pos, cur_v + uv_pos, r_v);                    \</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :     CONVERT2RGB_32(FUNC, XSTEP, top_y, bottom_y, top_dst, bottom_dst, pos);    \</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :   }                                                                            \</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             :   if (len &gt; 1) {                                                               \</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :     const int left_over = ((len + 1) &gt;&gt; 1) - (pos &gt;&gt; 1);                       \</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :     uint8_t* const tmp_top_dst = r_u + 4 * 32;                                 \</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :     uint8_t* const tmp_bottom_dst = tmp_top_dst + 4 * 32;                      \</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :     uint8_t* const tmp_top = tmp_bottom_dst + 4 * 32;                          \</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :     uint8_t* const tmp_bottom = (bottom_y == NULL) ? NULL : tmp_top + 32;      \</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :     assert(left_over &gt; 0);                                                     \</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :     UPSAMPLE_LAST_BLOCK(top_u + uv_pos, cur_u + uv_pos, left_over, r_u);       \</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :     UPSAMPLE_LAST_BLOCK(top_v + uv_pos, cur_v + uv_pos, left_over, r_v);       \</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :     memcpy(tmp_top, top_y + pos, len - pos);                                   \</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :     if (bottom_y != NULL) memcpy(tmp_bottom, bottom_y + pos, len - pos);       \</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             :     CONVERT2RGB_32(FUNC, XSTEP, tmp_top, tmp_bottom, tmp_top_dst,              \</span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :          tmp_bottom_dst, 0);                                                   \</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             :     memcpy(top_dst + pos * (XSTEP), tmp_top_dst, (len - pos) * (XSTEP));       \</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :     if (bottom_y != NULL) {                                                    \</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :       memcpy(bottom_dst + pos * (XSTEP), tmp_bottom_dst,                       \</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :              (len - pos) * (XSTEP));                                           \</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :     }                                                                          \</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :   }                                                                            \</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             : }</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             : </span>
+<span id="L167"><span class="lineNum">     167</span>                 :             : // SSE2 variants of the fancy upsampler.</span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 : SSE2_UPSAMPLE_FUNC(UpsampleRgbaLinePair_SSE2, VP8YuvToRgba, 4)</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 : SSE2_UPSAMPLE_FUNC(UpsampleBgraLinePair_SSE2, VP8YuvToBgra, 4)</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :             : </span>
+<span id="L171"><span class="lineNum">     171</span>                 :             : #if !defined(WEBP_REDUCE_CSP)</span>
+<span id="L172"><span class="lineNum">     172</span>                 :<span class="tlaUNC">           0 : SSE2_UPSAMPLE_FUNC(UpsampleRgbLinePair_SSE2,  VP8YuvToRgb,  3)</span></span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 : SSE2_UPSAMPLE_FUNC(UpsampleBgrLinePair_SSE2,  VP8YuvToBgr,  3)</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 : SSE2_UPSAMPLE_FUNC(UpsampleArgbLinePair_SSE2, VP8YuvToArgb, 4)</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 : SSE2_UPSAMPLE_FUNC(UpsampleRgba4444LinePair_SSE2, VP8YuvToRgba4444, 2)</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :<span class="tlaUNC">           0 : SSE2_UPSAMPLE_FUNC(UpsampleRgb565LinePair_SSE2, VP8YuvToRgb565, 2)</span></span>
+<span id="L177"><span class="lineNum">     177</span>                 :             : #endif   // WEBP_REDUCE_CSP</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             : </span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : #undef GET_M</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             : #undef PACK_AND_STORE</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             : #undef UPSAMPLE_32PIXELS</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : #undef UPSAMPLE_LAST_BLOCK</span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : #undef CONVERT2RGB</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : #undef CONVERT2RGB_32</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : #undef SSE2_UPSAMPLE_FUNC</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             : </span>
+<span id="L187"><span class="lineNum">     187</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : // Entry point</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             : </span>
+<span id="L190"><span class="lineNum">     190</span>                 :             : extern WebPUpsampleLinePairFunc WebPUpsamplers[/* MODE_LAST */];</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             : </span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : extern void WebPInitUpsamplersSSE2(void);</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : </span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 : WEBP_TSAN_IGNORE_FUNCTION void WebPInitUpsamplersSSE2(void) {</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_RGBA] = UpsampleRgbaLinePair_SSE2;</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_BGRA] = UpsampleBgraLinePair_SSE2;</span></span>
+<span id="L197"><span class="lineNum">     197</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_rgbA] = UpsampleRgbaLinePair_SSE2;</span></span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_bgrA] = UpsampleBgraLinePair_SSE2;</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :             : #if !defined(WEBP_REDUCE_CSP)</span>
+<span id="L200"><span class="lineNum">     200</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_RGB]  = UpsampleRgbLinePair_SSE2;</span></span>
+<span id="L201"><span class="lineNum">     201</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_BGR]  = UpsampleBgrLinePair_SSE2;</span></span>
+<span id="L202"><span class="lineNum">     202</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_ARGB] = UpsampleArgbLinePair_SSE2;</span></span>
+<span id="L203"><span class="lineNum">     203</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_Argb] = UpsampleArgbLinePair_SSE2;</span></span>
+<span id="L204"><span class="lineNum">     204</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_RGB_565] = UpsampleRgb565LinePair_SSE2;</span></span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_RGBA_4444] = UpsampleRgba4444LinePair_SSE2;</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :<span class="tlaUNC">           0 :   WebPUpsamplers[MODE_rgbA_4444] = UpsampleRgba4444LinePair_SSE2;</span></span>
+<span id="L207"><span class="lineNum">     207</span>                 :             : #endif   // WEBP_REDUCE_CSP</span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :             : </span>
+<span id="L210"><span class="lineNum">     210</span>                 :             : #endif  // FANCY_UPSAMPLING</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             : </span>
+<span id="L212"><span class="lineNum">     212</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             : </span>
+<span id="L214"><span class="lineNum">     214</span>                 :             : extern WebPYUV444Converter WebPYUV444Converters[/* MODE_LAST */];</span>
+<span id="L215"><span class="lineNum">     215</span>                 :             : extern void WebPInitYUV444ConvertersSSE2(void);</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             : </span>
+<span id="L217"><span class="lineNum">     217</span>                 :             : #define YUV444_FUNC(FUNC_NAME, CALL, CALL_C, XSTEP)                            \</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             : extern void CALL_C(const uint8_t* y, const uint8_t* u, const uint8_t* v,       \</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :                    uint8_t* dst, int len);                                     \</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             : static void FUNC_NAME(const uint8_t* y, const uint8_t* u, const uint8_t* v,    \</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             :                       uint8_t* dst, int len) {                                 \</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             :   int i;                                                                       \</span>
+<span id="L223"><span class="lineNum">     223</span>                 :             :   const int max_len = len &amp; ~31;                                               \</span>
+<span id="L224"><span class="lineNum">     224</span>                 :             :   for (i = 0; i &lt; max_len; i += 32) {                                          \</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :     CALL(y + i, u + i, v + i, dst + i * (XSTEP));                              \</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :   }                                                                            \</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             :   if (i &lt; len) {  /* C-fallback */                                             \</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :     CALL_C(y + i, u + i, v + i, dst + i * (XSTEP), len - i);                   \</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             :   }                                                                            \</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             : }</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             : </span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 : YUV444_FUNC(Yuv444ToRgba_SSE2, VP8YuvToRgba32_SSE2, WebPYuv444ToRgba_C, 4);</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 : YUV444_FUNC(Yuv444ToBgra_SSE2, VP8YuvToBgra32_SSE2, WebPYuv444ToBgra_C, 4);</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :             : #if !defined(WEBP_REDUCE_CSP)</span>
+<span id="L235"><span class="lineNum">     235</span>                 :<span class="tlaUNC">           0 : YUV444_FUNC(Yuv444ToRgb_SSE2, VP8YuvToRgb32_SSE2, WebPYuv444ToRgb_C, 3);</span></span>
+<span id="L236"><span class="lineNum">     236</span>                 :<span class="tlaUNC">           0 : YUV444_FUNC(Yuv444ToBgr_SSE2, VP8YuvToBgr32_SSE2, WebPYuv444ToBgr_C, 3);</span></span>
+<span id="L237"><span class="lineNum">     237</span>                 :<span class="tlaUNC">           0 : YUV444_FUNC(Yuv444ToArgb_SSE2, VP8YuvToArgb32_SSE2, WebPYuv444ToArgb_C, 4)</span></span>
+<span id="L238"><span class="lineNum">     238</span>                 :<span class="tlaUNC">           0 : YUV444_FUNC(Yuv444ToRgba4444_SSE2, VP8YuvToRgba444432_SSE2, \</span></span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :             WebPYuv444ToRgba4444_C, 2)</span>
+<span id="L240"><span class="lineNum">     240</span>                 :<span class="tlaUNC">           0 : YUV444_FUNC(Yuv444ToRgb565_SSE2, VP8YuvToRgb56532_SSE2, WebPYuv444ToRgb565_C, 2)</span></span>
+<span id="L241"><span class="lineNum">     241</span>                 :             : #endif   // WEBP_REDUCE_CSP</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             : </span>
+<span id="L243"><span class="lineNum">     243</span>                 :<span class="tlaUNC">           0 : WEBP_TSAN_IGNORE_FUNCTION void WebPInitYUV444ConvertersSSE2(void) {</span></span>
+<span id="L244"><span class="lineNum">     244</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_RGBA]      = Yuv444ToRgba_SSE2;</span></span>
+<span id="L245"><span class="lineNum">     245</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_BGRA]      = Yuv444ToBgra_SSE2;</span></span>
+<span id="L246"><span class="lineNum">     246</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_rgbA]      = Yuv444ToRgba_SSE2;</span></span>
+<span id="L247"><span class="lineNum">     247</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_bgrA]      = Yuv444ToBgra_SSE2;</span></span>
+<span id="L248"><span class="lineNum">     248</span>                 :             : #if !defined(WEBP_REDUCE_CSP)</span>
+<span id="L249"><span class="lineNum">     249</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_RGB]       = Yuv444ToRgb_SSE2;</span></span>
+<span id="L250"><span class="lineNum">     250</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_BGR]       = Yuv444ToBgr_SSE2;</span></span>
+<span id="L251"><span class="lineNum">     251</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_ARGB]      = Yuv444ToArgb_SSE2;</span></span>
+<span id="L252"><span class="lineNum">     252</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_RGBA_4444] = Yuv444ToRgba4444_SSE2;</span></span>
+<span id="L253"><span class="lineNum">     253</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_RGB_565]   = Yuv444ToRgb565_SSE2;</span></span>
+<span id="L254"><span class="lineNum">     254</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_Argb]      = Yuv444ToArgb_SSE2;</span></span>
+<span id="L255"><span class="lineNum">     255</span>                 :<span class="tlaUNC">           0 :   WebPYUV444Converters[MODE_rgbA_4444] = Yuv444ToRgba4444_SSE2;</span></span>
+<span id="L256"><span class="lineNum">     256</span>                 :             : #endif   // WEBP_REDUCE_CSP</span>
+<span id="L257"><span class="lineNum">     257</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L258"><span class="lineNum">     258</span>                 :             : </span>
+<span id="L259"><span class="lineNum">     259</span>                 :             : #else</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             : </span>
+<span id="L261"><span class="lineNum">     261</span>                 :             : WEBP_DSP_INIT_STUB(WebPInitYUV444ConvertersSSE2)</span>
+<span id="L262"><span class="lineNum">     262</span>                 :             : </span>
+<span id="L263"><span class="lineNum">     263</span>                 :             : #endif  // WEBP_USE_SSE2</span>
+<span id="L264"><span class="lineNum">     264</span>                 :             : </span>
+<span id="L265"><span class="lineNum">     265</span>                 :             : #if !(defined(FANCY_UPSAMPLING) &amp;&amp; defined(WEBP_USE_SSE2))</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             : WEBP_DSP_INIT_STUB(WebPInitUpsamplersSSE2)</span>
+<span id="L267"><span class="lineNum">     267</span>                 :             : #endif</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/encoder/x86/error_intrin_avx2.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/encoder/x86</a> - error_intrin_avx2.c<span style="font-size: 80%;"> (source / <a href="error_intrin_avx2.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">122</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2016, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #include &lt;immintrin.h&gt;  // AVX2</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #include &quot;config/av1_rtcd.h&quot;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : </span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;aom/aom_integer.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : </span>
+<span id="L18"><span class="lineNum">      18</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static inline void read_coeff(const tran_low_t *coeff, intptr_t offset,</span></span>
+<span id="L19"><span class="lineNum">      19</span>                 :             :                               __m256i *c) {</span>
+<span id="L20"><span class="lineNum">      20</span>                 :<span class="tlaUNC">           0 :   const tran_low_t *addr = coeff + offset;</span></span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : </span>
+<span id="L22"><span class="lineNum">      22</span>                 :             :   if (sizeof(tran_low_t) == 4) {</span>
+<span id="L23"><span class="lineNum">      23</span>                 :<span class="tlaUNC">           0 :     const __m256i x0 = _mm256_loadu_si256((const __m256i *)addr);</span></span>
+<span id="L24"><span class="lineNum">      24</span>                 :<span class="tlaUNC">           0 :     const __m256i x1 = _mm256_loadu_si256((const __m256i *)addr + 1);</span></span>
+<span id="L25"><span class="lineNum">      25</span>                 :<span class="tlaUNC">           0 :     const __m256i y = _mm256_packs_epi32(x0, x1);</span></span>
+<span id="L26"><span class="lineNum">      26</span>                 :<span class="tlaUNC">           0 :     *c = _mm256_permute4x64_epi64(y, 0xD8);</span></span>
+<span id="L27"><span class="lineNum">      27</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :     *c = _mm256_loadu_si256((const __m256i *)addr);</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :   }</span>
+<span id="L30"><span class="lineNum">      30</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L31"><span class="lineNum">      31</span>                 :             : </span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 : static inline void av1_block_error_block_size16_avx2(const int16_t *coeff,</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :                                                      const int16_t *dqcoeff,</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :                                                      __m256i *sse_256) {</span>
+<span id="L35"><span class="lineNum">      35</span>                 :<span class="tlaUNC">           0 :   const __m256i _coeff = _mm256_loadu_si256((const __m256i *)coeff);</span></span>
+<span id="L36"><span class="lineNum">      36</span>                 :<span class="tlaUNC">           0 :   const __m256i _dqcoeff = _mm256_loadu_si256((const __m256i *)dqcoeff);</span></span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :   // d0 d1 d2 d3 d4 d5 d6 d7 d8 d9 d10 d11 d12 d13 d14 d15</span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 :   const __m256i diff = _mm256_sub_epi16(_dqcoeff, _coeff);</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :   // r0 r1 r2 r3 r4 r5 r6 r7</span>
+<span id="L40"><span class="lineNum">      40</span>                 :<span class="tlaUNC">           0 :   const __m256i error = _mm256_madd_epi16(diff, diff);</span></span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :   // r0+r1 r2+r3 | r0+r1 r2+r3 | r4+r5 r6+r7 | r4+r5 r6+r7</span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 :   const __m256i error_hi = _mm256_hadd_epi32(error, error);</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :   // r0+r1 | r2+r3 | r4+r5 | r6+r7</span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 :   *sse_256 = _mm256_unpacklo_epi32(error_hi, _mm256_setzero_si256());</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : </span>
+<span id="L47"><span class="lineNum">      47</span>                 :<span class="tlaUNC">           0 : static inline void av1_block_error_block_size32_avx2(const int16_t *coeff,</span></span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :                                                      const int16_t *dqcoeff,</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :                                                      __m256i *sse_256) {</span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 :   const __m256i zero = _mm256_setzero_si256();</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :<span class="tlaUNC">           0 :   const __m256i _coeff_0 = _mm256_loadu_si256((const __m256i *)coeff);</span></span>
+<span id="L52"><span class="lineNum">      52</span>                 :<span class="tlaUNC">           0 :   const __m256i _dqcoeff_0 = _mm256_loadu_si256((const __m256i *)dqcoeff);</span></span>
+<span id="L53"><span class="lineNum">      53</span>                 :<span class="tlaUNC">           0 :   const __m256i _coeff_1 = _mm256_loadu_si256((const __m256i *)(coeff + 16));</span></span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 :   const __m256i _dqcoeff_1 =</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :<span class="tlaUNC">           0 :       _mm256_loadu_si256((const __m256i *)(dqcoeff + 16));</span></span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : </span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :   // d0 d1 d2 d3 d4 d5 d6 d7 d8 d9 d10 d11 d12 d13 d14 d15</span>
+<span id="L58"><span class="lineNum">      58</span>                 :<span class="tlaUNC">           0 :   const __m256i diff_0 = _mm256_sub_epi16(_dqcoeff_0, _coeff_0);</span></span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 :   const __m256i diff_1 = _mm256_sub_epi16(_dqcoeff_1, _coeff_1);</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : </span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :   // r0 r1 r2 r3 r4 r5 r6 r7</span>
+<span id="L62"><span class="lineNum">      62</span>                 :<span class="tlaUNC">           0 :   const __m256i error_0 = _mm256_madd_epi16(diff_0, diff_0);</span></span>
+<span id="L63"><span class="lineNum">      63</span>                 :<span class="tlaUNC">           0 :   const __m256i error_1 = _mm256_madd_epi16(diff_1, diff_1);</span></span>
+<span id="L64"><span class="lineNum">      64</span>                 :<span class="tlaUNC">           0 :   const __m256i err_final_0 = _mm256_add_epi32(error_0, error_1);</span></span>
+<span id="L65"><span class="lineNum">      65</span>                 :             : </span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   // For extreme input values, the accumulation needs to happen in 64 bit</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :   // precision to avoid any overflow.</span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 :   const __m256i exp0_error_lo = _mm256_unpacklo_epi32(err_final_0, zero);</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 :   const __m256i exp0_error_hi = _mm256_unpackhi_epi32(err_final_0, zero);</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :<span class="tlaUNC">           0 :   const __m256i sum_temp_0 = _mm256_add_epi64(exp0_error_hi, exp0_error_lo);</span></span>
+<span id="L71"><span class="lineNum">      71</span>                 :<span class="tlaUNC">           0 :   *sse_256 = _mm256_add_epi64(*sse_256, sum_temp_0);</span></span>
+<span id="L72"><span class="lineNum">      72</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : </span>
+<span id="L74"><span class="lineNum">      74</span>                 :<span class="tlaUNC">           0 : static inline void av1_block_error_block_size64_avx2(const int16_t *coeff,</span></span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :                                                      const int16_t *dqcoeff,</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :                                                      __m256i *sse_256,</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :                                                      intptr_t block_size) {</span>
+<span id="L78"><span class="lineNum">      78</span>                 :<span class="tlaUNC">           0 :   const __m256i zero = _mm256_setzero_si256();</span></span>
+<span id="L79"><span class="lineNum">      79</span>                 :<span class="tlaUNC">           0 :   for (int i = 0; i &lt; block_size; i += 64) {</span></span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :     // Load 64 elements for coeff and dqcoeff.</span>
+<span id="L81"><span class="lineNum">      81</span>                 :<span class="tlaUNC">           0 :     const __m256i _coeff_0 = _mm256_loadu_si256((const __m256i *)coeff);</span></span>
+<span id="L82"><span class="lineNum">      82</span>                 :<span class="tlaUNC">           0 :     const __m256i _dqcoeff_0 = _mm256_loadu_si256((const __m256i *)dqcoeff);</span></span>
+<span id="L83"><span class="lineNum">      83</span>                 :<span class="tlaUNC">           0 :     const __m256i _coeff_1 = _mm256_loadu_si256((const __m256i *)(coeff + 16));</span></span>
+<span id="L84"><span class="lineNum">      84</span>                 :<span class="tlaUNC">           0 :     const __m256i _dqcoeff_1 =</span></span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :         _mm256_loadu_si256((const __m256i *)(dqcoeff + 16));</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :     const __m256i _coeff_2 = _mm256_loadu_si256((const __m256i *)(coeff + 32));</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :<span class="tlaUNC">           0 :     const __m256i _dqcoeff_2 =</span></span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :         _mm256_loadu_si256((const __m256i *)(dqcoeff + 32));</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :<span class="tlaUNC">           0 :     const __m256i _coeff_3 = _mm256_loadu_si256((const __m256i *)(coeff + 48));</span></span>
+<span id="L90"><span class="lineNum">      90</span>                 :<span class="tlaUNC">           0 :     const __m256i _dqcoeff_3 =</span></span>
+<span id="L91"><span class="lineNum">      91</span>                 :<span class="tlaUNC">           0 :         _mm256_loadu_si256((const __m256i *)(dqcoeff + 48));</span></span>
+<span id="L92"><span class="lineNum">      92</span>                 :             : </span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :     // d0 d1 d2 d3 d4 d5 d6 d7 d8 d9 d10 d11 d12 d13 d14 d15</span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :     const __m256i diff_0 = _mm256_sub_epi16(_dqcoeff_0, _coeff_0);</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :     const __m256i diff_1 = _mm256_sub_epi16(_dqcoeff_1, _coeff_1);</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 :     const __m256i diff_2 = _mm256_sub_epi16(_dqcoeff_2, _coeff_2);</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :<span class="tlaUNC">           0 :     const __m256i diff_3 = _mm256_sub_epi16(_dqcoeff_3, _coeff_3);</span></span>
+<span id="L98"><span class="lineNum">      98</span>                 :             : </span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :     // r0 r1 r2 r3 r4 r5 r6 r7</span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC">           0 :     const __m256i error_0 = _mm256_madd_epi16(diff_0, diff_0);</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 :     const __m256i error_1 = _mm256_madd_epi16(diff_1, diff_1);</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 :     const __m256i error_2 = _mm256_madd_epi16(diff_2, diff_2);</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :     const __m256i error_3 = _mm256_madd_epi16(diff_3, diff_3);</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :     // r00 r01 r02 r03 r04 r05 r06 r07</span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :     const __m256i err_final_0 = _mm256_add_epi32(error_0, error_1);</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :     // r10 r11 r12 r13 r14 r15 r16 r17</span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :     const __m256i err_final_1 = _mm256_add_epi32(error_2, error_3);</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :             : </span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :     // For extreme input values, the accumulation needs to happen in 64 bit</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :     // precision to avoid any overflow. r00 r01 r04 r05</span>
+<span id="L111"><span class="lineNum">     111</span>                 :<span class="tlaUNC">           0 :     const __m256i exp0_error_lo = _mm256_unpacklo_epi32(err_final_0, zero);</span></span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :     // r02 r03 r06 r07</span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :     const __m256i exp0_error_hi = _mm256_unpackhi_epi32(err_final_0, zero);</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :     // r10 r11 r14 r15</span>
+<span id="L115"><span class="lineNum">     115</span>                 :<span class="tlaUNC">           0 :     const __m256i exp1_error_lo = _mm256_unpacklo_epi32(err_final_1, zero);</span></span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :     // r12 r13 r16 r17</span>
+<span id="L117"><span class="lineNum">     117</span>                 :<span class="tlaUNC">           0 :     const __m256i exp1_error_hi = _mm256_unpackhi_epi32(err_final_1, zero);</span></span>
+<span id="L118"><span class="lineNum">     118</span>                 :             : </span>
+<span id="L119"><span class="lineNum">     119</span>                 :<span class="tlaUNC">           0 :     const __m256i sum_temp_0 = _mm256_add_epi64(exp0_error_hi, exp0_error_lo);</span></span>
+<span id="L120"><span class="lineNum">     120</span>                 :<span class="tlaUNC">           0 :     const __m256i sum_temp_1 = _mm256_add_epi64(exp1_error_hi, exp1_error_lo);</span></span>
+<span id="L121"><span class="lineNum">     121</span>                 :<span class="tlaUNC">           0 :     const __m256i sse_256_temp = _mm256_add_epi64(sum_temp_1, sum_temp_0);</span></span>
+<span id="L122"><span class="lineNum">     122</span>                 :<span class="tlaUNC">           0 :     *sse_256 = _mm256_add_epi64(*sse_256, sse_256_temp);</span></span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaUNC">           0 :     coeff += 64;</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :<span class="tlaUNC">           0 :     dqcoeff += 64;</span></span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : </span>
+<span id="L128"><span class="lineNum">     128</span>                 :<span class="tlaUNC">           0 : int64_t av1_block_error_lp_avx2(const int16_t *coeff, const int16_t *dqcoeff,</span></span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :                                 intptr_t block_size) {</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :   assert(block_size % 16 == 0);</span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 :   __m256i sse_256 = _mm256_setzero_si256();</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :<span class="tlaUNC">           0 :   int64_t sse;</span></span>
+<span id="L133"><span class="lineNum">     133</span>                 :             : </span>
+<span id="L134"><span class="lineNum">     134</span>                 :<span class="tlaUNC">           0 :   if (block_size == 16)</span></span>
+<span id="L135"><span class="lineNum">     135</span>                 :<span class="tlaUNC">           0 :     av1_block_error_block_size16_avx2(coeff, dqcoeff, &amp;sse_256);</span></span>
+<span id="L136"><span class="lineNum">     136</span>                 :<span class="tlaUNC">           0 :   else if (block_size == 32)</span></span>
+<span id="L137"><span class="lineNum">     137</span>                 :<span class="tlaUNC">           0 :     av1_block_error_block_size32_avx2(coeff, dqcoeff, &amp;sse_256);</span></span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :   else</span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :     av1_block_error_block_size64_avx2(coeff, dqcoeff, &amp;sse_256, block_size);</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : </span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   // Save the higher 64 bit of each 128 bit lane.</span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :   const __m256i sse_hi = _mm256_srli_si256(sse_256, 8);</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :   // Add the higher 64 bit to the low 64 bit.</span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :   sse_256 = _mm256_add_epi64(sse_256, sse_hi);</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :   // Accumulate the sse_256 register to get final sse</span>
+<span id="L146"><span class="lineNum">     146</span>                 :<span class="tlaUNC">           0 :   const __m128i sse_128 = _mm_add_epi64(_mm256_castsi256_si128(sse_256),</span></span>
+<span id="L147"><span class="lineNum">     147</span>                 :<span class="tlaUNC">           0 :                                         _mm256_extractf128_si256(sse_256, 1));</span></span>
+<span id="L148"><span class="lineNum">     148</span>                 :             : </span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :   // Store the results.</span>
+<span id="L150"><span class="lineNum">     150</span>                 :<span class="tlaUNC">           0 :   _mm_storel_epi64((__m128i *)&amp;sse, sse_128);</span></span>
+<span id="L151"><span class="lineNum">     151</span>                 :<span class="tlaUNC">           0 :   return sse;</span></span>
+<span id="L152"><span class="lineNum">     152</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L153"><span class="lineNum">     153</span>                 :             : </span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 : int64_t av1_block_error_avx2(const tran_low_t *coeff, const tran_low_t *dqcoeff,</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :                              intptr_t block_size, int64_t *ssz) {</span>
+<span id="L156"><span class="lineNum">     156</span>                 :<span class="tlaUNC">           0 :   __m256i sse_reg, ssz_reg, coeff_reg, dqcoeff_reg;</span></span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :   __m256i exp_dqcoeff_lo, exp_dqcoeff_hi, exp_coeff_lo, exp_coeff_hi;</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 :   __m256i sse_reg_64hi, ssz_reg_64hi;</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :<span class="tlaUNC">           0 :   __m128i sse_reg128, ssz_reg128;</span></span>
+<span id="L160"><span class="lineNum">     160</span>                 :<span class="tlaUNC">           0 :   int64_t sse;</span></span>
+<span id="L161"><span class="lineNum">     161</span>                 :<span class="tlaUNC">           0 :   int i;</span></span>
+<span id="L162"><span class="lineNum">     162</span>                 :<span class="tlaUNC">           0 :   const __m256i zero_reg = _mm256_setzero_si256();</span></span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : </span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :   // init sse and ssz registerd to zero</span>
+<span id="L165"><span class="lineNum">     165</span>                 :<span class="tlaUNC">           0 :   sse_reg = _mm256_setzero_si256();</span></span>
+<span id="L166"><span class="lineNum">     166</span>                 :<span class="tlaUNC">           0 :   ssz_reg = _mm256_setzero_si256();</span></span>
+<span id="L167"><span class="lineNum">     167</span>                 :             : </span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 :   for (i = 0; i &lt; block_size; i += 16) {</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :             :     // load 32 bytes from coeff and dqcoeff</span>
+<span id="L170"><span class="lineNum">     170</span>                 :<span class="tlaUNC">           0 :     read_coeff(coeff, i, &amp;coeff_reg);</span></span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :     read_coeff(dqcoeff, i, &amp;dqcoeff_reg);</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :             :     // dqcoeff - coeff</span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :     dqcoeff_reg = _mm256_sub_epi16(dqcoeff_reg, coeff_reg);</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :     // madd (dqcoeff - coeff)</span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 :     dqcoeff_reg = _mm256_madd_epi16(dqcoeff_reg, dqcoeff_reg);</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :             :     // madd coeff</span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 :     coeff_reg = _mm256_madd_epi16(coeff_reg, coeff_reg);</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :     // expand each double word of madd (dqcoeff - coeff) to quad word</span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :     exp_dqcoeff_lo = _mm256_unpacklo_epi32(dqcoeff_reg, zero_reg);</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :     exp_dqcoeff_hi = _mm256_unpackhi_epi32(dqcoeff_reg, zero_reg);</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :     // expand each double word of madd (coeff) to quad word</span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 :     exp_coeff_lo = _mm256_unpacklo_epi32(coeff_reg, zero_reg);</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :<span class="tlaUNC">           0 :     exp_coeff_hi = _mm256_unpackhi_epi32(coeff_reg, zero_reg);</span></span>
+<span id="L184"><span class="lineNum">     184</span>                 :             :     // add each quad word of madd (dqcoeff - coeff) and madd (coeff)</span>
+<span id="L185"><span class="lineNum">     185</span>                 :<span class="tlaUNC">           0 :     sse_reg = _mm256_add_epi64(sse_reg, exp_dqcoeff_lo);</span></span>
+<span id="L186"><span class="lineNum">     186</span>                 :<span class="tlaUNC">           0 :     ssz_reg = _mm256_add_epi64(ssz_reg, exp_coeff_lo);</span></span>
+<span id="L187"><span class="lineNum">     187</span>                 :<span class="tlaUNC">           0 :     sse_reg = _mm256_add_epi64(sse_reg, exp_dqcoeff_hi);</span></span>
+<span id="L188"><span class="lineNum">     188</span>                 :<span class="tlaUNC">           0 :     ssz_reg = _mm256_add_epi64(ssz_reg, exp_coeff_hi);</span></span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :   // save the higher 64 bit of each 128 bit lane</span>
+<span id="L191"><span class="lineNum">     191</span>                 :<span class="tlaUNC">           0 :   sse_reg_64hi = _mm256_srli_si256(sse_reg, 8);</span></span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 :   ssz_reg_64hi = _mm256_srli_si256(ssz_reg, 8);</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :             :   // add the higher 64 bit to the low 64 bit</span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 :   sse_reg = _mm256_add_epi64(sse_reg, sse_reg_64hi);</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :   ssz_reg = _mm256_add_epi64(ssz_reg, ssz_reg_64hi);</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :             : </span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :   // add each 64 bit from each of the 128 bit lane of the 256 bit</span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 :   sse_reg128 = _mm_add_epi64(_mm256_castsi256_si128(sse_reg),</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :<span class="tlaUNC">           0 :                              _mm256_extractf128_si256(sse_reg, 1));</span></span>
+<span id="L200"><span class="lineNum">     200</span>                 :             : </span>
+<span id="L201"><span class="lineNum">     201</span>                 :<span class="tlaUNC">           0 :   ssz_reg128 = _mm_add_epi64(_mm256_castsi256_si128(ssz_reg),</span></span>
+<span id="L202"><span class="lineNum">     202</span>                 :<span class="tlaUNC">           0 :                              _mm256_extractf128_si256(ssz_reg, 1));</span></span>
+<span id="L203"><span class="lineNum">     203</span>                 :             : </span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :   // store the results</span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :   _mm_storel_epi64((__m128i *)(&amp;sse), sse_reg128);</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :             : </span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 :   _mm_storel_epi64((__m128i *)(ssz), ssz_reg128);</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 :   _mm256_zeroupper();</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :   return sse;</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

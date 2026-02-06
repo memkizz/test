@@ -1,0 +1,303 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/encoder/level.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/encoder</a> - level.h<span style="font-size: 80%;"> (source / <a href="level.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2019, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #ifndef AOM_AV1_ENCODER_LEVEL_H_</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #define AOM_AV1_ENCODER_LEVEL_H_</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : </span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #include &quot;av1/common/enums.h&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : struct AV1_COMP;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : </span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : // AV1 Level Specifications</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : typedef struct {</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             :   AV1_LEVEL level;</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             :   int max_picture_size;</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             :   int max_h_size;</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             :   int max_v_size;</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             :   int max_header_rate;</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             :   int max_tile_rate;</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             :   int max_tiles;</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :   int max_tile_cols;</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :   int64_t max_display_rate;</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :   int64_t max_decode_rate;</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :   double main_mbps;</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :   double high_mbps;</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :   double main_cr;</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :   double high_cr;</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : } AV1LevelSpec;</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : </span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : typedef struct {</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :   int64_t ts_start;</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :   int64_t ts_end;</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :   size_t encoded_size_in_bytes;</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :   int pic_size;</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :   int frame_header_count;</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :   int tiles;</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :   int show_frame;</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :   int show_existing_frame;</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : } FrameRecord;</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : </span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : // Record frame info. in a rolling window.</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : #define FRAME_WINDOW_SIZE 256</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : typedef struct {</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :   FrameRecord buf[FRAME_WINDOW_SIZE];</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   int num;    // Number of FrameRecord stored in the buffer.</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :   int start;  // Buffer index of the first FrameRecord.</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             : } FrameWindowBuffer;</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : </span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : typedef struct {</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :   int max_bitrate;  // Max bitrate in any 1-second window, in bps.</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :   int max_tile_size;</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :   int max_superres_tile_width;</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :   int min_cropped_tile_width;</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :   int min_cropped_tile_height;</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   int tile_width_is_valid;</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   int min_frame_width;</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   int min_frame_height;</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   double total_compressed_size;  // In bytes.</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   double total_time_encoded;     // In seconds.</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :   double min_cr;</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : } AV1LevelStats;</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             : </span>
+<span id="L70"><span class="lineNum">      70</span>                 :             : // The following data structures are for the decoder model.</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             : typedef struct {</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   int decoder_ref_count;</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :   int player_ref_count;</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   int display_index;</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :   FRAME_TYPE frame_type;</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :   double presentation_time;</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : } FRAME_BUFFER;</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             : </span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : // Interval of bits transmission for a DFG(Decodable Frame Group).</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             : typedef struct {</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :   double first_bit_arrival_time;  // Time when the first bit arrives.</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   double last_bit_arrival_time;   // Time when the last bit arrives.</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   // Removal time means the time when the bits to be decoded are removed from</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :   // the smoothing buffer. Removal time is essentially the time when the</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :   // decoding of the frame starts.</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :   double removal_time;</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : } DFG_INTERVAL;</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : </span>
+<span id="L89"><span class="lineNum">      89</span>                 :             : #define DFG_INTERVAL_QUEUE_SIZE 64</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : typedef struct {</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :   int head;</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :   int size;</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             :   double total_interval;</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :   DFG_INTERVAL buf[DFG_INTERVAL_QUEUE_SIZE];</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             : } DFG_INTERVAL_QUEUE;</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : </span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : enum {</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :   RESOURCE_MODE = 0,  // Resource availability mode.</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :   SCHEDULE_MODE       // Decoding schedule mode.</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : } UENUM1BYTE(DECODER_MODEL_MODE);</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : </span>
+<span id="L102"><span class="lineNum">     102</span>                 :             : enum {</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :   DECODER_MODEL_OK = 0,</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :   DECODE_BUFFER_AVAILABLE_LATE,</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :   DECODE_FRAME_BUF_UNAVAILABLE,</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :   DECODE_EXISTING_FRAME_BUF_EMPTY,</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :   DISPLAY_FRAME_LATE,</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :   SMOOTHING_BUFFER_UNDERFLOW,</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :   SMOOTHING_BUFFER_OVERFLOW,</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   DECODER_MODEL_DISABLED</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : } UENUM1BYTE(DECODER_MODEL_STATUS);</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             : </span>
+<span id="L113"><span class="lineNum">     113</span>                 :             : #define BUFFER_POOL_MAX_SIZE 10</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : typedef struct {</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :   DECODER_MODEL_STATUS status;</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :   DECODER_MODEL_MODE mode;</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :   bool is_low_delay_mode;</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :   AV1_LEVEL level;</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :   int encoder_buffer_delay;  // In units of 1/90000 seconds.</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :   int decoder_buffer_delay;  // In units of 1/90000 seconds.</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :   int num_ticks_per_picture;</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :   int initial_display_delay;  // In units of frames.</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :   int64_t decode_rate;</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :   double display_clock_tick;          // In units of seconds.</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :   double current_time;                // In units of seconds.</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :   double initial_presentation_delay;  // In units of seconds.</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :   double bit_rate;                    // Bits per second.</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : </span>
+<span id="L129"><span class="lineNum">     129</span>                 :             :   int num_frame;</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :   int num_decoded_frame;</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :   int num_shown_frame;</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :   int vbi[REF_FRAMES];  // Virtual buffer index.</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :   FRAME_BUFFER frame_buffer_pool[BUFFER_POOL_MAX_SIZE];</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :   DFG_INTERVAL_QUEUE dfg_interval_queue;</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             : </span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :   // Information for the DFG(Decodable Frame Group) being processed.</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :   double first_bit_arrival_time;</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :   double last_bit_arrival_time;</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :   size_t coded_bits;</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             : </span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   // Information for the frame being processed.</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :   double removal_time;</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :   double presentation_time;</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :   int decode_samples;</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :   int display_samples;</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : </span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :   double max_display_rate;</span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :   double max_decode_rate;</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             : } DECODER_MODEL;</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             : </span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : typedef struct {</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :   AV1LevelStats level_stats;</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :   AV1LevelSpec level_spec;</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :   FrameWindowBuffer frame_window_buffer;</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :   DECODER_MODEL decoder_models[SEQ_LEVELS];</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             : } AV1LevelInfo;</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             : </span>
+<span id="L158"><span class="lineNum">     158</span>                 :             : typedef struct AV1LevelParams {</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             :   // Specifies the level that the coded video sequence conforms to for each</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :   // operating point.</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :   AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :   // Bit mask to indicate whether to keep level stats for corresponding</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :   // operating points.</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :   uint32_t keep_level_stats;</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :   // Level information for each operating point.</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :   AV1LevelInfo *level_info[MAX_NUM_OPERATING_POINTS];</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             : } AV1LevelParams;</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             : </span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static inline int is_in_operating_point(int operating_point,</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :                                         int temporal_layer_id,</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             :                                         int spatial_layer_id) {</span>
+<span id="L172"><span class="lineNum">     172</span>                 :<span class="tlaUNC">           0 :   if (!operating_point) return 1;</span></span>
+<span id="L173"><span class="lineNum">     173</span>                 :             : </span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :   return ((operating_point &gt;&gt; temporal_layer_id) &amp; 1) &amp;&amp;</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 :          ((operating_point &gt;&gt; (spatial_layer_id + 8)) &amp; 1);</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L177"><span class="lineNum">     177</span>                 :             : </span>
+<span id="L178"><span class="lineNum">     178</span>                 :             : void av1_init_level_info(struct AV1_COMP *cpi);</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             : </span>
+<span id="L180"><span class="lineNum">     180</span>                 :             : void av1_update_level_info(struct AV1_COMP *cpi, size_t size, int64_t ts_start,</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :                            int64_t ts_end);</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : </span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : // Return sequence level indices in seq_level_idx[MAX_NUM_OPERATING_POINTS].</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : aom_codec_err_t av1_get_seq_level_idx(const SequenceHeader *seq_params,</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             :                                       const AV1LevelParams *level_params,</span>
+<span id="L186"><span class="lineNum">     186</span>                 :             :                                       int *seq_level_idx);</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             : </span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : aom_codec_err_t av1_get_target_seq_level_idx(const SequenceHeader *seq_params,</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             :                                              const AV1LevelParams *level_params,</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :                                              int *target_seq_level_idx);</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             : </span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : // This function uses the decoder model to check whether there could be</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : // SMOOTHING_BUFFER_UNDERFLOW or SMOOTHING_BUFFER_OVERFLOW. It does not</span>
+<span id="L194"><span class="lineNum">     194</span>                 :             : // update the content of decoder_model, and can be used to target certain</span>
+<span id="L195"><span class="lineNum">     195</span>                 :             : // encoding level in the recode loop.</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             : DECODER_MODEL_STATUS av1_decoder_model_try_smooth_buf(</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :     const struct AV1_COMP *const cpi, size_t coded_bits,</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :     const DECODER_MODEL *const decoder_model);</span>
+<span id="L199"><span class="lineNum">     199</span>                 :             : </span>
+<span id="L200"><span class="lineNum">     200</span>                 :             : // Return max bitrate(bps) for given level.</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             : double av1_get_max_bitrate_for_level(AV1_LEVEL level_index, int tier,</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             :                                      BITSTREAM_PROFILE profile);</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             : </span>
+<span id="L204"><span class="lineNum">     204</span>                 :             : // Get max number of tiles and tile columns for given level.</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             : void av1_get_max_tiles_for_level(AV1_LEVEL level_index, int *const max_tiles,</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :                                  int *const max_tile_cols);</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             : </span>
+<span id="L208"><span class="lineNum">     208</span>                 :             : // Return minimum compression ratio for given level.</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             : double av1_get_min_cr_for_level(AV1_LEVEL level_index, int tier,</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :                                 int is_still_picture);</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             : #endif  // AOM_AV1_ENCODER_LEVEL_H_</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

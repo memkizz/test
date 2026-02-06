@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libX11-1.8.12/src/xlibi18n/lcUniConv/armscii_8.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">libX11-1.8.12/src/xlibi18n/lcUniConv</a> - armscii_8.h<span style="font-size: 80%;"> (source / <a href="armscii_8.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">31</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : </span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : /*</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  * ARMSCII-8</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  */</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : </span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : static const unsigned short armscii_8_2uni[96] = {</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :   /* 0xa0 */</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :   0x00a0, 0xfffd, 0x0587, 0x0589, 0x0029, 0x0028, 0x00bb, 0x00ab,</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :   0x2014, 0x002e, 0x055d, 0x002c, 0x002d, 0x058a, 0x2026, 0x055c,</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :   /* 0xb0 */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             :   0x055b, 0x055e, 0x0531, 0x0561, 0x0532, 0x0562, 0x0533, 0x0563,</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             :   0x0534, 0x0564, 0x0535, 0x0565, 0x0536, 0x0566, 0x0537, 0x0567,</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             :   /* 0xc0 */</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             :   0x0538, 0x0568, 0x0539, 0x0569, 0x053a, 0x056a, 0x053b, 0x056b,</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             :   0x053c, 0x056c, 0x053d, 0x056d, 0x053e, 0x056e, 0x053f, 0x056f,</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             :   /* 0xd0 */</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             :   0x0540, 0x0570, 0x0541, 0x0571, 0x0542, 0x0572, 0x0543, 0x0573,</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             :   0x0544, 0x0574, 0x0545, 0x0575, 0x0546, 0x0576, 0x0547, 0x0577,</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             :   /* 0xe0 */</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             :   0x0548, 0x0578, 0x0549, 0x0579, 0x054a, 0x057a, 0x054b, 0x057b,</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             :   0x054c, 0x057c, 0x054d, 0x057d, 0x054e, 0x057e, 0x054f, 0x057f,</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             :   /* 0xf0 */</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             :   0x0550, 0x0580, 0x0551, 0x0581, 0x0552, 0x0582, 0x0553, 0x0583,</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             :   0x0554, 0x0584, 0x0555, 0x0585, 0x0556, 0x0586, 0x055a, 0xfffd,</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : };</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : </span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : static int</span>
+<span id="L28"><span class="lineNum">      28</span>                 :<span class="tlaUNC tlaBgUNC">           0 : armscii_8_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)</span></span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : {</span>
+<span id="L30"><span class="lineNum">      30</span>                 :<span class="tlaUNC">           0 :   unsigned char c = *s;</span></span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC">           0 :   if (c &lt; 0xa0) {</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :     *pwc = (ucs4_t) c;</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :   }</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :   else {</span>
+<span id="L36"><span class="lineNum">      36</span>                 :<span class="tlaUNC">           0 :     unsigned short wc = armscii_8_2uni[c-0xa0];</span></span>
+<span id="L37"><span class="lineNum">      37</span>                 :<span class="tlaUNC">           0 :     if (wc != 0xfffd) {</span></span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 :       *pwc = (ucs4_t) wc;</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :<span class="tlaUNC">           0 :       return 1;</span></span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :     }</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :   }</span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 :   return RET_ILSEQ;</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : </span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : static const unsigned char armscii_8_page00[8] = {</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :   0xa5, 0xa4, 0x2a, 0x2b, 0xab, 0xac, 0xa9, 0x2f, /* 0x28-0x2f */</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : };</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : static const unsigned char armscii_8_page00_1[32] = {</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :   0xa0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 0xa0-0xa7 */</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :   0x00, 0x00, 0x00, 0xa7, 0x00, 0x00, 0x00, 0x00, /* 0xa8-0xaf */</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 0xb0-0xb7 */</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   0x00, 0x00, 0x00, 0xa6, 0x00, 0x00, 0x00, 0x00, /* 0xb8-0xbf */</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : };</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             : static const unsigned char armscii_8_page05[96] = {</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :   0x00, 0xb2, 0xb4, 0xb6, 0xb8, 0xba, 0xbc, 0xbe, /* 0x30-0x37 */</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :   0xc0, 0xc2, 0xc4, 0xc6, 0xc8, 0xca, 0xcc, 0xce, /* 0x38-0x3f */</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :   0xd0, 0xd2, 0xd4, 0xd6, 0xd8, 0xda, 0xdc, 0xde, /* 0x40-0x47 */</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :   0xe0, 0xe2, 0xe4, 0xe6, 0xe8, 0xea, 0xec, 0xee, /* 0x48-0x4f */</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :   0xf0, 0xf2, 0xf4, 0xf6, 0xf8, 0xfa, 0xfc, 0x00, /* 0x50-0x57 */</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :   0x00, 0x00, 0xfe, 0xb0, 0xaf, 0xaa, 0xb1, 0x00, /* 0x58-0x5f */</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :   0x00, 0xb3, 0xb5, 0xb7, 0xb9, 0xbb, 0xbd, 0xbf, /* 0x60-0x67 */</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   0xc1, 0xc3, 0xc5, 0xc7, 0xc9, 0xcb, 0xcd, 0xcf, /* 0x68-0x6f */</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   0xd1, 0xd3, 0xd5, 0xd7, 0xd9, 0xdb, 0xdd, 0xdf, /* 0x70-0x77 */</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   0xe1, 0xe3, 0xe5, 0xe7, 0xe9, 0xeb, 0xed, 0xef, /* 0x78-0x7f */</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   0xf1, 0xf3, 0xf5, 0xf7, 0xf9, 0xfb, 0xfd, 0xa2, /* 0x80-0x87 */</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   0x00, 0xa3, 0xad, 0x00, 0x00, 0x00, 0x00, 0x00, /* 0x88-0x8f */</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : };</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : static const unsigned char armscii_8_page20[24] = {</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :   0x00, 0x00, 0x00, 0x00, 0xa8, 0x00, 0x00, 0x00, /* 0x10-0x17 */</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 0x18-0x1f */</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xae, 0x00, /* 0x20-0x27 */</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             : };</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             : </span>
+<span id="L74"><span class="lineNum">      74</span>                 :             : static int</span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 : armscii_8_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n)</span></span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : {</span>
+<span id="L77"><span class="lineNum">      77</span>                 :<span class="tlaUNC">           0 :   unsigned char c = 0;</span></span>
+<span id="L78"><span class="lineNum">      78</span>                 :<span class="tlaUNC">           0 :   if (wc &lt; 0x0028) {</span></span>
+<span id="L79"><span class="lineNum">      79</span>                 :<span class="tlaUNC">           0 :     *r = (unsigned char) wc;</span></span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :   }</span>
+<span id="L82"><span class="lineNum">      82</span>                 :<span class="tlaUNC">           0 :   else if (wc &gt;= 0x0028 &amp;&amp; wc &lt; 0x0030)</span></span>
+<span id="L83"><span class="lineNum">      83</span>                 :<span class="tlaUNC">           0 :     c = armscii_8_page00[wc-0x0028];</span></span>
+<span id="L84"><span class="lineNum">      84</span>                 :<span class="tlaUNC">           0 :   else if (wc &gt;= 0x0030 &amp;&amp; wc &lt; 0x00a0)</span></span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :     c = (unsigned char) wc;</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :   else if (wc &gt;= 0x00a0 &amp;&amp; wc &lt; 0x00c0)</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :<span class="tlaUNC">           0 :     c = armscii_8_page00_1[wc-0x00a0];</span></span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :   else if (wc &gt;= 0x0530 &amp;&amp; wc &lt; 0x0590)</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :<span class="tlaUNC">           0 :     c = armscii_8_page05[wc-0x0530];</span></span>
+<span id="L90"><span class="lineNum">      90</span>                 :<span class="tlaUNC">           0 :   else if (wc &gt;= 0x2010 &amp;&amp; wc &lt; 0x2028)</span></span>
+<span id="L91"><span class="lineNum">      91</span>                 :<span class="tlaUNC">           0 :     c = armscii_8_page20[wc-0x2010];</span></span>
+<span id="L92"><span class="lineNum">      92</span>                 :<span class="tlaUNC">           0 :   if (c != 0) {</span></span>
+<span id="L93"><span class="lineNum">      93</span>                 :<span class="tlaUNC">           0 :     *r = c;</span></span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :   }</span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 :   return RET_ILSEQ;</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libwebp-1.3.2/src/dsp/common_sse2.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libwebp-1.3.2/src/dsp</a> - common_sse2.h<span style="font-size: 80%;"> (source / <a href="common_sse2.h.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">44</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // Copyright 2016 Google Inc. All Rights Reserved.</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : //</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : // Use of this source code is governed by a BSD-style license</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : // that can be found in the COPYING file in the root of the source</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : // tree. An additional intellectual property rights grant can be found</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : // in the file PATENTS. All contributing project authors may</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : // be found in the AUTHORS file in the root of the source tree.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : // SSE2 code common to several files.</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : //</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : // Author: Vincent Rabaud (vrabaud@google.com)</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #ifndef WEBP_DSP_COMMON_SSE2_H_</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #define WEBP_DSP_COMMON_SSE2_H_</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #ifdef __cplusplus</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : extern &quot;C&quot; {</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #endif</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : </span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #if defined(WEBP_USE_SSE2)</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : </span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : #include &lt;emmintrin.h&gt;</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : </span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : // Quite useful macro for debugging. Left here for convenience.</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : </span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : #if 0</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : #include &lt;stdio.h&gt;</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : static WEBP_INLINE void PrintReg(const __m128i r, const char* const name,</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :                                  int size) {</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :   int n;</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :   union {</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :     __m128i r;</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :     uint8_t i8[16];</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             :     uint16_t i16[8];</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :     uint32_t i32[4];</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :     uint64_t i64[2];</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :   } tmp;</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :   tmp.r = r;</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :   fprintf(stderr, &quot;%s\t: &quot;, name);</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :   if (size == 8) {</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :     for (n = 0; n &lt; 16; ++n) fprintf(stderr, &quot;%.2x &quot;, tmp.i8[n]);</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :   } else if (size == 16) {</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :     for (n = 0; n &lt; 8; ++n) fprintf(stderr, &quot;%.4x &quot;, tmp.i16[n]);</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :   } else if (size == 32) {</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :     for (n = 0; n &lt; 4; ++n) fprintf(stderr, &quot;%.8x &quot;, tmp.i32[n]);</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :   } else {</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :     for (n = 0; n &lt; 2; ++n) fprintf(stderr, &quot;%.16lx &quot;, tmp.i64[n]);</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :   }</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :   fprintf(stderr, &quot;\n&quot;);</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : }</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : #endif</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             : </span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : // Math functions.</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             : </span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : // Return the sum of all the 8b in the register.</span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static WEBP_INLINE int VP8HorizontalAdd8b(const __m128i* const a) {</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :<span class="tlaUNC">           0 :   const __m128i zero = _mm_setzero_si128();</span></span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 :   const __m128i sad8x2 = _mm_sad_epu8(*a, zero);</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   // sum the two sads: sad8x2[0:1] + sad8x2[8:9]</span>
+<span id="L63"><span class="lineNum">      63</span>                 :<span class="tlaUNC">           0 :   const __m128i sum = _mm_add_epi32(sad8x2, _mm_shuffle_epi32(sad8x2, 2));</span></span>
+<span id="L64"><span class="lineNum">      64</span>                 :<span class="tlaUNC">           0 :   return _mm_cvtsi128_si32(sum);</span></span>
+<span id="L65"><span class="lineNum">      65</span>                 :             : }</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             : </span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : // Transpose two 4x4 16b matrices horizontally stored in registers.</span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE void VP8Transpose_2_4x4_16b(</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :     const __m128i* const in0, const __m128i* const in1,</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :     const __m128i* const in2, const __m128i* const in3, __m128i* const out0,</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :     __m128i* const out1, __m128i* const out2, __m128i* const out3) {</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   // Transpose the two 4x4.</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :   // a00 a01 a02 a03   b00 b01 b02 b03</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   // a10 a11 a12 a13   b10 b11 b12 b13</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :   // a20 a21 a22 a23   b20 b21 b22 b23</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :   // a30 a31 a32 a33   b30 b31 b32 b33</span>
+<span id="L77"><span class="lineNum">      77</span>                 :<span class="tlaUNC">           0 :   const __m128i transpose0_0 = _mm_unpacklo_epi16(*in0, *in1);</span></span>
+<span id="L78"><span class="lineNum">      78</span>                 :<span class="tlaUNC">           0 :   const __m128i transpose0_1 = _mm_unpacklo_epi16(*in2, *in3);</span></span>
+<span id="L79"><span class="lineNum">      79</span>                 :<span class="tlaUNC">           0 :   const __m128i transpose0_2 = _mm_unpackhi_epi16(*in0, *in1);</span></span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 :   const __m128i transpose0_3 = _mm_unpackhi_epi16(*in2, *in3);</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :   // a00 a10 a01 a11   a02 a12 a03 a13</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   // a20 a30 a21 a31   a22 a32 a23 a33</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   // b00 b10 b01 b11   b02 b12 b03 b13</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :   // b20 b30 b21 b31   b22 b32 b23 b33</span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :   const __m128i transpose1_0 = _mm_unpacklo_epi32(transpose0_0, transpose0_1);</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :   const __m128i transpose1_1 = _mm_unpacklo_epi32(transpose0_2, transpose0_3);</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :<span class="tlaUNC">           0 :   const __m128i transpose1_2 = _mm_unpackhi_epi32(transpose0_0, transpose0_1);</span></span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :   const __m128i transpose1_3 = _mm_unpackhi_epi32(transpose0_2, transpose0_3);</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :   // a00 a10 a20 a30 a01 a11 a21 a31</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :   // b00 b10 b20 b30 b01 b11 b21 b31</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :   // a02 a12 a22 a32 a03 a13 a23 a33</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :   // b02 b12 a22 b32 b03 b13 b23 b33</span>
+<span id="L93"><span class="lineNum">      93</span>                 :<span class="tlaUNC">           0 :   *out0 = _mm_unpacklo_epi64(transpose1_0, transpose1_1);</span></span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :   *out1 = _mm_unpackhi_epi64(transpose1_0, transpose1_1);</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :   *out2 = _mm_unpacklo_epi64(transpose1_2, transpose1_3);</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 :   *out3 = _mm_unpackhi_epi64(transpose1_2, transpose1_3);</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :   // a00 a10 a20 a30   b00 b10 b20 b30</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :   // a01 a11 a21 a31   b01 b11 b21 b31</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :   // a02 a12 a22 a32   b02 b12 b22 b32</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :   // a03 a13 a23 a33   b03 b13 b23 b33</span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :             : </span>
+<span id="L103"><span class="lineNum">     103</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             : // Channel mixing.</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : </span>
+<span id="L106"><span class="lineNum">     106</span>                 :             : // Function used several times in VP8PlanarTo24b.</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             : // It samples the in buffer as follows: one every two unsigned char is stored</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             : // at the beginning of the buffer, while the other half is stored at the end.</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             : #define VP8PlanarTo24bHelper(IN, OUT)                            \</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   do {                                                           \</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :     const __m128i v_mask = _mm_set1_epi16(0x00ff);               \</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :     /* Take one every two upper 8b values.*/                     \</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :     (OUT##0) = _mm_packus_epi16(_mm_and_si128((IN##0), v_mask),  \</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :                                 _mm_and_si128((IN##1), v_mask)); \</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :     (OUT##1) = _mm_packus_epi16(_mm_and_si128((IN##2), v_mask),  \</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :                                 _mm_and_si128((IN##3), v_mask)); \</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :     (OUT##2) = _mm_packus_epi16(_mm_and_si128((IN##4), v_mask),  \</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :                                 _mm_and_si128((IN##5), v_mask)); \</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :     /* Take one every two lower 8b values.*/                     \</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :     (OUT##3) = _mm_packus_epi16(_mm_srli_epi16((IN##0), 8),      \</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :                                 _mm_srli_epi16((IN##1), 8));     \</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :     (OUT##4) = _mm_packus_epi16(_mm_srli_epi16((IN##2), 8),      \</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             :                                 _mm_srli_epi16((IN##3), 8));     \</span>
+<span id="L124"><span class="lineNum">     124</span>                 :             :     (OUT##5) = _mm_packus_epi16(_mm_srli_epi16((IN##4), 8),      \</span>
+<span id="L125"><span class="lineNum">     125</span>                 :             :                                 _mm_srli_epi16((IN##5), 8));     \</span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :   } while (0)</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : </span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : // Pack the planar buffers</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : // rrrr... rrrr... gggg... gggg... bbbb... bbbb....</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : // triplet by triplet in the output buffer rgb as rgbrgbrgbrgb ...</span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE void VP8PlanarTo24b_SSE2(</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :             :     __m128i* const in0, __m128i* const in1, __m128i* const in2,</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             :     __m128i* const in3, __m128i* const in4, __m128i* const in5) {</span>
+<span id="L134"><span class="lineNum">     134</span>                 :             :   // The input is 6 registers of sixteen 8b but for the sake of explanation,</span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :   // let's take 6 registers of four 8b values.</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :   // To pack, we will keep taking one every two 8b integer and move it</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :   // around as follows:</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             :   // Input:</span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :   //   r0r1r2r3 | r4r5r6r7 | g0g1g2g3 | g4g5g6g7 | b0b1b2b3 | b4b5b6b7</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :   // Split the 6 registers in two sets of 3 registers: the first set as the even</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :   // 8b bytes, the second the odd ones:</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :   //   r0r2r4r6 | g0g2g4g6 | b0b2b4b6 | r1r3r5r7 | g1g3g5g7 | b1b3b5b7</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :   // Repeat the same permutations twice more:</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :   //   r0r4g0g4 | b0b4r1r5 | g1g5b1b5 | r2r6g2g6 | b2b6r3r7 | g3g7b3b7</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :   //   r0g0b0r1 | g1b1r2g2 | b2r3g3b3 | r4g4b4r5 | g5b5r6g6 | b6r7g7b7</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             :   __m128i tmp0, tmp1, tmp2, tmp3, tmp4, tmp5;</span>
+<span id="L147"><span class="lineNum">     147</span>                 :<span class="tlaUNC">           0 :   VP8PlanarTo24bHelper(*in, tmp);</span></span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :   VP8PlanarTo24bHelper(tmp, *in);</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :   VP8PlanarTo24bHelper(*in, tmp);</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :   // We need to do it two more times than the example as we have sixteen bytes.</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :   {</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :     __m128i out0, out1, out2, out3, out4, out5;</span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 :     VP8PlanarTo24bHelper(tmp, out);</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 :     VP8PlanarTo24bHelper(out, *in);</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :   }</span>
+<span id="L156"><span class="lineNum">     156</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L157"><span class="lineNum">     157</span>                 :             : </span>
+<span id="L158"><span class="lineNum">     158</span>                 :             : #undef VP8PlanarTo24bHelper</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :             : // Convert four packed four-channel buffers like argbargbargbargb... into the</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             : // split channels aaaaa ... rrrr ... gggg .... bbbbb ......</span>
+<span id="L162"><span class="lineNum">     162</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE void VP8L32bToPlanar_SSE2(__m128i* const in0,</span></span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :                                              __m128i* const in1,</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :                                              __m128i* const in2,</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             :                                              __m128i* const in3) {</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :   // Column-wise transpose.</span>
+<span id="L167"><span class="lineNum">     167</span>                 :<span class="tlaUNC">           0 :   const __m128i A0 = _mm_unpacklo_epi8(*in0, *in1);</span></span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 :   const __m128i A1 = _mm_unpackhi_epi8(*in0, *in1);</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 :   const __m128i A2 = _mm_unpacklo_epi8(*in2, *in3);</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :<span class="tlaUNC">           0 :   const __m128i A3 = _mm_unpackhi_epi8(*in2, *in3);</span></span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :   const __m128i B0 = _mm_unpacklo_epi8(A0, A1);</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :<span class="tlaUNC">           0 :   const __m128i B1 = _mm_unpackhi_epi8(A0, A1);</span></span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :   const __m128i B2 = _mm_unpacklo_epi8(A2, A3);</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :   const __m128i B3 = _mm_unpackhi_epi8(A2, A3);</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :             :   // C0 = g7 g6 ... g1 g0 | b7 b6 ... b1 b0</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             :   // C1 = a7 a6 ... a1 a0 | r7 r6 ... r1 r0</span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 :   const __m128i C0 = _mm_unpacklo_epi8(B0, B1);</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :<span class="tlaUNC">           0 :   const __m128i C1 = _mm_unpackhi_epi8(B0, B1);</span></span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :   const __m128i C2 = _mm_unpacklo_epi8(B2, B3);</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :   const __m128i C3 = _mm_unpackhi_epi8(B2, B3);</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :   // Gather the channels.</span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 :   *in0 = _mm_unpackhi_epi64(C1, C3);</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :<span class="tlaUNC">           0 :   *in1 = _mm_unpacklo_epi64(C1, C3);</span></span>
+<span id="L184"><span class="lineNum">     184</span>                 :<span class="tlaUNC">           0 :   *in2 = _mm_unpackhi_epi64(C0, C2);</span></span>
+<span id="L185"><span class="lineNum">     185</span>                 :<span class="tlaUNC">           0 :   *in3 = _mm_unpacklo_epi64(C0, C2);</span></span>
+<span id="L186"><span class="lineNum">     186</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L187"><span class="lineNum">     187</span>                 :             : </span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : #endif  // WEBP_USE_SSE2</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             : </span>
+<span id="L190"><span class="lineNum">     190</span>                 :             : #ifdef __cplusplus</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             : }  // extern &quot;C&quot;</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : #endif</span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : </span>
+<span id="L194"><span class="lineNum">     194</span>                 :             : #endif  // WEBP_DSP_COMMON_SSE2_H_</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

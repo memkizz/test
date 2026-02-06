@@ -1,0 +1,304 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libX11-1.8.12/src/ErrDes.c</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">libX11-1.8.12/src</a> - ErrDes.c<span style="font-size: 80%;"> (source / <a href="ErrDes.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">65</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  */</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : </span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : /***********************************************************</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : </span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : Copyright 1987, 1988, 1998  The Open Group</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : </span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : Permission to use, copy, modify, distribute, and sell this software and its</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : documentation for any purpose is hereby granted without fee, provided that</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : the above copyright notice appear in all copies and that both that</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : copyright notice and this permission notice appear in supporting</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : documentation.</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : The above copyright notice and this permission notice shall be included in</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : all copies or substantial portions of the Software.</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : </span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : Except as contained in this notice, the name of The Open Group shall not be</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : used in advertising or otherwise to promote the sale, use or other dealings</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : in this Software without prior written authorization from The Open Group.</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : </span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : </span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts.</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : </span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :                         All Rights Reserved</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : </span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : Permission to use, copy, modify, and distribute this software and its</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : documentation for any purpose and without fee is hereby granted,</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : provided that the above copyright notice appear in all copies and that</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : both that copyright notice and this permission notice appear in</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : supporting documentation, and that the name of Digital not be</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : used in advertising or publicity pertaining to distribution of the</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : software without specific, written prior permission.</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : </span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : SOFTWARE.</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : </span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : ******************************************************************/</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : </span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : #ifdef HAVE_CONFIG_H</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : #include &lt;config.h&gt;</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : #endif</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             : #include &quot;Xlibint.h&quot;</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : #include &lt;X11/Xos.h&gt;</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : #include &quot;Xresource.h&quot;</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             : #include &lt;stdio.h&gt;</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : </span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : #ifndef ERRORDB</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : #ifndef XERRORDB</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             : #define ERRORDB &quot;/usr/lib/X11/XErrorDB&quot;</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             : #else</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             : #define ERRORDB XERRORDB</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             : #endif</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             : #endif</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             : </span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : /*</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :  * descriptions of errors in Section 4 of Protocol doc (pp. 350-351); more</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :  * verbose descriptions are given in the error database</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :  */</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             : static const char _XErrorList[] =</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :     /* No error */          &quot;no error\0&quot;</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :     /* BadRequest */        &quot;BadRequest\0&quot;</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :     /* BadValue */          &quot;BadValue\0&quot;</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :     /* BadWindow */         &quot;BadWindow\0&quot;</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :     /* BadPixmap */         &quot;BadPixmap\0&quot;</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :     /* BadAtom */           &quot;BadAtom\0&quot;</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :     /* BadCursor */         &quot;BadCursor\0&quot;</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :     /* BadFont */           &quot;BadFont\0&quot;</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :     /* BadMatch */          &quot;BadMatch\0&quot;</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :     /* BadDrawable */       &quot;BadDrawable\0&quot;</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :     /* BadAccess */         &quot;BadAccess\0&quot;</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :     /* BadAlloc */          &quot;BadAlloc\0&quot;</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :     /* BadColor */          &quot;BadColor\0&quot;</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :     /* BadGC */             &quot;BadGC\0&quot;</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :     /* BadIDChoice */       &quot;BadIDChoice\0&quot;</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :     /* BadName */           &quot;BadName\0&quot;</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :     /* BadLength */         &quot;BadLength\0&quot;</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :     /* BadImplementation */ &quot;BadImplementation&quot;</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : ;</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             : </span>
+<span id="L92"><span class="lineNum">      92</span>                 :             : /* offsets into _XErrorList */</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             : static const unsigned char _XErrorOffsets[] = {</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :     0, 9, 20, 29, 39, 49, 57, 67, 75, 84, 96,</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :     106, 115, 124, 130, 142, 150, 160</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             : };</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             : </span>
+<span id="L98"><span class="lineNum">      98</span>                 :             : </span>
+<span id="L99"><span class="lineNum">      99</span>                 :             : int</span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC tlaBgUNC">           0 : XGetErrorText(</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :     register Display *dpy,</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :     register int code,</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :     char *buffer,</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :     int nbytes)</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : {</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :     char buf[150];</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :     register _XExtension *ext;</span>
+<span id="L108"><span class="lineNum">     108</span>                 :<span class="tlaUNC">           0 :     _XExtension *bext = (_XExtension *)NULL;</span></span>
+<span id="L109"><span class="lineNum">     109</span>                 :             : </span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 :     if (nbytes == 0) return 0;</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :<span class="tlaUNC">           0 :     if (code &lt;= BadImplementation &amp;&amp; code &gt; 0) {</span></span>
+<span id="L112"><span class="lineNum">     112</span>                 :<span class="tlaUNC">           0 :         snprintf(buf, sizeof(buf), &quot;%d&quot;, code);</span></span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :         (void) XGetErrorDatabaseText(dpy, &quot;XProtoError&quot;, buf,</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :<span class="tlaUNC">           0 :                                      _XErrorList + _XErrorOffsets[code],</span></span>
+<span id="L115"><span class="lineNum">     115</span>                 :<span class="tlaUNC">           0 :                                      buffer, nbytes);</span></span>
+<span id="L116"><span class="lineNum">     116</span>                 :<span class="tlaUNC">           0 :     } else</span></span>
+<span id="L117"><span class="lineNum">     117</span>                 :<span class="tlaUNC">           0 :         buffer[0] = '\0';</span></span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :     /* call out to any extensions interested */</span>
+<span id="L119"><span class="lineNum">     119</span>                 :<span class="tlaUNC">           0 :     for (ext = dpy-&gt;ext_procs; ext; ext = ext-&gt;next) {</span></span>
+<span id="L120"><span class="lineNum">     120</span>                 :<span class="tlaUNC">           0 :         if (ext-&gt;error_string)</span></span>
+<span id="L121"><span class="lineNum">     121</span>                 :<span class="tlaUNC">           0 :             (*ext-&gt;error_string)(dpy, code, &amp;ext-&gt;codes, buffer, nbytes);</span></span>
+<span id="L122"><span class="lineNum">     122</span>                 :<span class="tlaUNC">           0 :         if (ext-&gt;codes.first_error &amp;&amp;</span></span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaUNC">           0 :             ext-&gt;codes.first_error &lt;= code &amp;&amp;</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :<span class="tlaUNC">           0 :             (!bext || ext-&gt;codes.first_error &gt; bext-&gt;codes.first_error))</span></span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaUNC">           0 :             bext = ext;</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L127"><span class="lineNum">     127</span>                 :<span class="tlaUNC">           0 :     if (!buffer[0] &amp;&amp; bext) {</span></span>
+<span id="L128"><span class="lineNum">     128</span>                 :<span class="tlaUNC">           0 :         snprintf(buf, sizeof(buf), &quot;%s.%d&quot;,</span></span>
+<span id="L129"><span class="lineNum">     129</span>                 :<span class="tlaUNC">           0 :                  bext-&gt;name, code - bext-&gt;codes.first_error);</span></span>
+<span id="L130"><span class="lineNum">     130</span>                 :<span class="tlaUNC">           0 :         (void) XGetErrorDatabaseText(dpy, &quot;XProtoError&quot;, buf, &quot;&quot;, buffer, nbytes);</span></span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :<span class="tlaUNC">           0 :     if (!buffer[0])</span></span>
+<span id="L133"><span class="lineNum">     133</span>                 :<span class="tlaUNC">           0 :         snprintf(buffer, nbytes, &quot;%d&quot;, code);</span></span>
+<span id="L134"><span class="lineNum">     134</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L135"><span class="lineNum">     135</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L136"><span class="lineNum">     136</span>                 :             : </span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : int</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : /*ARGSUSED*/</span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 : XGetErrorDatabaseText(</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :     Display *dpy,</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :     register _Xconst char *name,</span>
+<span id="L142"><span class="lineNum">     142</span>                 :             :     register _Xconst char *type,</span>
+<span id="L143"><span class="lineNum">     143</span>                 :             :     _Xconst char *defaultp,</span>
+<span id="L144"><span class="lineNum">     144</span>                 :             :     char *buffer,</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :     int nbytes)</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : {</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : </span>
+<span id="L148"><span class="lineNum">     148</span>                 :             :     static XrmDatabase db = NULL;</span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :     XrmString type_str;</span>
+<span id="L150"><span class="lineNum">     150</span>                 :             :     XrmValue result;</span>
+<span id="L151"><span class="lineNum">     151</span>                 :             :     char temp[BUFSIZ];</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :     char* tptr;</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :     unsigned long tlen;</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             : </span>
+<span id="L155"><span class="lineNum">     155</span>                 :<span class="tlaUNC">           0 :     if (nbytes == 0) return 0;</span></span>
+<span id="L156"><span class="lineNum">     156</span>                 :             : </span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :     if (!db) {</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :         /* the Xrm routines expect to be called with the global</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             :            mutex unlocked. */</span>
+<span id="L160"><span class="lineNum">     160</span>                 :             :         XrmDatabase temp_db;</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :         int do_destroy;</span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :         const char *dbname;</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : </span>
+<span id="L164"><span class="lineNum">     164</span>                 :<span class="tlaUNC">           0 :         XrmInitialize();</span></span>
+<span id="L165"><span class="lineNum">     165</span>                 :             : #ifdef WIN32</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :         dbname = getenv(&quot;XERRORDB&quot;);</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             :         if (!dbname)</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             :             dbname = ERRORDB;</span>
+<span id="L169"><span class="lineNum">     169</span>                 :             : #else</span>
+<span id="L170"><span class="lineNum">     170</span>                 :<span class="tlaUNC">           0 :     dbname = ERRORDB;</span></span>
+<span id="L171"><span class="lineNum">     171</span>                 :             : #endif</span>
+<span id="L172"><span class="lineNum">     172</span>                 :<span class="tlaUNC">           0 :         temp_db = XrmGetFileDatabase(dbname);</span></span>
+<span id="L173"><span class="lineNum">     173</span>                 :             : </span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :         _XLockMutex(_Xglobal_lock);</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 :         if (!db) {</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :<span class="tlaUNC">           0 :             db = temp_db;</span></span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 :             do_destroy = 0;</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :<span class="tlaUNC">           0 :         } else</span></span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :             do_destroy = 1;     /* we didn't need to get it after all */</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :         _XUnlockMutex(_Xglobal_lock);</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :             : </span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 :         if (do_destroy)</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :<span class="tlaUNC">           0 :             XrmDestroyDatabase(temp_db);</span></span>
+<span id="L184"><span class="lineNum">     184</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : </span>
+<span id="L186"><span class="lineNum">     186</span>                 :<span class="tlaUNC">           0 :     if (db)</span></span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :     {</span>
+<span id="L188"><span class="lineNum">     188</span>                 :<span class="tlaUNC">           0 :         tlen = strlen (name) + strlen (type) + 2;</span></span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :         if (tlen &lt;= sizeof(temp))</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 :             tptr = temp;</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :         else</span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 :             tptr = Xmalloc (tlen);</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :<span class="tlaUNC">           0 :         if (tptr) {</span></span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 :             snprintf(tptr, tlen, &quot;%s.%s&quot;, name, type);</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :             XrmGetResource(db, tptr, &quot;ErrorType.ErrorNumber&quot;,</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :               &amp;type_str, &amp;result);</span>
+<span id="L197"><span class="lineNum">     197</span>                 :<span class="tlaUNC">           0 :             if (tptr != temp)</span></span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 :                 Xfree (tptr);</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :<span class="tlaUNC">           0 :         } else {</span></span>
+<span id="L200"><span class="lineNum">     200</span>                 :<span class="tlaUNC">           0 :             result.addr = (XPointer) NULL;</span></span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :         }</span>
+<span id="L202"><span class="lineNum">     202</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :     else</span>
+<span id="L204"><span class="lineNum">     204</span>                 :<span class="tlaUNC">           0 :         result.addr = (XPointer)NULL;</span></span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :     if (!result.addr) {</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :<span class="tlaUNC">           0 :         result.addr = (XPointer) defaultp;</span></span>
+<span id="L207"><span class="lineNum">     207</span>                 :<span class="tlaUNC">           0 :         result.size = (unsigned)strlen(defaultp) + 1;</span></span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :     (void) strncpy (buffer, (char *) result.addr, (size_t)nbytes);</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :<span class="tlaUNC">           0 :     if (result.size &gt; nbytes) buffer[nbytes-1] = '\0';</span></span>
+<span id="L211"><span class="lineNum">     211</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L212"><span class="lineNum">     212</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - aom-3.13.1/av1/encoder/x86/error_intrin_sse2.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">aom-3.13.1/av1/encoder/x86</a> - error_intrin_sse2.c<span style="font-size: 80%;"> (source / <a href="error_intrin_sse2.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">33</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (c) 2021, Alliance for Open Media. All rights reserved.</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This source code is subject to the terms of the BSD 2 Clause License and</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * was not distributed with this source code in the LICENSE file, you can</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * obtain it at www.aomedia.org/license/software. If the Alliance for Open</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * Media Patent License 1.0 was not distributed with this source code in the</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  */</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : </span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : #include &lt;emmintrin.h&gt;  // SSE2</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #include &quot;config/av1_rtcd.h&quot;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : </span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : #include &quot;aom/aom_integer.h&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : </span>
+<span id="L18"><span class="lineNum">      18</span>                 :<span class="tlaUNC tlaBgUNC">           0 : static inline __m128i reduce_sum_epi64(__m128i reg) {</span></span>
+<span id="L19"><span class="lineNum">      19</span>                 :<span class="tlaUNC">           0 :   __m128i reg_hi = _mm_srli_si128(reg, 8);</span></span>
+<span id="L20"><span class="lineNum">      20</span>                 :<span class="tlaUNC">           0 :   reg = _mm_add_epi64(reg, reg_hi);</span></span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : </span>
+<span id="L22"><span class="lineNum">      22</span>                 :<span class="tlaUNC">           0 :   return reg;</span></span>
+<span id="L23"><span class="lineNum">      23</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : </span>
+<span id="L25"><span class="lineNum">      25</span>                 :<span class="tlaUNC">           0 : int64_t av1_block_error_lp_sse2(const int16_t *coeff, const int16_t *dqcoeff,</span></span>
+<span id="L26"><span class="lineNum">      26</span>                 :             :                                 intptr_t block_size) {</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             :   assert(block_size % 16 == 0);</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :   assert(block_size &gt;= 16);</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : </span>
+<span id="L30"><span class="lineNum">      30</span>                 :<span class="tlaUNC">           0 :   const __m128i zero = _mm_setzero_si128();</span></span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC">           0 :   __m128i accum_0 = zero;</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :   __m128i accum_1 = zero;</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : </span>
+<span id="L34"><span class="lineNum">      34</span>                 :<span class="tlaUNC">           0 :   for (int i = 0; i &lt; block_size; i += 16) {</span></span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :     // Load 8 elements for coeff and dqcoeff.</span>
+<span id="L36"><span class="lineNum">      36</span>                 :<span class="tlaUNC">           0 :     const __m128i _coeff_0 = _mm_loadu_si128((const __m128i *)coeff);</span></span>
+<span id="L37"><span class="lineNum">      37</span>                 :<span class="tlaUNC">           0 :     const __m128i _coeff_1 = _mm_loadu_si128((const __m128i *)(coeff + 8));</span></span>
+<span id="L38"><span class="lineNum">      38</span>                 :<span class="tlaUNC">           0 :     const __m128i _dqcoeff_0 = _mm_loadu_si128((const __m128i *)dqcoeff);</span></span>
+<span id="L39"><span class="lineNum">      39</span>                 :<span class="tlaUNC">           0 :     const __m128i _dqcoeff_1 = _mm_loadu_si128((const __m128i *)(dqcoeff + 8));</span></span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :     // Compute the diff</span>
+<span id="L41"><span class="lineNum">      41</span>                 :<span class="tlaUNC">           0 :     const __m128i diff_0 = _mm_sub_epi16(_dqcoeff_0, _coeff_0);</span></span>
+<span id="L42"><span class="lineNum">      42</span>                 :<span class="tlaUNC">           0 :     const __m128i diff_1 = _mm_sub_epi16(_dqcoeff_1, _coeff_1);</span></span>
+<span id="L43"><span class="lineNum">      43</span>                 :             :     // Compute the error</span>
+<span id="L44"><span class="lineNum">      44</span>                 :<span class="tlaUNC">           0 :     const __m128i error_0 = _mm_madd_epi16(diff_0, diff_0);</span></span>
+<span id="L45"><span class="lineNum">      45</span>                 :<span class="tlaUNC">           0 :     const __m128i error_1 = _mm_madd_epi16(diff_1, diff_1);</span></span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : </span>
+<span id="L47"><span class="lineNum">      47</span>                 :<span class="tlaUNC">           0 :     const __m128i error_lo_0 = _mm_unpacklo_epi32(error_0, zero);</span></span>
+<span id="L48"><span class="lineNum">      48</span>                 :<span class="tlaUNC">           0 :     const __m128i error_lo_1 = _mm_unpacklo_epi32(error_1, zero);</span></span>
+<span id="L49"><span class="lineNum">      49</span>                 :<span class="tlaUNC">           0 :     const __m128i error_hi_0 = _mm_unpackhi_epi32(error_0, zero);</span></span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 :     const __m128i error_hi_1 = _mm_unpackhi_epi32(error_1, zero);</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : </span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :     // Accumulate</span>
+<span id="L53"><span class="lineNum">      53</span>                 :<span class="tlaUNC">           0 :     accum_0 = _mm_add_epi64(accum_0, error_lo_0);</span></span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 :     accum_1 = _mm_add_epi64(accum_1, error_lo_1);</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :<span class="tlaUNC">           0 :     accum_0 = _mm_add_epi64(accum_0, error_hi_0);</span></span>
+<span id="L56"><span class="lineNum">      56</span>                 :<span class="tlaUNC">           0 :     accum_1 = _mm_add_epi64(accum_1, error_hi_1);</span></span>
+<span id="L57"><span class="lineNum">      57</span>                 :             : </span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :     // Advance</span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 :     coeff += 16;</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :<span class="tlaUNC">           0 :     dqcoeff += 16;</span></span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :             : </span>
+<span id="L63"><span class="lineNum">      63</span>                 :<span class="tlaUNC">           0 :   __m128i accum = _mm_add_epi64(accum_0, accum_1);</span></span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   // Reduce sum the register</span>
+<span id="L65"><span class="lineNum">      65</span>                 :<span class="tlaUNC">           0 :   accum = reduce_sum_epi64(accum);</span></span>
+<span id="L66"><span class="lineNum">      66</span>                 :             : </span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :   // Store the results.</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             : #if AOM_ARCH_X86_64</span>
+<span id="L69"><span class="lineNum">      69</span>                 :<span class="tlaUNC">           0 :   return _mm_cvtsi128_si64(accum);</span></span>
+<span id="L70"><span class="lineNum">      70</span>                 :             : #else</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   int64_t result;</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   _mm_storel_epi64((__m128i *)&amp;result, accum);</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :   return result;</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             : #endif  // AOM_ARCH_X86_64</span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

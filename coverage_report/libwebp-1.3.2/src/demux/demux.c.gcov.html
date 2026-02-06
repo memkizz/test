@@ -1,0 +1,1067 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libwebp-1.3.2/src/demux/demux.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libwebp-1.3.2/src/demux</a> - demux.c<span style="font-size: 80%;"> (source / <a href="demux.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">572</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">46</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // Copyright 2012 Google Inc. All Rights Reserved.</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : //</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : // Use of this source code is governed by a BSD-style license</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : // that can be found in the COPYING file in the root of the source</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : // tree. An additional intellectual property rights grant can be found</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : // in the file PATENTS. All contributing project authors may</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : // be found in the AUTHORS file in the root of the source tree.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : //</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : //  WebP container demux.</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : //</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : </span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : #ifdef HAVE_CONFIG_H</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : #include &quot;src/webp/config.h&quot;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : #endif</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #include &lt;assert.h&gt;</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &lt;stdlib.h&gt;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &lt;string.h&gt;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : </span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : #include &quot;src/utils/utils.h&quot;</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #include &quot;src/webp/decode.h&quot;     // WebPGetFeatures</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : #include &quot;src/webp/demux.h&quot;</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : #include &quot;src/webp/format_constants.h&quot;</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : </span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : #define DMUX_MAJ_VERSION 1</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : #define DMUX_MIN_VERSION 3</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : #define DMUX_REV_VERSION 2</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : </span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : typedef struct {</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :   size_t start_;        // start location of the data</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :   size_t end_;          // end location</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :   size_t riff_end_;     // riff chunk end location, can be &gt; end_.</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :   size_t buf_size_;     // size of the buffer</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :   const uint8_t* buf_;</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : } MemBuffer;</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : </span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : typedef struct {</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :   size_t offset_;</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :   size_t size_;</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : } ChunkData;</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : </span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : typedef struct Frame {</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :   int x_offset_, y_offset_;</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             :   int width_, height_;</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             :   int has_alpha_;</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             :   int duration_;</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             :   WebPMuxAnimDispose dispose_method_;</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             :   WebPMuxAnimBlend blend_method_;</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             :   int frame_num_;</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :   int complete_;   // img_components_ contains a full image.</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :   ChunkData img_components_[2];  // 0=VP8{,L} 1=ALPH</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :   struct Frame* next_;</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             : } Frame;</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : </span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : typedef struct Chunk {</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :   ChunkData data_;</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :   struct Chunk* next_;</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : } Chunk;</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             : </span>
+<span id="L61"><span class="lineNum">      61</span>                 :             : struct WebPDemuxer {</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   MemBuffer mem_;</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   WebPDemuxState state_;</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   int is_ext_format_;</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   uint32_t feature_flags_;</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   int canvas_width_, canvas_height_;</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :   int loop_count_;</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :   uint32_t bgcolor_;</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :   int num_frames_;</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :   Frame* frames_;</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   Frame** frames_tail_;</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   Chunk* chunks_;  // non-image chunks</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :   Chunk** chunks_tail_;</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             : };</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             : </span>
+<span id="L76"><span class="lineNum">      76</span>                 :             : typedef enum {</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :   PARSE_OK,</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   PARSE_NEED_MORE_DATA,</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :   PARSE_ERROR</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             : } ParseStatus;</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             : </span>
+<span id="L82"><span class="lineNum">      82</span>                 :             : typedef struct ChunkParser {</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   uint8_t id[4];</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :   ParseStatus (*parse)(WebPDemuxer* const dmux);</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :   int (*valid)(const WebPDemuxer* const dmux);</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             : } ChunkParser;</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : </span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : static ParseStatus ParseSingleImage(WebPDemuxer* const dmux);</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             : static ParseStatus ParseVP8X(WebPDemuxer* const dmux);</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : static int IsValidSimpleFormat(const WebPDemuxer* const dmux);</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             : static int IsValidExtendedFormat(const WebPDemuxer* const dmux);</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             : </span>
+<span id="L93"><span class="lineNum">      93</span>                 :             : static const ChunkParser kMasterChunks[] = {</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :   { { 'V', 'P', '8', ' ' }, ParseSingleImage, IsValidSimpleFormat },</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :   { { 'V', 'P', '8', 'L' }, ParseSingleImage, IsValidSimpleFormat },</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             :   { { 'V', 'P', '8', 'X' }, ParseVP8X,        IsValidExtendedFormat },</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :   { { '0', '0', '0', '0' }, NULL,             NULL },</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             : };</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             : </span>
+<span id="L100"><span class="lineNum">     100</span>                 :             : //------------------------------------------------------------------------------</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : </span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC tlaBgUNC">           0 : int WebPGetDemuxVersion(void) {</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :   return (DMUX_MAJ_VERSION &lt;&lt; 16) | (DMUX_MIN_VERSION &lt;&lt; 8) | DMUX_REV_VERSION;</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :             : }</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : </span>
+<span id="L106"><span class="lineNum">     106</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             : // MemBuffer</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             : </span>
+<span id="L109"><span class="lineNum">     109</span>                 :<span class="tlaUNC">           0 : static int RemapMemBuffer(MemBuffer* const mem,</span></span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :                           const uint8_t* data, size_t size) {</span>
+<span id="L111"><span class="lineNum">     111</span>                 :<span class="tlaUNC">           0 :   if (size &lt; mem-&gt;buf_size_) return 0;  // can't remap to a shorter buffer!</span></span>
+<span id="L112"><span class="lineNum">     112</span>                 :             : </span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :   mem-&gt;buf_ = data;</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :<span class="tlaUNC">           0 :   mem-&gt;end_ = mem-&gt;buf_size_ = size;</span></span>
+<span id="L115"><span class="lineNum">     115</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L116"><span class="lineNum">     116</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L117"><span class="lineNum">     117</span>                 :             : </span>
+<span id="L118"><span class="lineNum">     118</span>                 :<span class="tlaUNC">           0 : static int InitMemBuffer(MemBuffer* const mem,</span></span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :                          const uint8_t* data, size_t size) {</span>
+<span id="L120"><span class="lineNum">     120</span>                 :<span class="tlaUNC">           0 :   memset(mem, 0, sizeof(*mem));</span></span>
+<span id="L121"><span class="lineNum">     121</span>                 :<span class="tlaUNC">           0 :   return RemapMemBuffer(mem, data, size);</span></span>
+<span id="L122"><span class="lineNum">     122</span>                 :             : }</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             : </span>
+<span id="L124"><span class="lineNum">     124</span>                 :             : // Return the remaining data size available in 'mem'.</span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE size_t MemDataSize(const MemBuffer* const mem) {</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :<span class="tlaUNC">           0 :   return (mem-&gt;end_ - mem-&gt;start_);</span></span>
+<span id="L127"><span class="lineNum">     127</span>                 :             : }</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : </span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : // Return true if 'size' exceeds the end of the RIFF chunk.</span>
+<span id="L130"><span class="lineNum">     130</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE int SizeIsInvalid(const MemBuffer* const mem, size_t size) {</span></span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 :   return (size &gt; mem-&gt;riff_end_ - mem-&gt;start_);</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :             : }</span>
+<span id="L133"><span class="lineNum">     133</span>                 :             : </span>
+<span id="L134"><span class="lineNum">     134</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE void Skip(MemBuffer* const mem, size_t size) {</span></span>
+<span id="L135"><span class="lineNum">     135</span>                 :<span class="tlaUNC">           0 :   mem-&gt;start_ += size;</span></span>
+<span id="L136"><span class="lineNum">     136</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : </span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE void Rewind(MemBuffer* const mem, size_t size) {</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :   mem-&gt;start_ -= size;</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L141"><span class="lineNum">     141</span>                 :             : </span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE const uint8_t* GetBuffer(MemBuffer* const mem) {</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :<span class="tlaUNC">           0 :   return mem-&gt;buf_ + mem-&gt;start_;</span></span>
+<span id="L144"><span class="lineNum">     144</span>                 :             : }</span>
+<span id="L145"><span class="lineNum">     145</span>                 :             : </span>
+<span id="L146"><span class="lineNum">     146</span>                 :             : // Read from 'mem' and skip the read bytes.</span>
+<span id="L147"><span class="lineNum">     147</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE uint8_t ReadByte(MemBuffer* const mem) {</span></span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :   const uint8_t byte = mem-&gt;buf_[mem-&gt;start_];</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :   Skip(mem, 1);</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :<span class="tlaUNC">           0 :   return byte;</span></span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : }</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             : </span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE int ReadLE16s(MemBuffer* const mem) {</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 :   const uint8_t* const data = mem-&gt;buf_ + mem-&gt;start_;</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :<span class="tlaUNC">           0 :   const int val = GetLE16(data);</span></span>
+<span id="L156"><span class="lineNum">     156</span>                 :<span class="tlaUNC">           0 :   Skip(mem, 2);</span></span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :   return val;</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :             : }</span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE int ReadLE24s(MemBuffer* const mem) {</span></span>
+<span id="L161"><span class="lineNum">     161</span>                 :<span class="tlaUNC">           0 :   const uint8_t* const data = mem-&gt;buf_ + mem-&gt;start_;</span></span>
+<span id="L162"><span class="lineNum">     162</span>                 :<span class="tlaUNC">           0 :   const int val = GetLE24(data);</span></span>
+<span id="L163"><span class="lineNum">     163</span>                 :<span class="tlaUNC">           0 :   Skip(mem, 3);</span></span>
+<span id="L164"><span class="lineNum">     164</span>                 :<span class="tlaUNC">           0 :   return val;</span></span>
+<span id="L165"><span class="lineNum">     165</span>                 :             : }</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             : </span>
+<span id="L167"><span class="lineNum">     167</span>                 :<span class="tlaUNC">           0 : static WEBP_INLINE uint32_t ReadLE32(MemBuffer* const mem) {</span></span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 :   const uint8_t* const data = mem-&gt;buf_ + mem-&gt;start_;</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 :   const uint32_t val = GetLE32(data);</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :<span class="tlaUNC">           0 :   Skip(mem, 4);</span></span>
+<span id="L171"><span class="lineNum">     171</span>                 :<span class="tlaUNC">           0 :   return val;</span></span>
+<span id="L172"><span class="lineNum">     172</span>                 :             : }</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             : </span>
+<span id="L174"><span class="lineNum">     174</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             : // Secondary chunk parsing</span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : </span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 : static void AddChunk(WebPDemuxer* const dmux, Chunk* const chunk) {</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :<span class="tlaUNC">           0 :   *dmux-&gt;chunks_tail_ = chunk;</span></span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :   chunk-&gt;next_ = NULL;</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;chunks_tail_ = &amp;chunk-&gt;next_;</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L182"><span class="lineNum">     182</span>                 :             : </span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : // Add a frame to the end of the list, ensuring the last frame is complete.</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : // Returns true on success, false otherwise.</span>
+<span id="L185"><span class="lineNum">     185</span>                 :<span class="tlaUNC">           0 : static int AddFrame(WebPDemuxer* const dmux, Frame* const frame) {</span></span>
+<span id="L186"><span class="lineNum">     186</span>                 :<span class="tlaUNC">           0 :   const Frame* const last_frame = *dmux-&gt;frames_tail_;</span></span>
+<span id="L187"><span class="lineNum">     187</span>                 :<span class="tlaUNC">           0 :   if (last_frame != NULL &amp;&amp; !last_frame-&gt;complete_) return 0;</span></span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : </span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :   *dmux-&gt;frames_tail_ = frame;</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 :   frame-&gt;next_ = NULL;</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;frames_tail_ = &amp;frame-&gt;next_;</span></span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L194"><span class="lineNum">     194</span>                 :             : </span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 : static void SetFrameInfo(size_t start_offset, size_t size,</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :                          int frame_num, int complete,</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             :                          const WebPBitstreamFeatures* const features,</span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :                          Frame* const frame) {</span>
+<span id="L199"><span class="lineNum">     199</span>                 :<span class="tlaUNC">           0 :   frame-&gt;img_components_[0].offset_ = start_offset;</span></span>
+<span id="L200"><span class="lineNum">     200</span>                 :<span class="tlaUNC">           0 :   frame-&gt;img_components_[0].size_ = size;</span></span>
+<span id="L201"><span class="lineNum">     201</span>                 :<span class="tlaUNC">           0 :   frame-&gt;width_ = features-&gt;width;</span></span>
+<span id="L202"><span class="lineNum">     202</span>                 :<span class="tlaUNC">           0 :   frame-&gt;height_ = features-&gt;height;</span></span>
+<span id="L203"><span class="lineNum">     203</span>                 :<span class="tlaUNC">           0 :   frame-&gt;has_alpha_ |= features-&gt;has_alpha;</span></span>
+<span id="L204"><span class="lineNum">     204</span>                 :<span class="tlaUNC">           0 :   frame-&gt;frame_num_ = frame_num;</span></span>
+<span id="L205"><span class="lineNum">     205</span>                 :<span class="tlaUNC">           0 :   frame-&gt;complete_ = complete;</span></span>
+<span id="L206"><span class="lineNum">     206</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L207"><span class="lineNum">     207</span>                 :             : </span>
+<span id="L208"><span class="lineNum">     208</span>                 :             : // Store image bearing chunks to 'frame'. 'min_size' is an optional size</span>
+<span id="L209"><span class="lineNum">     209</span>                 :             : // requirement, it may be zero.</span>
+<span id="L210"><span class="lineNum">     210</span>                 :<span class="tlaUNC">           0 : static ParseStatus StoreFrame(int frame_num, uint32_t min_size,</span></span>
+<span id="L211"><span class="lineNum">     211</span>                 :             :                               MemBuffer* const mem, Frame* const frame) {</span>
+<span id="L212"><span class="lineNum">     212</span>                 :<span class="tlaUNC">           0 :   int alpha_chunks = 0;</span></span>
+<span id="L213"><span class="lineNum">     213</span>                 :<span class="tlaUNC">           0 :   int image_chunks = 0;</span></span>
+<span id="L214"><span class="lineNum">     214</span>                 :<span class="tlaUNC">           0 :   int done = (MemDataSize(mem) &lt; CHUNK_HEADER_SIZE ||</span></span>
+<span id="L215"><span class="lineNum">     215</span>                 :<span class="tlaUNC">           0 :               MemDataSize(mem) &lt; min_size);</span></span>
+<span id="L216"><span class="lineNum">     216</span>                 :<span class="tlaUNC">           0 :   ParseStatus status = PARSE_OK;</span></span>
+<span id="L217"><span class="lineNum">     217</span>                 :             : </span>
+<span id="L218"><span class="lineNum">     218</span>                 :<span class="tlaUNC">           0 :   if (done) return PARSE_NEED_MORE_DATA;</span></span>
+<span id="L219"><span class="lineNum">     219</span>                 :             : </span>
+<span id="L220"><span class="lineNum">     220</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L221"><span class="lineNum">     221</span>                 :<span class="tlaUNC">           0 :     const size_t chunk_start_offset = mem-&gt;start_;</span></span>
+<span id="L222"><span class="lineNum">     222</span>                 :<span class="tlaUNC">           0 :     const uint32_t fourcc = ReadLE32(mem);</span></span>
+<span id="L223"><span class="lineNum">     223</span>                 :<span class="tlaUNC">           0 :     const uint32_t payload_size = ReadLE32(mem);</span></span>
+<span id="L224"><span class="lineNum">     224</span>                 :             :     uint32_t payload_size_padded;</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :     size_t payload_available;</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :     size_t chunk_size;</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             : </span>
+<span id="L228"><span class="lineNum">     228</span>                 :<span class="tlaUNC">           0 :     if (payload_size &gt; MAX_CHUNK_PAYLOAD) return PARSE_ERROR;</span></span>
+<span id="L229"><span class="lineNum">     229</span>                 :             : </span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 :     payload_size_padded = payload_size + (payload_size &amp; 1);</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :<span class="tlaUNC">           0 :     payload_available = (payload_size_padded &gt; MemDataSize(mem))</span></span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 :                       ? MemDataSize(mem) : payload_size_padded;</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 :     chunk_size = CHUNK_HEADER_SIZE + payload_available;</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :<span class="tlaUNC">           0 :     if (SizeIsInvalid(mem, payload_size_padded)) return PARSE_ERROR;</span></span>
+<span id="L235"><span class="lineNum">     235</span>                 :<span class="tlaUNC">           0 :     if (payload_size_padded &gt; MemDataSize(mem)) status = PARSE_NEED_MORE_DATA;</span></span>
+<span id="L236"><span class="lineNum">     236</span>                 :             : </span>
+<span id="L237"><span class="lineNum">     237</span>                 :<span class="tlaUNC">           0 :     switch (fourcc) {</span></span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :       case MKFOURCC('A', 'L', 'P', 'H'):</span>
+<span id="L239"><span class="lineNum">     239</span>                 :<span class="tlaUNC">           0 :         if (alpha_chunks == 0) {</span></span>
+<span id="L240"><span class="lineNum">     240</span>                 :<span class="tlaUNC">           0 :           ++alpha_chunks;</span></span>
+<span id="L241"><span class="lineNum">     241</span>                 :<span class="tlaUNC">           0 :           frame-&gt;img_components_[1].offset_ = chunk_start_offset;</span></span>
+<span id="L242"><span class="lineNum">     242</span>                 :<span class="tlaUNC">           0 :           frame-&gt;img_components_[1].size_ = chunk_size;</span></span>
+<span id="L243"><span class="lineNum">     243</span>                 :<span class="tlaUNC">           0 :           frame-&gt;has_alpha_ = 1;</span></span>
+<span id="L244"><span class="lineNum">     244</span>                 :<span class="tlaUNC">           0 :           frame-&gt;frame_num_ = frame_num;</span></span>
+<span id="L245"><span class="lineNum">     245</span>                 :<span class="tlaUNC">           0 :           Skip(mem, payload_available);</span></span>
+<span id="L246"><span class="lineNum">     246</span>                 :<span class="tlaUNC">           0 :         } else {</span></span>
+<span id="L247"><span class="lineNum">     247</span>                 :<span class="tlaUNC">           0 :           goto Done;</span></span>
+<span id="L248"><span class="lineNum">     248</span>                 :             :         }</span>
+<span id="L249"><span class="lineNum">     249</span>                 :<span class="tlaUNC">           0 :         break;</span></span>
+<span id="L250"><span class="lineNum">     250</span>                 :             :       case MKFOURCC('V', 'P', '8', 'L'):</span>
+<span id="L251"><span class="lineNum">     251</span>                 :<span class="tlaUNC">           0 :         if (alpha_chunks &gt; 0) return PARSE_ERROR;  // VP8L has its own alpha</span></span>
+<span id="L252"><span class="lineNum">     252</span>                 :             :         // fall through</span>
+<span id="L253"><span class="lineNum">     253</span>                 :             :       case MKFOURCC('V', 'P', '8', ' '):</span>
+<span id="L254"><span class="lineNum">     254</span>                 :<span class="tlaUNC">           0 :         if (image_chunks == 0) {</span></span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :           // Extract the bitstream features, tolerating failures when the data</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :           // is incomplete.</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             :           WebPBitstreamFeatures features;</span>
+<span id="L258"><span class="lineNum">     258</span>                 :<span class="tlaUNC">           0 :           const VP8StatusCode vp8_status =</span></span>
+<span id="L259"><span class="lineNum">     259</span>                 :<span class="tlaUNC">           0 :               WebPGetFeatures(mem-&gt;buf_ + chunk_start_offset, chunk_size,</span></span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :                               &amp;features);</span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 :           if (status == PARSE_NEED_MORE_DATA &amp;&amp;</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :<span class="tlaUNC">           0 :               vp8_status == VP8_STATUS_NOT_ENOUGH_DATA) {</span></span>
+<span id="L263"><span class="lineNum">     263</span>                 :<span class="tlaUNC">           0 :             return PARSE_NEED_MORE_DATA;</span></span>
+<span id="L264"><span class="lineNum">     264</span>                 :<span class="tlaUNC">           0 :           } else if (vp8_status != VP8_STATUS_OK) {</span></span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :             // We have enough data, and yet WebPGetFeatures() failed.</span>
+<span id="L266"><span class="lineNum">     266</span>                 :<span class="tlaUNC">           0 :             return PARSE_ERROR;</span></span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :           }</span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 :           ++image_chunks;</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :<span class="tlaUNC">           0 :           SetFrameInfo(chunk_start_offset, chunk_size, frame_num,</span></span>
+<span id="L270"><span class="lineNum">     270</span>                 :<span class="tlaUNC">           0 :                        status == PARSE_OK, &amp;features, frame);</span></span>
+<span id="L271"><span class="lineNum">     271</span>                 :<span class="tlaUNC">           0 :           Skip(mem, payload_available);</span></span>
+<span id="L272"><span class="lineNum">     272</span>                 :<span class="tlaUNC">           0 :         } else {</span></span>
+<span id="L273"><span class="lineNum">     273</span>                 :<span class="tlaUNC">           0 :           goto Done;</span></span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :         }</span>
+<span id="L275"><span class="lineNum">     275</span>                 :<span class="tlaUNC">           0 :         break;</span></span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :  Done:</span>
+<span id="L277"><span class="lineNum">     277</span>                 :             :       default:</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             :         // Restore fourcc/size when moving up one level in parsing.</span>
+<span id="L279"><span class="lineNum">     279</span>                 :<span class="tlaUNC">           0 :         Rewind(mem, CHUNK_HEADER_SIZE);</span></span>
+<span id="L280"><span class="lineNum">     280</span>                 :<span class="tlaUNC">           0 :         done = 1;</span></span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 :         break;</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :             :     }</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             : </span>
+<span id="L284"><span class="lineNum">     284</span>                 :<span class="tlaUNC">           0 :     if (mem-&gt;start_ == mem-&gt;riff_end_) {</span></span>
+<span id="L285"><span class="lineNum">     285</span>                 :<span class="tlaUNC">           0 :       done = 1;</span></span>
+<span id="L286"><span class="lineNum">     286</span>                 :<span class="tlaUNC">           0 :     } else if (MemDataSize(mem) &lt; CHUNK_HEADER_SIZE) {</span></span>
+<span id="L287"><span class="lineNum">     287</span>                 :<span class="tlaUNC">           0 :       status = PARSE_NEED_MORE_DATA;</span></span>
+<span id="L288"><span class="lineNum">     288</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L289"><span class="lineNum">     289</span>                 :<span class="tlaUNC">           0 :   } while (!done &amp;&amp; status == PARSE_OK);</span></span>
+<span id="L290"><span class="lineNum">     290</span>                 :             : </span>
+<span id="L291"><span class="lineNum">     291</span>                 :<span class="tlaUNC">           0 :   return status;</span></span>
+<span id="L292"><span class="lineNum">     292</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L293"><span class="lineNum">     293</span>                 :             : </span>
+<span id="L294"><span class="lineNum">     294</span>                 :             : // Creates a new Frame if 'actual_size' is within bounds and 'mem' contains</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             : // enough data ('min_size') to parse the payload.</span>
+<span id="L296"><span class="lineNum">     296</span>                 :             : // Returns PARSE_OK on success with *frame pointing to the new Frame.</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             : // Returns PARSE_NEED_MORE_DATA with insufficient data, PARSE_ERROR otherwise.</span>
+<span id="L298"><span class="lineNum">     298</span>                 :<span class="tlaUNC">           0 : static ParseStatus NewFrame(const MemBuffer* const mem,</span></span>
+<span id="L299"><span class="lineNum">     299</span>                 :             :                             uint32_t min_size, uint32_t actual_size,</span>
+<span id="L300"><span class="lineNum">     300</span>                 :             :                             Frame** frame) {</span>
+<span id="L301"><span class="lineNum">     301</span>                 :<span class="tlaUNC">           0 :   if (SizeIsInvalid(mem, min_size)) return PARSE_ERROR;</span></span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :   if (actual_size &lt; min_size) return PARSE_ERROR;</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :<span class="tlaUNC">           0 :   if (MemDataSize(mem) &lt; min_size)  return PARSE_NEED_MORE_DATA;</span></span>
+<span id="L304"><span class="lineNum">     304</span>                 :             : </span>
+<span id="L305"><span class="lineNum">     305</span>                 :<span class="tlaUNC">           0 :   *frame = (Frame*)WebPSafeCalloc(1ULL, sizeof(**frame));</span></span>
+<span id="L306"><span class="lineNum">     306</span>                 :<span class="tlaUNC">           0 :   return (*frame == NULL) ? PARSE_ERROR : PARSE_OK;</span></span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :             : </span>
+<span id="L309"><span class="lineNum">     309</span>                 :             : // Parse a 'ANMF' chunk and any image bearing chunks that immediately follow.</span>
+<span id="L310"><span class="lineNum">     310</span>                 :             : // 'frame_chunk_size' is the previously validated, padded chunk size.</span>
+<span id="L311"><span class="lineNum">     311</span>                 :<span class="tlaUNC">           0 : static ParseStatus ParseAnimationFrame(</span></span>
+<span id="L312"><span class="lineNum">     312</span>                 :             :     WebPDemuxer* const dmux, uint32_t frame_chunk_size) {</span>
+<span id="L313"><span class="lineNum">     313</span>                 :<span class="tlaUNC">           0 :   const int is_animation = !!(dmux-&gt;feature_flags_ &amp; ANIMATION_FLAG);</span></span>
+<span id="L314"><span class="lineNum">     314</span>                 :<span class="tlaUNC">           0 :   const uint32_t anmf_payload_size = frame_chunk_size - ANMF_CHUNK_SIZE;</span></span>
+<span id="L315"><span class="lineNum">     315</span>                 :<span class="tlaUNC">           0 :   int added_frame = 0;</span></span>
+<span id="L316"><span class="lineNum">     316</span>                 :             :   int bits;</span>
+<span id="L317"><span class="lineNum">     317</span>                 :<span class="tlaUNC">           0 :   MemBuffer* const mem = &amp;dmux-&gt;mem_;</span></span>
+<span id="L318"><span class="lineNum">     318</span>                 :             :   Frame* frame;</span>
+<span id="L319"><span class="lineNum">     319</span>                 :             :   size_t start_offset;</span>
+<span id="L320"><span class="lineNum">     320</span>                 :<span class="tlaUNC">           0 :   ParseStatus status =</span></span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 :       NewFrame(mem, ANMF_CHUNK_SIZE, frame_chunk_size, &amp;frame);</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :<span class="tlaUNC">           0 :   if (status != PARSE_OK) return status;</span></span>
+<span id="L323"><span class="lineNum">     323</span>                 :             : </span>
+<span id="L324"><span class="lineNum">     324</span>                 :<span class="tlaUNC">           0 :   frame-&gt;x_offset_       = 2 * ReadLE24s(mem);</span></span>
+<span id="L325"><span class="lineNum">     325</span>                 :<span class="tlaUNC">           0 :   frame-&gt;y_offset_       = 2 * ReadLE24s(mem);</span></span>
+<span id="L326"><span class="lineNum">     326</span>                 :<span class="tlaUNC">           0 :   frame-&gt;width_          = 1 + ReadLE24s(mem);</span></span>
+<span id="L327"><span class="lineNum">     327</span>                 :<span class="tlaUNC">           0 :   frame-&gt;height_         = 1 + ReadLE24s(mem);</span></span>
+<span id="L328"><span class="lineNum">     328</span>                 :<span class="tlaUNC">           0 :   frame-&gt;duration_       = ReadLE24s(mem);</span></span>
+<span id="L329"><span class="lineNum">     329</span>                 :<span class="tlaUNC">           0 :   bits = ReadByte(mem);</span></span>
+<span id="L330"><span class="lineNum">     330</span>                 :<span class="tlaUNC">           0 :   frame-&gt;dispose_method_ =</span></span>
+<span id="L331"><span class="lineNum">     331</span>                 :<span class="tlaUNC">           0 :       (bits &amp; 1) ? WEBP_MUX_DISPOSE_BACKGROUND : WEBP_MUX_DISPOSE_NONE;</span></span>
+<span id="L332"><span class="lineNum">     332</span>                 :<span class="tlaUNC">           0 :   frame-&gt;blend_method_ = (bits &amp; 2) ? WEBP_MUX_NO_BLEND : WEBP_MUX_BLEND;</span></span>
+<span id="L333"><span class="lineNum">     333</span>                 :<span class="tlaUNC">           0 :   if (frame-&gt;width_ * (uint64_t)frame-&gt;height_ &gt;= MAX_IMAGE_AREA) {</span></span>
+<span id="L334"><span class="lineNum">     334</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(frame);</span></span>
+<span id="L335"><span class="lineNum">     335</span>                 :<span class="tlaUNC">           0 :     return PARSE_ERROR;</span></span>
+<span id="L336"><span class="lineNum">     336</span>                 :             :   }</span>
+<span id="L337"><span class="lineNum">     337</span>                 :             : </span>
+<span id="L338"><span class="lineNum">     338</span>                 :             :   // Store a frame only if the animation flag is set there is some data for</span>
+<span id="L339"><span class="lineNum">     339</span>                 :             :   // this frame is available.</span>
+<span id="L340"><span class="lineNum">     340</span>                 :<span class="tlaUNC">           0 :   start_offset = mem-&gt;start_;</span></span>
+<span id="L341"><span class="lineNum">     341</span>                 :<span class="tlaUNC">           0 :   status = StoreFrame(dmux-&gt;num_frames_ + 1, anmf_payload_size, mem, frame);</span></span>
+<span id="L342"><span class="lineNum">     342</span>                 :<span class="tlaUNC">           0 :   if (status != PARSE_ERROR &amp;&amp; mem-&gt;start_ - start_offset &gt; anmf_payload_size) {</span></span>
+<span id="L343"><span class="lineNum">     343</span>                 :<span class="tlaUNC">           0 :     status = PARSE_ERROR;</span></span>
+<span id="L344"><span class="lineNum">     344</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L345"><span class="lineNum">     345</span>                 :<span class="tlaUNC">           0 :   if (status != PARSE_ERROR &amp;&amp; is_animation &amp;&amp; frame-&gt;frame_num_ &gt; 0) {</span></span>
+<span id="L346"><span class="lineNum">     346</span>                 :<span class="tlaUNC">           0 :     added_frame = AddFrame(dmux, frame);</span></span>
+<span id="L347"><span class="lineNum">     347</span>                 :<span class="tlaUNC">           0 :     if (added_frame) {</span></span>
+<span id="L348"><span class="lineNum">     348</span>                 :<span class="tlaUNC">           0 :       ++dmux-&gt;num_frames_;</span></span>
+<span id="L349"><span class="lineNum">     349</span>                 :<span class="tlaUNC">           0 :     } else {</span></span>
+<span id="L350"><span class="lineNum">     350</span>                 :<span class="tlaUNC">           0 :       status = PARSE_ERROR;</span></span>
+<span id="L351"><span class="lineNum">     351</span>                 :             :     }</span>
+<span id="L352"><span class="lineNum">     352</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L353"><span class="lineNum">     353</span>                 :             : </span>
+<span id="L354"><span class="lineNum">     354</span>                 :<span class="tlaUNC">           0 :   if (!added_frame) WebPSafeFree(frame);</span></span>
+<span id="L355"><span class="lineNum">     355</span>                 :<span class="tlaUNC">           0 :   return status;</span></span>
+<span id="L356"><span class="lineNum">     356</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L357"><span class="lineNum">     357</span>                 :             : </span>
+<span id="L358"><span class="lineNum">     358</span>                 :             : // General chunk storage, starting with the header at 'start_offset', allowing</span>
+<span id="L359"><span class="lineNum">     359</span>                 :             : // the user to request the payload via a fourcc string. 'size' includes the</span>
+<span id="L360"><span class="lineNum">     360</span>                 :             : // header and the unpadded payload size.</span>
+<span id="L361"><span class="lineNum">     361</span>                 :             : // Returns true on success, false otherwise.</span>
+<span id="L362"><span class="lineNum">     362</span>                 :<span class="tlaUNC">           0 : static int StoreChunk(WebPDemuxer* const dmux,</span></span>
+<span id="L363"><span class="lineNum">     363</span>                 :             :                       size_t start_offset, uint32_t size) {</span>
+<span id="L364"><span class="lineNum">     364</span>                 :<span class="tlaUNC">           0 :   Chunk* const chunk = (Chunk*)WebPSafeCalloc(1ULL, sizeof(*chunk));</span></span>
+<span id="L365"><span class="lineNum">     365</span>                 :<span class="tlaUNC">           0 :   if (chunk == NULL) return 0;</span></span>
+<span id="L366"><span class="lineNum">     366</span>                 :             : </span>
+<span id="L367"><span class="lineNum">     367</span>                 :<span class="tlaUNC">           0 :   chunk-&gt;data_.offset_ = start_offset;</span></span>
+<span id="L368"><span class="lineNum">     368</span>                 :<span class="tlaUNC">           0 :   chunk-&gt;data_.size_ = size;</span></span>
+<span id="L369"><span class="lineNum">     369</span>                 :<span class="tlaUNC">           0 :   AddChunk(dmux, chunk);</span></span>
+<span id="L370"><span class="lineNum">     370</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L371"><span class="lineNum">     371</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L372"><span class="lineNum">     372</span>                 :             : </span>
+<span id="L373"><span class="lineNum">     373</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L374"><span class="lineNum">     374</span>                 :             : // Primary chunk parsing</span>
+<span id="L375"><span class="lineNum">     375</span>                 :             : </span>
+<span id="L376"><span class="lineNum">     376</span>                 :<span class="tlaUNC">           0 : static ParseStatus ReadHeader(MemBuffer* const mem) {</span></span>
+<span id="L377"><span class="lineNum">     377</span>                 :<span class="tlaUNC">           0 :   const size_t min_size = RIFF_HEADER_SIZE + CHUNK_HEADER_SIZE;</span></span>
+<span id="L378"><span class="lineNum">     378</span>                 :             :   uint32_t riff_size;</span>
+<span id="L379"><span class="lineNum">     379</span>                 :             : </span>
+<span id="L380"><span class="lineNum">     380</span>                 :             :   // Basic file level validation.</span>
+<span id="L381"><span class="lineNum">     381</span>                 :<span class="tlaUNC">           0 :   if (MemDataSize(mem) &lt; min_size) return PARSE_NEED_MORE_DATA;</span></span>
+<span id="L382"><span class="lineNum">     382</span>                 :<span class="tlaUNC">           0 :   if (memcmp(GetBuffer(mem), &quot;RIFF&quot;, CHUNK_SIZE_BYTES) ||</span></span>
+<span id="L383"><span class="lineNum">     383</span>                 :<span class="tlaUNC">           0 :       memcmp(GetBuffer(mem) + CHUNK_HEADER_SIZE, &quot;WEBP&quot;, CHUNK_SIZE_BYTES)) {</span></span>
+<span id="L384"><span class="lineNum">     384</span>                 :<span class="tlaUNC">           0 :     return PARSE_ERROR;</span></span>
+<span id="L385"><span class="lineNum">     385</span>                 :             :   }</span>
+<span id="L386"><span class="lineNum">     386</span>                 :             : </span>
+<span id="L387"><span class="lineNum">     387</span>                 :<span class="tlaUNC">           0 :   riff_size = GetLE32(GetBuffer(mem) + TAG_SIZE);</span></span>
+<span id="L388"><span class="lineNum">     388</span>                 :<span class="tlaUNC">           0 :   if (riff_size &lt; CHUNK_HEADER_SIZE) return PARSE_ERROR;</span></span>
+<span id="L389"><span class="lineNum">     389</span>                 :<span class="tlaUNC">           0 :   if (riff_size &gt; MAX_CHUNK_PAYLOAD) return PARSE_ERROR;</span></span>
+<span id="L390"><span class="lineNum">     390</span>                 :             : </span>
+<span id="L391"><span class="lineNum">     391</span>                 :             :   // There's no point in reading past the end of the RIFF chunk</span>
+<span id="L392"><span class="lineNum">     392</span>                 :<span class="tlaUNC">           0 :   mem-&gt;riff_end_ = riff_size + CHUNK_HEADER_SIZE;</span></span>
+<span id="L393"><span class="lineNum">     393</span>                 :<span class="tlaUNC">           0 :   if (mem-&gt;buf_size_ &gt; mem-&gt;riff_end_) {</span></span>
+<span id="L394"><span class="lineNum">     394</span>                 :<span class="tlaUNC">           0 :     mem-&gt;buf_size_ = mem-&gt;end_ = mem-&gt;riff_end_;</span></span>
+<span id="L395"><span class="lineNum">     395</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L396"><span class="lineNum">     396</span>                 :             : </span>
+<span id="L397"><span class="lineNum">     397</span>                 :<span class="tlaUNC">           0 :   Skip(mem, RIFF_HEADER_SIZE);</span></span>
+<span id="L398"><span class="lineNum">     398</span>                 :<span class="tlaUNC">           0 :   return PARSE_OK;</span></span>
+<span id="L399"><span class="lineNum">     399</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L400"><span class="lineNum">     400</span>                 :             : </span>
+<span id="L401"><span class="lineNum">     401</span>                 :<span class="tlaUNC">           0 : static ParseStatus ParseSingleImage(WebPDemuxer* const dmux) {</span></span>
+<span id="L402"><span class="lineNum">     402</span>                 :<span class="tlaUNC">           0 :   const size_t min_size = CHUNK_HEADER_SIZE;</span></span>
+<span id="L403"><span class="lineNum">     403</span>                 :<span class="tlaUNC">           0 :   MemBuffer* const mem = &amp;dmux-&gt;mem_;</span></span>
+<span id="L404"><span class="lineNum">     404</span>                 :             :   Frame* frame;</span>
+<span id="L405"><span class="lineNum">     405</span>                 :             :   ParseStatus status;</span>
+<span id="L406"><span class="lineNum">     406</span>                 :<span class="tlaUNC">           0 :   int image_added = 0;</span></span>
+<span id="L407"><span class="lineNum">     407</span>                 :             : </span>
+<span id="L408"><span class="lineNum">     408</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;frames_ != NULL) return PARSE_ERROR;</span></span>
+<span id="L409"><span class="lineNum">     409</span>                 :<span class="tlaUNC">           0 :   if (SizeIsInvalid(mem, min_size)) return PARSE_ERROR;</span></span>
+<span id="L410"><span class="lineNum">     410</span>                 :<span class="tlaUNC">           0 :   if (MemDataSize(mem) &lt; min_size) return PARSE_NEED_MORE_DATA;</span></span>
+<span id="L411"><span class="lineNum">     411</span>                 :             : </span>
+<span id="L412"><span class="lineNum">     412</span>                 :<span class="tlaUNC">           0 :   frame = (Frame*)WebPSafeCalloc(1ULL, sizeof(*frame));</span></span>
+<span id="L413"><span class="lineNum">     413</span>                 :<span class="tlaUNC">           0 :   if (frame == NULL) return PARSE_ERROR;</span></span>
+<span id="L414"><span class="lineNum">     414</span>                 :             : </span>
+<span id="L415"><span class="lineNum">     415</span>                 :             :   // For the single image case we allow parsing of a partial frame, so no</span>
+<span id="L416"><span class="lineNum">     416</span>                 :             :   // minimum size is imposed here.</span>
+<span id="L417"><span class="lineNum">     417</span>                 :<span class="tlaUNC">           0 :   status = StoreFrame(1, 0, &amp;dmux-&gt;mem_, frame);</span></span>
+<span id="L418"><span class="lineNum">     418</span>                 :<span class="tlaUNC">           0 :   if (status != PARSE_ERROR) {</span></span>
+<span id="L419"><span class="lineNum">     419</span>                 :<span class="tlaUNC">           0 :     const int has_alpha = !!(dmux-&gt;feature_flags_ &amp; ALPHA_FLAG);</span></span>
+<span id="L420"><span class="lineNum">     420</span>                 :             :     // Clear any alpha when the alpha flag is missing.</span>
+<span id="L421"><span class="lineNum">     421</span>                 :<span class="tlaUNC">           0 :     if (!has_alpha &amp;&amp; frame-&gt;img_components_[1].size_ &gt; 0) {</span></span>
+<span id="L422"><span class="lineNum">     422</span>                 :<span class="tlaUNC">           0 :       frame-&gt;img_components_[1].offset_ = 0;</span></span>
+<span id="L423"><span class="lineNum">     423</span>                 :<span class="tlaUNC">           0 :       frame-&gt;img_components_[1].size_ = 0;</span></span>
+<span id="L424"><span class="lineNum">     424</span>                 :<span class="tlaUNC">           0 :       frame-&gt;has_alpha_ = 0;</span></span>
+<span id="L425"><span class="lineNum">     425</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L426"><span class="lineNum">     426</span>                 :             : </span>
+<span id="L427"><span class="lineNum">     427</span>                 :             :     // Use the frame width/height as the canvas values for non-vp8x files.</span>
+<span id="L428"><span class="lineNum">     428</span>                 :             :     // Also, set ALPHA_FLAG if this is a lossless image with alpha.</span>
+<span id="L429"><span class="lineNum">     429</span>                 :<span class="tlaUNC">           0 :     if (!dmux-&gt;is_ext_format_ &amp;&amp; frame-&gt;width_ &gt; 0 &amp;&amp; frame-&gt;height_ &gt; 0) {</span></span>
+<span id="L430"><span class="lineNum">     430</span>                 :<span class="tlaUNC">           0 :       dmux-&gt;state_ = WEBP_DEMUX_PARSED_HEADER;</span></span>
+<span id="L431"><span class="lineNum">     431</span>                 :<span class="tlaUNC">           0 :       dmux-&gt;canvas_width_ = frame-&gt;width_;</span></span>
+<span id="L432"><span class="lineNum">     432</span>                 :<span class="tlaUNC">           0 :       dmux-&gt;canvas_height_ = frame-&gt;height_;</span></span>
+<span id="L433"><span class="lineNum">     433</span>                 :<span class="tlaUNC">           0 :       dmux-&gt;feature_flags_ |= frame-&gt;has_alpha_ ? ALPHA_FLAG : 0;</span></span>
+<span id="L434"><span class="lineNum">     434</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L435"><span class="lineNum">     435</span>                 :<span class="tlaUNC">           0 :     if (!AddFrame(dmux, frame)) {</span></span>
+<span id="L436"><span class="lineNum">     436</span>                 :<span class="tlaUNC">           0 :       status = PARSE_ERROR;  // last frame was left incomplete</span></span>
+<span id="L437"><span class="lineNum">     437</span>                 :<span class="tlaUNC">           0 :     } else {</span></span>
+<span id="L438"><span class="lineNum">     438</span>                 :<span class="tlaUNC">           0 :       image_added = 1;</span></span>
+<span id="L439"><span class="lineNum">     439</span>                 :<span class="tlaUNC">           0 :       dmux-&gt;num_frames_ = 1;</span></span>
+<span id="L440"><span class="lineNum">     440</span>                 :             :     }</span>
+<span id="L441"><span class="lineNum">     441</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L442"><span class="lineNum">     442</span>                 :             : </span>
+<span id="L443"><span class="lineNum">     443</span>                 :<span class="tlaUNC">           0 :   if (!image_added) WebPSafeFree(frame);</span></span>
+<span id="L444"><span class="lineNum">     444</span>                 :<span class="tlaUNC">           0 :   return status;</span></span>
+<span id="L445"><span class="lineNum">     445</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L446"><span class="lineNum">     446</span>                 :             : </span>
+<span id="L447"><span class="lineNum">     447</span>                 :<span class="tlaUNC">           0 : static ParseStatus ParseVP8XChunks(WebPDemuxer* const dmux) {</span></span>
+<span id="L448"><span class="lineNum">     448</span>                 :<span class="tlaUNC">           0 :   const int is_animation = !!(dmux-&gt;feature_flags_ &amp; ANIMATION_FLAG);</span></span>
+<span id="L449"><span class="lineNum">     449</span>                 :<span class="tlaUNC">           0 :   MemBuffer* const mem = &amp;dmux-&gt;mem_;</span></span>
+<span id="L450"><span class="lineNum">     450</span>                 :<span class="tlaUNC">           0 :   int anim_chunks = 0;</span></span>
+<span id="L451"><span class="lineNum">     451</span>                 :<span class="tlaUNC">           0 :   ParseStatus status = PARSE_OK;</span></span>
+<span id="L452"><span class="lineNum">     452</span>                 :             : </span>
+<span id="L453"><span class="lineNum">     453</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L454"><span class="lineNum">     454</span>                 :<span class="tlaUNC">           0 :     int store_chunk = 1;</span></span>
+<span id="L455"><span class="lineNum">     455</span>                 :<span class="tlaUNC">           0 :     const size_t chunk_start_offset = mem-&gt;start_;</span></span>
+<span id="L456"><span class="lineNum">     456</span>                 :<span class="tlaUNC">           0 :     const uint32_t fourcc = ReadLE32(mem);</span></span>
+<span id="L457"><span class="lineNum">     457</span>                 :<span class="tlaUNC">           0 :     const uint32_t chunk_size = ReadLE32(mem);</span></span>
+<span id="L458"><span class="lineNum">     458</span>                 :             :     uint32_t chunk_size_padded;</span>
+<span id="L459"><span class="lineNum">     459</span>                 :             : </span>
+<span id="L460"><span class="lineNum">     460</span>                 :<span class="tlaUNC">           0 :     if (chunk_size &gt; MAX_CHUNK_PAYLOAD) return PARSE_ERROR;</span></span>
+<span id="L461"><span class="lineNum">     461</span>                 :             : </span>
+<span id="L462"><span class="lineNum">     462</span>                 :<span class="tlaUNC">           0 :     chunk_size_padded = chunk_size + (chunk_size &amp; 1);</span></span>
+<span id="L463"><span class="lineNum">     463</span>                 :<span class="tlaUNC">           0 :     if (SizeIsInvalid(mem, chunk_size_padded)) return PARSE_ERROR;</span></span>
+<span id="L464"><span class="lineNum">     464</span>                 :             : </span>
+<span id="L465"><span class="lineNum">     465</span>                 :<span class="tlaUNC">           0 :     switch (fourcc) {</span></span>
+<span id="L466"><span class="lineNum">     466</span>                 :             :       case MKFOURCC('V', 'P', '8', 'X'): {</span>
+<span id="L467"><span class="lineNum">     467</span>                 :<span class="tlaUNC">           0 :         return PARSE_ERROR;</span></span>
+<span id="L468"><span class="lineNum">     468</span>                 :             :       }</span>
+<span id="L469"><span class="lineNum">     469</span>                 :             :       case MKFOURCC('A', 'L', 'P', 'H'):</span>
+<span id="L470"><span class="lineNum">     470</span>                 :             :       case MKFOURCC('V', 'P', '8', ' '):</span>
+<span id="L471"><span class="lineNum">     471</span>                 :             :       case MKFOURCC('V', 'P', '8', 'L'): {</span>
+<span id="L472"><span class="lineNum">     472</span>                 :             :         // check that this isn't an animation (all frames should be in an ANMF).</span>
+<span id="L473"><span class="lineNum">     473</span>                 :<span class="tlaUNC">           0 :         if (anim_chunks &gt; 0 || is_animation) return PARSE_ERROR;</span></span>
+<span id="L474"><span class="lineNum">     474</span>                 :             : </span>
+<span id="L475"><span class="lineNum">     475</span>                 :<span class="tlaUNC">           0 :         Rewind(mem, CHUNK_HEADER_SIZE);</span></span>
+<span id="L476"><span class="lineNum">     476</span>                 :<span class="tlaUNC">           0 :         status = ParseSingleImage(dmux);</span></span>
+<span id="L477"><span class="lineNum">     477</span>                 :<span class="tlaUNC">           0 :         break;</span></span>
+<span id="L478"><span class="lineNum">     478</span>                 :             :       }</span>
+<span id="L479"><span class="lineNum">     479</span>                 :             :       case MKFOURCC('A', 'N', 'I', 'M'): {</span>
+<span id="L480"><span class="lineNum">     480</span>                 :<span class="tlaUNC">           0 :         if (chunk_size_padded &lt; ANIM_CHUNK_SIZE) return PARSE_ERROR;</span></span>
+<span id="L481"><span class="lineNum">     481</span>                 :             : </span>
+<span id="L482"><span class="lineNum">     482</span>                 :<span class="tlaUNC">           0 :         if (MemDataSize(mem) &lt; chunk_size_padded) {</span></span>
+<span id="L483"><span class="lineNum">     483</span>                 :<span class="tlaUNC">           0 :           status = PARSE_NEED_MORE_DATA;</span></span>
+<span id="L484"><span class="lineNum">     484</span>                 :<span class="tlaUNC">           0 :         } else if (anim_chunks == 0) {</span></span>
+<span id="L485"><span class="lineNum">     485</span>                 :<span class="tlaUNC">           0 :           ++anim_chunks;</span></span>
+<span id="L486"><span class="lineNum">     486</span>                 :<span class="tlaUNC">           0 :           dmux-&gt;bgcolor_ = ReadLE32(mem);</span></span>
+<span id="L487"><span class="lineNum">     487</span>                 :<span class="tlaUNC">           0 :           dmux-&gt;loop_count_ = ReadLE16s(mem);</span></span>
+<span id="L488"><span class="lineNum">     488</span>                 :<span class="tlaUNC">           0 :           Skip(mem, chunk_size_padded - ANIM_CHUNK_SIZE);</span></span>
+<span id="L489"><span class="lineNum">     489</span>                 :<span class="tlaUNC">           0 :         } else {</span></span>
+<span id="L490"><span class="lineNum">     490</span>                 :<span class="tlaUNC">           0 :           store_chunk = 0;</span></span>
+<span id="L491"><span class="lineNum">     491</span>                 :<span class="tlaUNC">           0 :           goto Skip;</span></span>
+<span id="L492"><span class="lineNum">     492</span>                 :             :         }</span>
+<span id="L493"><span class="lineNum">     493</span>                 :<span class="tlaUNC">           0 :         break;</span></span>
+<span id="L494"><span class="lineNum">     494</span>                 :             :       }</span>
+<span id="L495"><span class="lineNum">     495</span>                 :             :       case MKFOURCC('A', 'N', 'M', 'F'): {</span>
+<span id="L496"><span class="lineNum">     496</span>                 :<span class="tlaUNC">           0 :         if (anim_chunks == 0) return PARSE_ERROR;  // 'ANIM' precedes frames.</span></span>
+<span id="L497"><span class="lineNum">     497</span>                 :<span class="tlaUNC">           0 :         status = ParseAnimationFrame(dmux, chunk_size_padded);</span></span>
+<span id="L498"><span class="lineNum">     498</span>                 :<span class="tlaUNC">           0 :         break;</span></span>
+<span id="L499"><span class="lineNum">     499</span>                 :             :       }</span>
+<span id="L500"><span class="lineNum">     500</span>                 :             :       case MKFOURCC('I', 'C', 'C', 'P'): {</span>
+<span id="L501"><span class="lineNum">     501</span>                 :<span class="tlaUNC">           0 :         store_chunk = !!(dmux-&gt;feature_flags_ &amp; ICCP_FLAG);</span></span>
+<span id="L502"><span class="lineNum">     502</span>                 :<span class="tlaUNC">           0 :         goto Skip;</span></span>
+<span id="L503"><span class="lineNum">     503</span>                 :             :       }</span>
+<span id="L504"><span class="lineNum">     504</span>                 :             :       case MKFOURCC('E', 'X', 'I', 'F'): {</span>
+<span id="L505"><span class="lineNum">     505</span>                 :<span class="tlaUNC">           0 :         store_chunk = !!(dmux-&gt;feature_flags_ &amp; EXIF_FLAG);</span></span>
+<span id="L506"><span class="lineNum">     506</span>                 :<span class="tlaUNC">           0 :         goto Skip;</span></span>
+<span id="L507"><span class="lineNum">     507</span>                 :             :       }</span>
+<span id="L508"><span class="lineNum">     508</span>                 :             :       case MKFOURCC('X', 'M', 'P', ' '): {</span>
+<span id="L509"><span class="lineNum">     509</span>                 :<span class="tlaUNC">           0 :         store_chunk = !!(dmux-&gt;feature_flags_ &amp; XMP_FLAG);</span></span>
+<span id="L510"><span class="lineNum">     510</span>                 :<span class="tlaUNC">           0 :         goto Skip;</span></span>
+<span id="L511"><span class="lineNum">     511</span>                 :<span class="tlaUNC">           0 :       }</span></span>
+<span id="L512"><span class="lineNum">     512</span>                 :             :  Skip:</span>
+<span id="L513"><span class="lineNum">     513</span>                 :             :       default: {</span>
+<span id="L514"><span class="lineNum">     514</span>                 :<span class="tlaUNC">           0 :         if (chunk_size_padded &lt;= MemDataSize(mem)) {</span></span>
+<span id="L515"><span class="lineNum">     515</span>                 :<span class="tlaUNC">           0 :           if (store_chunk) {</span></span>
+<span id="L516"><span class="lineNum">     516</span>                 :             :             // Store only the chunk header and unpadded size as only the payload</span>
+<span id="L517"><span class="lineNum">     517</span>                 :             :             // will be returned to the user.</span>
+<span id="L518"><span class="lineNum">     518</span>                 :<span class="tlaUNC">           0 :             if (!StoreChunk(dmux, chunk_start_offset,</span></span>
+<span id="L519"><span class="lineNum">     519</span>                 :<span class="tlaUNC">           0 :                             CHUNK_HEADER_SIZE + chunk_size)) {</span></span>
+<span id="L520"><span class="lineNum">     520</span>                 :<span class="tlaUNC">           0 :               return PARSE_ERROR;</span></span>
+<span id="L521"><span class="lineNum">     521</span>                 :             :             }</span>
+<span id="L522"><span class="lineNum">     522</span>                 :<span class="tlaUNC">           0 :           }</span></span>
+<span id="L523"><span class="lineNum">     523</span>                 :<span class="tlaUNC">           0 :           Skip(mem, chunk_size_padded);</span></span>
+<span id="L524"><span class="lineNum">     524</span>                 :<span class="tlaUNC">           0 :         } else {</span></span>
+<span id="L525"><span class="lineNum">     525</span>                 :<span class="tlaUNC">           0 :           status = PARSE_NEED_MORE_DATA;</span></span>
+<span id="L526"><span class="lineNum">     526</span>                 :             :         }</span>
+<span id="L527"><span class="lineNum">     527</span>                 :             :       }</span>
+<span id="L528"><span class="lineNum">     528</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L529"><span class="lineNum">     529</span>                 :             : </span>
+<span id="L530"><span class="lineNum">     530</span>                 :<span class="tlaUNC">           0 :     if (mem-&gt;start_ == mem-&gt;riff_end_) {</span></span>
+<span id="L531"><span class="lineNum">     531</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L532"><span class="lineNum">     532</span>                 :<span class="tlaUNC">           0 :     } else if (MemDataSize(mem) &lt; CHUNK_HEADER_SIZE) {</span></span>
+<span id="L533"><span class="lineNum">     533</span>                 :<span class="tlaUNC">           0 :       status = PARSE_NEED_MORE_DATA;</span></span>
+<span id="L534"><span class="lineNum">     534</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L535"><span class="lineNum">     535</span>                 :<span class="tlaUNC">           0 :   } while (status == PARSE_OK);</span></span>
+<span id="L536"><span class="lineNum">     536</span>                 :             : </span>
+<span id="L537"><span class="lineNum">     537</span>                 :<span class="tlaUNC">           0 :   return status;</span></span>
+<span id="L538"><span class="lineNum">     538</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L539"><span class="lineNum">     539</span>                 :             : </span>
+<span id="L540"><span class="lineNum">     540</span>                 :<span class="tlaUNC">           0 : static ParseStatus ParseVP8X(WebPDemuxer* const dmux) {</span></span>
+<span id="L541"><span class="lineNum">     541</span>                 :<span class="tlaUNC">           0 :   MemBuffer* const mem = &amp;dmux-&gt;mem_;</span></span>
+<span id="L542"><span class="lineNum">     542</span>                 :             :   uint32_t vp8x_size;</span>
+<span id="L543"><span class="lineNum">     543</span>                 :             : </span>
+<span id="L544"><span class="lineNum">     544</span>                 :<span class="tlaUNC">           0 :   if (MemDataSize(mem) &lt; CHUNK_HEADER_SIZE) return PARSE_NEED_MORE_DATA;</span></span>
+<span id="L545"><span class="lineNum">     545</span>                 :             : </span>
+<span id="L546"><span class="lineNum">     546</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;is_ext_format_ = 1;</span></span>
+<span id="L547"><span class="lineNum">     547</span>                 :<span class="tlaUNC">           0 :   Skip(mem, TAG_SIZE);  // VP8X</span></span>
+<span id="L548"><span class="lineNum">     548</span>                 :<span class="tlaUNC">           0 :   vp8x_size = ReadLE32(mem);</span></span>
+<span id="L549"><span class="lineNum">     549</span>                 :<span class="tlaUNC">           0 :   if (vp8x_size &gt; MAX_CHUNK_PAYLOAD) return PARSE_ERROR;</span></span>
+<span id="L550"><span class="lineNum">     550</span>                 :<span class="tlaUNC">           0 :   if (vp8x_size &lt; VP8X_CHUNK_SIZE) return PARSE_ERROR;</span></span>
+<span id="L551"><span class="lineNum">     551</span>                 :<span class="tlaUNC">           0 :   vp8x_size += vp8x_size &amp; 1;</span></span>
+<span id="L552"><span class="lineNum">     552</span>                 :<span class="tlaUNC">           0 :   if (SizeIsInvalid(mem, vp8x_size)) return PARSE_ERROR;</span></span>
+<span id="L553"><span class="lineNum">     553</span>                 :<span class="tlaUNC">           0 :   if (MemDataSize(mem) &lt; vp8x_size) return PARSE_NEED_MORE_DATA;</span></span>
+<span id="L554"><span class="lineNum">     554</span>                 :             : </span>
+<span id="L555"><span class="lineNum">     555</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;feature_flags_ = ReadByte(mem);</span></span>
+<span id="L556"><span class="lineNum">     556</span>                 :<span class="tlaUNC">           0 :   Skip(mem, 3);  // Reserved.</span></span>
+<span id="L557"><span class="lineNum">     557</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;canvas_width_  = 1 + ReadLE24s(mem);</span></span>
+<span id="L558"><span class="lineNum">     558</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;canvas_height_ = 1 + ReadLE24s(mem);</span></span>
+<span id="L559"><span class="lineNum">     559</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;canvas_width_ * (uint64_t)dmux-&gt;canvas_height_ &gt;= MAX_IMAGE_AREA) {</span></span>
+<span id="L560"><span class="lineNum">     560</span>                 :<span class="tlaUNC">           0 :     return PARSE_ERROR;  // image final dimension is too large</span></span>
+<span id="L561"><span class="lineNum">     561</span>                 :             :   }</span>
+<span id="L562"><span class="lineNum">     562</span>                 :<span class="tlaUNC">           0 :   Skip(mem, vp8x_size - VP8X_CHUNK_SIZE);  // skip any trailing data.</span></span>
+<span id="L563"><span class="lineNum">     563</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;state_ = WEBP_DEMUX_PARSED_HEADER;</span></span>
+<span id="L564"><span class="lineNum">     564</span>                 :             : </span>
+<span id="L565"><span class="lineNum">     565</span>                 :<span class="tlaUNC">           0 :   if (SizeIsInvalid(mem, CHUNK_HEADER_SIZE)) return PARSE_ERROR;</span></span>
+<span id="L566"><span class="lineNum">     566</span>                 :<span class="tlaUNC">           0 :   if (MemDataSize(mem) &lt; CHUNK_HEADER_SIZE) return PARSE_NEED_MORE_DATA;</span></span>
+<span id="L567"><span class="lineNum">     567</span>                 :             : </span>
+<span id="L568"><span class="lineNum">     568</span>                 :<span class="tlaUNC">           0 :   return ParseVP8XChunks(dmux);</span></span>
+<span id="L569"><span class="lineNum">     569</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L570"><span class="lineNum">     570</span>                 :             : </span>
+<span id="L571"><span class="lineNum">     571</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L572"><span class="lineNum">     572</span>                 :             : // Format validation</span>
+<span id="L573"><span class="lineNum">     573</span>                 :             : </span>
+<span id="L574"><span class="lineNum">     574</span>                 :<span class="tlaUNC">           0 : static int IsValidSimpleFormat(const WebPDemuxer* const dmux) {</span></span>
+<span id="L575"><span class="lineNum">     575</span>                 :<span class="tlaUNC">           0 :   const Frame* const frame = dmux-&gt;frames_;</span></span>
+<span id="L576"><span class="lineNum">     576</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;state_ == WEBP_DEMUX_PARSING_HEADER) return 1;</span></span>
+<span id="L577"><span class="lineNum">     577</span>                 :             : </span>
+<span id="L578"><span class="lineNum">     578</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;canvas_width_ &lt;= 0 || dmux-&gt;canvas_height_ &lt;= 0) return 0;</span></span>
+<span id="L579"><span class="lineNum">     579</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;state_ == WEBP_DEMUX_DONE &amp;&amp; frame == NULL) return 0;</span></span>
+<span id="L580"><span class="lineNum">     580</span>                 :             : </span>
+<span id="L581"><span class="lineNum">     581</span>                 :<span class="tlaUNC">           0 :   if (frame-&gt;width_ &lt;= 0 || frame-&gt;height_ &lt;= 0) return 0;</span></span>
+<span id="L582"><span class="lineNum">     582</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L583"><span class="lineNum">     583</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L584"><span class="lineNum">     584</span>                 :             : </span>
+<span id="L585"><span class="lineNum">     585</span>                 :             : // If 'exact' is true, check that the image resolution matches the canvas.</span>
+<span id="L586"><span class="lineNum">     586</span>                 :             : // If 'exact' is false, check that the x/y offsets do not exceed the canvas.</span>
+<span id="L587"><span class="lineNum">     587</span>                 :<span class="tlaUNC">           0 : static int CheckFrameBounds(const Frame* const frame, int exact,</span></span>
+<span id="L588"><span class="lineNum">     588</span>                 :             :                             int canvas_width, int canvas_height) {</span>
+<span id="L589"><span class="lineNum">     589</span>                 :<span class="tlaUNC">           0 :   if (exact) {</span></span>
+<span id="L590"><span class="lineNum">     590</span>                 :<span class="tlaUNC">           0 :     if (frame-&gt;x_offset_ != 0 || frame-&gt;y_offset_ != 0) {</span></span>
+<span id="L591"><span class="lineNum">     591</span>                 :<span class="tlaUNC">           0 :       return 0;</span></span>
+<span id="L592"><span class="lineNum">     592</span>                 :             :     }</span>
+<span id="L593"><span class="lineNum">     593</span>                 :<span class="tlaUNC">           0 :     if (frame-&gt;width_ != canvas_width || frame-&gt;height_ != canvas_height) {</span></span>
+<span id="L594"><span class="lineNum">     594</span>                 :<span class="tlaUNC">           0 :       return 0;</span></span>
+<span id="L595"><span class="lineNum">     595</span>                 :             :     }</span>
+<span id="L596"><span class="lineNum">     596</span>                 :<span class="tlaUNC">           0 :   } else {</span></span>
+<span id="L597"><span class="lineNum">     597</span>                 :<span class="tlaUNC">           0 :     if (frame-&gt;x_offset_ &lt; 0 || frame-&gt;y_offset_ &lt; 0) return 0;</span></span>
+<span id="L598"><span class="lineNum">     598</span>                 :<span class="tlaUNC">           0 :     if (frame-&gt;width_ + frame-&gt;x_offset_ &gt; canvas_width) return 0;</span></span>
+<span id="L599"><span class="lineNum">     599</span>                 :<span class="tlaUNC">           0 :     if (frame-&gt;height_ + frame-&gt;y_offset_ &gt; canvas_height) return 0;</span></span>
+<span id="L600"><span class="lineNum">     600</span>                 :             :   }</span>
+<span id="L601"><span class="lineNum">     601</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L602"><span class="lineNum">     602</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L603"><span class="lineNum">     603</span>                 :             : </span>
+<span id="L604"><span class="lineNum">     604</span>                 :<span class="tlaUNC">           0 : static int IsValidExtendedFormat(const WebPDemuxer* const dmux) {</span></span>
+<span id="L605"><span class="lineNum">     605</span>                 :<span class="tlaUNC">           0 :   const int is_animation = !!(dmux-&gt;feature_flags_ &amp; ANIMATION_FLAG);</span></span>
+<span id="L606"><span class="lineNum">     606</span>                 :<span class="tlaUNC">           0 :   const Frame* f = dmux-&gt;frames_;</span></span>
+<span id="L607"><span class="lineNum">     607</span>                 :             : </span>
+<span id="L608"><span class="lineNum">     608</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;state_ == WEBP_DEMUX_PARSING_HEADER) return 1;</span></span>
+<span id="L609"><span class="lineNum">     609</span>                 :             : </span>
+<span id="L610"><span class="lineNum">     610</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;canvas_width_ &lt;= 0 || dmux-&gt;canvas_height_ &lt;= 0) return 0;</span></span>
+<span id="L611"><span class="lineNum">     611</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;loop_count_ &lt; 0) return 0;</span></span>
+<span id="L612"><span class="lineNum">     612</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;state_ == WEBP_DEMUX_DONE &amp;&amp; dmux-&gt;frames_ == NULL) return 0;</span></span>
+<span id="L613"><span class="lineNum">     613</span>                 :<span class="tlaUNC">           0 :   if (dmux-&gt;feature_flags_ &amp; ~ALL_VALID_FLAGS) return 0;  // invalid bitstream</span></span>
+<span id="L614"><span class="lineNum">     614</span>                 :             : </span>
+<span id="L615"><span class="lineNum">     615</span>                 :<span class="tlaUNC">           0 :   while (f != NULL) {</span></span>
+<span id="L616"><span class="lineNum">     616</span>                 :<span class="tlaUNC">           0 :     const int cur_frame_set = f-&gt;frame_num_;</span></span>
+<span id="L617"><span class="lineNum">     617</span>                 :             : </span>
+<span id="L618"><span class="lineNum">     618</span>                 :             :     // Check frame properties.</span>
+<span id="L619"><span class="lineNum">     619</span>                 :<span class="tlaUNC">           0 :     for (; f != NULL &amp;&amp; f-&gt;frame_num_ == cur_frame_set; f = f-&gt;next_) {</span></span>
+<span id="L620"><span class="lineNum">     620</span>                 :<span class="tlaUNC">           0 :       const ChunkData* const image = f-&gt;img_components_;</span></span>
+<span id="L621"><span class="lineNum">     621</span>                 :<span class="tlaUNC">           0 :       const ChunkData* const alpha = f-&gt;img_components_ + 1;</span></span>
+<span id="L622"><span class="lineNum">     622</span>                 :             : </span>
+<span id="L623"><span class="lineNum">     623</span>                 :<span class="tlaUNC">           0 :       if (!is_animation &amp;&amp; f-&gt;frame_num_ &gt; 1) return 0;</span></span>
+<span id="L624"><span class="lineNum">     624</span>                 :             : </span>
+<span id="L625"><span class="lineNum">     625</span>                 :<span class="tlaUNC">           0 :       if (f-&gt;complete_) {</span></span>
+<span id="L626"><span class="lineNum">     626</span>                 :<span class="tlaUNC">           0 :         if (alpha-&gt;size_ == 0 &amp;&amp; image-&gt;size_ == 0) return 0;</span></span>
+<span id="L627"><span class="lineNum">     627</span>                 :             :         // Ensure alpha precedes image bitstream.</span>
+<span id="L628"><span class="lineNum">     628</span>                 :<span class="tlaUNC">           0 :         if (alpha-&gt;size_ &gt; 0 &amp;&amp; alpha-&gt;offset_ &gt; image-&gt;offset_) {</span></span>
+<span id="L629"><span class="lineNum">     629</span>                 :<span class="tlaUNC">           0 :           return 0;</span></span>
+<span id="L630"><span class="lineNum">     630</span>                 :             :         }</span>
+<span id="L631"><span class="lineNum">     631</span>                 :             : </span>
+<span id="L632"><span class="lineNum">     632</span>                 :<span class="tlaUNC">           0 :         if (f-&gt;width_ &lt;= 0 || f-&gt;height_ &lt;= 0) return 0;</span></span>
+<span id="L633"><span class="lineNum">     633</span>                 :<span class="tlaUNC">           0 :       } else {</span></span>
+<span id="L634"><span class="lineNum">     634</span>                 :             :         // There shouldn't be a partial frame in a complete file.</span>
+<span id="L635"><span class="lineNum">     635</span>                 :<span class="tlaUNC">           0 :         if (dmux-&gt;state_ == WEBP_DEMUX_DONE) return 0;</span></span>
+<span id="L636"><span class="lineNum">     636</span>                 :             : </span>
+<span id="L637"><span class="lineNum">     637</span>                 :             :         // Ensure alpha precedes image bitstream.</span>
+<span id="L638"><span class="lineNum">     638</span>                 :<span class="tlaUNC">           0 :         if (alpha-&gt;size_ &gt; 0 &amp;&amp; image-&gt;size_ &gt; 0 &amp;&amp;</span></span>
+<span id="L639"><span class="lineNum">     639</span>                 :<span class="tlaUNC">           0 :             alpha-&gt;offset_ &gt; image-&gt;offset_) {</span></span>
+<span id="L640"><span class="lineNum">     640</span>                 :<span class="tlaUNC">           0 :           return 0;</span></span>
+<span id="L641"><span class="lineNum">     641</span>                 :             :         }</span>
+<span id="L642"><span class="lineNum">     642</span>                 :             :         // There shouldn't be any frames after an incomplete one.</span>
+<span id="L643"><span class="lineNum">     643</span>                 :<span class="tlaUNC">           0 :         if (f-&gt;next_ != NULL) return 0;</span></span>
+<span id="L644"><span class="lineNum">     644</span>                 :             :       }</span>
+<span id="L645"><span class="lineNum">     645</span>                 :             : </span>
+<span id="L646"><span class="lineNum">     646</span>                 :<span class="tlaUNC">           0 :       if (f-&gt;width_ &gt; 0 &amp;&amp; f-&gt;height_ &gt; 0 &amp;&amp;</span></span>
+<span id="L647"><span class="lineNum">     647</span>                 :<span class="tlaUNC">           0 :           !CheckFrameBounds(f, !is_animation,</span></span>
+<span id="L648"><span class="lineNum">     648</span>                 :<span class="tlaUNC">           0 :                             dmux-&gt;canvas_width_, dmux-&gt;canvas_height_)) {</span></span>
+<span id="L649"><span class="lineNum">     649</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L650"><span class="lineNum">     650</span>                 :             :       }</span>
+<span id="L651"><span class="lineNum">     651</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L652"><span class="lineNum">     652</span>                 :             :   }</span>
+<span id="L653"><span class="lineNum">     653</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L654"><span class="lineNum">     654</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L655"><span class="lineNum">     655</span>                 :             : </span>
+<span id="L656"><span class="lineNum">     656</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L657"><span class="lineNum">     657</span>                 :             : // WebPDemuxer object</span>
+<span id="L658"><span class="lineNum">     658</span>                 :             : </span>
+<span id="L659"><span class="lineNum">     659</span>                 :<span class="tlaUNC">           0 : static void InitDemux(WebPDemuxer* const dmux, const MemBuffer* const mem) {</span></span>
+<span id="L660"><span class="lineNum">     660</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;state_ = WEBP_DEMUX_PARSING_HEADER;</span></span>
+<span id="L661"><span class="lineNum">     661</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;loop_count_ = 1;</span></span>
+<span id="L662"><span class="lineNum">     662</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;bgcolor_ = 0xFFFFFFFF;  // White background by default.</span></span>
+<span id="L663"><span class="lineNum">     663</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;canvas_width_ = -1;</span></span>
+<span id="L664"><span class="lineNum">     664</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;canvas_height_ = -1;</span></span>
+<span id="L665"><span class="lineNum">     665</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;frames_tail_ = &amp;dmux-&gt;frames_;</span></span>
+<span id="L666"><span class="lineNum">     666</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;chunks_tail_ = &amp;dmux-&gt;chunks_;</span></span>
+<span id="L667"><span class="lineNum">     667</span>                 :<span class="tlaUNC">           0 :   dmux-&gt;mem_ = *mem;</span></span>
+<span id="L668"><span class="lineNum">     668</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L669"><span class="lineNum">     669</span>                 :             : </span>
+<span id="L670"><span class="lineNum">     670</span>                 :<span class="tlaUNC">           0 : static ParseStatus CreateRawImageDemuxer(MemBuffer* const mem,</span></span>
+<span id="L671"><span class="lineNum">     671</span>                 :             :                                          WebPDemuxer** demuxer) {</span>
+<span id="L672"><span class="lineNum">     672</span>                 :             :   WebPBitstreamFeatures features;</span>
+<span id="L673"><span class="lineNum">     673</span>                 :<span class="tlaUNC">           0 :   const VP8StatusCode status =</span></span>
+<span id="L674"><span class="lineNum">     674</span>                 :<span class="tlaUNC">           0 :       WebPGetFeatures(mem-&gt;buf_, mem-&gt;buf_size_, &amp;features);</span></span>
+<span id="L675"><span class="lineNum">     675</span>                 :<span class="tlaUNC">           0 :   *demuxer = NULL;</span></span>
+<span id="L676"><span class="lineNum">     676</span>                 :<span class="tlaUNC">           0 :   if (status != VP8_STATUS_OK) {</span></span>
+<span id="L677"><span class="lineNum">     677</span>                 :<span class="tlaUNC">           0 :     return (status == VP8_STATUS_NOT_ENOUGH_DATA) ? PARSE_NEED_MORE_DATA</span></span>
+<span id="L678"><span class="lineNum">     678</span>                 :             :                                                   : PARSE_ERROR;</span>
+<span id="L679"><span class="lineNum">     679</span>                 :             :   }</span>
+<span id="L680"><span class="lineNum">     680</span>                 :             : </span>
+<span id="L681"><span class="lineNum">     681</span>                 :             :   {</span>
+<span id="L682"><span class="lineNum">     682</span>                 :<span class="tlaUNC">           0 :     WebPDemuxer* const dmux = (WebPDemuxer*)WebPSafeCalloc(1ULL, sizeof(*dmux));</span></span>
+<span id="L683"><span class="lineNum">     683</span>                 :<span class="tlaUNC">           0 :     Frame* const frame = (Frame*)WebPSafeCalloc(1ULL, sizeof(*frame));</span></span>
+<span id="L684"><span class="lineNum">     684</span>                 :<span class="tlaUNC">           0 :     if (dmux == NULL || frame == NULL) goto Error;</span></span>
+<span id="L685"><span class="lineNum">     685</span>                 :<span class="tlaUNC">           0 :     InitDemux(dmux, mem);</span></span>
+<span id="L686"><span class="lineNum">     686</span>                 :<span class="tlaUNC">           0 :     SetFrameInfo(0, mem-&gt;buf_size_, 1 /*frame_num*/, 1 /*complete*/, &amp;features,</span></span>
+<span id="L687"><span class="lineNum">     687</span>                 :<span class="tlaUNC">           0 :                  frame);</span></span>
+<span id="L688"><span class="lineNum">     688</span>                 :<span class="tlaUNC">           0 :     if (!AddFrame(dmux, frame)) goto Error;</span></span>
+<span id="L689"><span class="lineNum">     689</span>                 :<span class="tlaUNC">           0 :     dmux-&gt;state_ = WEBP_DEMUX_DONE;</span></span>
+<span id="L690"><span class="lineNum">     690</span>                 :<span class="tlaUNC">           0 :     dmux-&gt;canvas_width_ = frame-&gt;width_;</span></span>
+<span id="L691"><span class="lineNum">     691</span>                 :<span class="tlaUNC">           0 :     dmux-&gt;canvas_height_ = frame-&gt;height_;</span></span>
+<span id="L692"><span class="lineNum">     692</span>                 :<span class="tlaUNC">           0 :     dmux-&gt;feature_flags_ |= frame-&gt;has_alpha_ ? ALPHA_FLAG : 0;</span></span>
+<span id="L693"><span class="lineNum">     693</span>                 :<span class="tlaUNC">           0 :     dmux-&gt;num_frames_ = 1;</span></span>
+<span id="L694"><span class="lineNum">     694</span>                 :             :     assert(IsValidSimpleFormat(dmux));</span>
+<span id="L695"><span class="lineNum">     695</span>                 :<span class="tlaUNC">           0 :     *demuxer = dmux;</span></span>
+<span id="L696"><span class="lineNum">     696</span>                 :<span class="tlaUNC">           0 :     return PARSE_OK;</span></span>
+<span id="L697"><span class="lineNum">     697</span>                 :             : </span>
+<span id="L698"><span class="lineNum">     698</span>                 :             :  Error:</span>
+<span id="L699"><span class="lineNum">     699</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(dmux);</span></span>
+<span id="L700"><span class="lineNum">     700</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(frame);</span></span>
+<span id="L701"><span class="lineNum">     701</span>                 :<span class="tlaUNC">           0 :     return PARSE_ERROR;</span></span>
+<span id="L702"><span class="lineNum">     702</span>                 :             :   }</span>
+<span id="L703"><span class="lineNum">     703</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L704"><span class="lineNum">     704</span>                 :             : </span>
+<span id="L705"><span class="lineNum">     705</span>                 :<span class="tlaUNC">           0 : WebPDemuxer* WebPDemuxInternal(const WebPData* data, int allow_partial,</span></span>
+<span id="L706"><span class="lineNum">     706</span>                 :             :                                WebPDemuxState* state, int version) {</span>
+<span id="L707"><span class="lineNum">     707</span>                 :             :   const ChunkParser* parser;</span>
+<span id="L708"><span class="lineNum">     708</span>                 :             :   int partial;</span>
+<span id="L709"><span class="lineNum">     709</span>                 :<span class="tlaUNC">           0 :   ParseStatus status = PARSE_ERROR;</span></span>
+<span id="L710"><span class="lineNum">     710</span>                 :             :   MemBuffer mem;</span>
+<span id="L711"><span class="lineNum">     711</span>                 :             :   WebPDemuxer* dmux;</span>
+<span id="L712"><span class="lineNum">     712</span>                 :             : </span>
+<span id="L713"><span class="lineNum">     713</span>                 :<span class="tlaUNC">           0 :   if (state != NULL) *state = WEBP_DEMUX_PARSE_ERROR;</span></span>
+<span id="L714"><span class="lineNum">     714</span>                 :             : </span>
+<span id="L715"><span class="lineNum">     715</span>                 :<span class="tlaUNC">           0 :   if (WEBP_ABI_IS_INCOMPATIBLE(version, WEBP_DEMUX_ABI_VERSION)) return NULL;</span></span>
+<span id="L716"><span class="lineNum">     716</span>                 :<span class="tlaUNC">           0 :   if (data == NULL || data-&gt;bytes == NULL || data-&gt;size == 0) return NULL;</span></span>
+<span id="L717"><span class="lineNum">     717</span>                 :             : </span>
+<span id="L718"><span class="lineNum">     718</span>                 :<span class="tlaUNC">           0 :   if (!InitMemBuffer(&amp;mem, data-&gt;bytes, data-&gt;size)) return NULL;</span></span>
+<span id="L719"><span class="lineNum">     719</span>                 :<span class="tlaUNC">           0 :   status = ReadHeader(&amp;mem);</span></span>
+<span id="L720"><span class="lineNum">     720</span>                 :<span class="tlaUNC">           0 :   if (status != PARSE_OK) {</span></span>
+<span id="L721"><span class="lineNum">     721</span>                 :             :     // If parsing of the webp file header fails attempt to handle a raw</span>
+<span id="L722"><span class="lineNum">     722</span>                 :             :     // VP8/VP8L frame. Note 'allow_partial' is ignored in this case.</span>
+<span id="L723"><span class="lineNum">     723</span>                 :<span class="tlaUNC">           0 :     if (status == PARSE_ERROR) {</span></span>
+<span id="L724"><span class="lineNum">     724</span>                 :<span class="tlaUNC">           0 :       status = CreateRawImageDemuxer(&amp;mem, &amp;dmux);</span></span>
+<span id="L725"><span class="lineNum">     725</span>                 :<span class="tlaUNC">           0 :       if (status == PARSE_OK) {</span></span>
+<span id="L726"><span class="lineNum">     726</span>                 :<span class="tlaUNC">           0 :         if (state != NULL) *state = WEBP_DEMUX_DONE;</span></span>
+<span id="L727"><span class="lineNum">     727</span>                 :<span class="tlaUNC">           0 :         return dmux;</span></span>
+<span id="L728"><span class="lineNum">     728</span>                 :             :       }</span>
+<span id="L729"><span class="lineNum">     729</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L730"><span class="lineNum">     730</span>                 :<span class="tlaUNC">           0 :     if (state != NULL) {</span></span>
+<span id="L731"><span class="lineNum">     731</span>                 :<span class="tlaUNC">           0 :       *state = (status == PARSE_NEED_MORE_DATA) ? WEBP_DEMUX_PARSING_HEADER</span></span>
+<span id="L732"><span class="lineNum">     732</span>                 :             :                                                 : WEBP_DEMUX_PARSE_ERROR;</span>
+<span id="L733"><span class="lineNum">     733</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L734"><span class="lineNum">     734</span>                 :<span class="tlaUNC">           0 :     return NULL;</span></span>
+<span id="L735"><span class="lineNum">     735</span>                 :             :   }</span>
+<span id="L736"><span class="lineNum">     736</span>                 :             : </span>
+<span id="L737"><span class="lineNum">     737</span>                 :<span class="tlaUNC">           0 :   partial = (mem.buf_size_ &lt; mem.riff_end_);</span></span>
+<span id="L738"><span class="lineNum">     738</span>                 :<span class="tlaUNC">           0 :   if (!allow_partial &amp;&amp; partial) return NULL;</span></span>
+<span id="L739"><span class="lineNum">     739</span>                 :             : </span>
+<span id="L740"><span class="lineNum">     740</span>                 :<span class="tlaUNC">           0 :   dmux = (WebPDemuxer*)WebPSafeCalloc(1ULL, sizeof(*dmux));</span></span>
+<span id="L741"><span class="lineNum">     741</span>                 :<span class="tlaUNC">           0 :   if (dmux == NULL) return NULL;</span></span>
+<span id="L742"><span class="lineNum">     742</span>                 :<span class="tlaUNC">           0 :   InitDemux(dmux, &amp;mem);</span></span>
+<span id="L743"><span class="lineNum">     743</span>                 :             : </span>
+<span id="L744"><span class="lineNum">     744</span>                 :<span class="tlaUNC">           0 :   status = PARSE_ERROR;</span></span>
+<span id="L745"><span class="lineNum">     745</span>                 :<span class="tlaUNC">           0 :   for (parser = kMasterChunks; parser-&gt;parse != NULL; ++parser) {</span></span>
+<span id="L746"><span class="lineNum">     746</span>                 :<span class="tlaUNC">           0 :     if (!memcmp(parser-&gt;id, GetBuffer(&amp;dmux-&gt;mem_), TAG_SIZE)) {</span></span>
+<span id="L747"><span class="lineNum">     747</span>                 :<span class="tlaUNC">           0 :       status = parser-&gt;parse(dmux);</span></span>
+<span id="L748"><span class="lineNum">     748</span>                 :<span class="tlaUNC">           0 :       if (status == PARSE_OK) dmux-&gt;state_ = WEBP_DEMUX_DONE;</span></span>
+<span id="L749"><span class="lineNum">     749</span>                 :<span class="tlaUNC">           0 :       if (status == PARSE_NEED_MORE_DATA &amp;&amp; !partial) status = PARSE_ERROR;</span></span>
+<span id="L750"><span class="lineNum">     750</span>                 :<span class="tlaUNC">           0 :       if (status != PARSE_ERROR &amp;&amp; !parser-&gt;valid(dmux)) status = PARSE_ERROR;</span></span>
+<span id="L751"><span class="lineNum">     751</span>                 :<span class="tlaUNC">           0 :       if (status == PARSE_ERROR) dmux-&gt;state_ = WEBP_DEMUX_PARSE_ERROR;</span></span>
+<span id="L752"><span class="lineNum">     752</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L753"><span class="lineNum">     753</span>                 :             :     }</span>
+<span id="L754"><span class="lineNum">     754</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L755"><span class="lineNum">     755</span>                 :<span class="tlaUNC">           0 :   if (state != NULL) *state = dmux-&gt;state_;</span></span>
+<span id="L756"><span class="lineNum">     756</span>                 :             : </span>
+<span id="L757"><span class="lineNum">     757</span>                 :<span class="tlaUNC">           0 :   if (status == PARSE_ERROR) {</span></span>
+<span id="L758"><span class="lineNum">     758</span>                 :<span class="tlaUNC">           0 :     WebPDemuxDelete(dmux);</span></span>
+<span id="L759"><span class="lineNum">     759</span>                 :<span class="tlaUNC">           0 :     return NULL;</span></span>
+<span id="L760"><span class="lineNum">     760</span>                 :             :   }</span>
+<span id="L761"><span class="lineNum">     761</span>                 :<span class="tlaUNC">           0 :   return dmux;</span></span>
+<span id="L762"><span class="lineNum">     762</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L763"><span class="lineNum">     763</span>                 :             : </span>
+<span id="L764"><span class="lineNum">     764</span>                 :<span class="tlaUNC">           0 : void WebPDemuxDelete(WebPDemuxer* dmux) {</span></span>
+<span id="L765"><span class="lineNum">     765</span>                 :             :   Chunk* c;</span>
+<span id="L766"><span class="lineNum">     766</span>                 :             :   Frame* f;</span>
+<span id="L767"><span class="lineNum">     767</span>                 :<span class="tlaUNC">           0 :   if (dmux == NULL) return;</span></span>
+<span id="L768"><span class="lineNum">     768</span>                 :             : </span>
+<span id="L769"><span class="lineNum">     769</span>                 :<span class="tlaUNC">           0 :   for (f = dmux-&gt;frames_; f != NULL;) {</span></span>
+<span id="L770"><span class="lineNum">     770</span>                 :<span class="tlaUNC">           0 :     Frame* const cur_frame = f;</span></span>
+<span id="L771"><span class="lineNum">     771</span>                 :<span class="tlaUNC">           0 :     f = f-&gt;next_;</span></span>
+<span id="L772"><span class="lineNum">     772</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(cur_frame);</span></span>
+<span id="L773"><span class="lineNum">     773</span>                 :             :   }</span>
+<span id="L774"><span class="lineNum">     774</span>                 :<span class="tlaUNC">           0 :   for (c = dmux-&gt;chunks_; c != NULL;) {</span></span>
+<span id="L775"><span class="lineNum">     775</span>                 :<span class="tlaUNC">           0 :     Chunk* const cur_chunk = c;</span></span>
+<span id="L776"><span class="lineNum">     776</span>                 :<span class="tlaUNC">           0 :     c = c-&gt;next_;</span></span>
+<span id="L777"><span class="lineNum">     777</span>                 :<span class="tlaUNC">           0 :     WebPSafeFree(cur_chunk);</span></span>
+<span id="L778"><span class="lineNum">     778</span>                 :             :   }</span>
+<span id="L779"><span class="lineNum">     779</span>                 :<span class="tlaUNC">           0 :   WebPSafeFree(dmux);</span></span>
+<span id="L780"><span class="lineNum">     780</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L781"><span class="lineNum">     781</span>                 :             : </span>
+<span id="L782"><span class="lineNum">     782</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L783"><span class="lineNum">     783</span>                 :             : </span>
+<span id="L784"><span class="lineNum">     784</span>                 :<span class="tlaUNC">           0 : uint32_t WebPDemuxGetI(const WebPDemuxer* dmux, WebPFormatFeature feature) {</span></span>
+<span id="L785"><span class="lineNum">     785</span>                 :<span class="tlaUNC">           0 :   if (dmux == NULL) return 0;</span></span>
+<span id="L786"><span class="lineNum">     786</span>                 :             : </span>
+<span id="L787"><span class="lineNum">     787</span>                 :<span class="tlaUNC">           0 :   switch (feature) {</span></span>
+<span id="L788"><span class="lineNum">     788</span>                 :<span class="tlaUNC">           0 :     case WEBP_FF_FORMAT_FLAGS:     return dmux-&gt;feature_flags_;</span></span>
+<span id="L789"><span class="lineNum">     789</span>                 :<span class="tlaUNC">           0 :     case WEBP_FF_CANVAS_WIDTH:     return (uint32_t)dmux-&gt;canvas_width_;</span></span>
+<span id="L790"><span class="lineNum">     790</span>                 :<span class="tlaUNC">           0 :     case WEBP_FF_CANVAS_HEIGHT:    return (uint32_t)dmux-&gt;canvas_height_;</span></span>
+<span id="L791"><span class="lineNum">     791</span>                 :<span class="tlaUNC">           0 :     case WEBP_FF_LOOP_COUNT:       return (uint32_t)dmux-&gt;loop_count_;</span></span>
+<span id="L792"><span class="lineNum">     792</span>                 :<span class="tlaUNC">           0 :     case WEBP_FF_BACKGROUND_COLOR: return dmux-&gt;bgcolor_;</span></span>
+<span id="L793"><span class="lineNum">     793</span>                 :<span class="tlaUNC">           0 :     case WEBP_FF_FRAME_COUNT:      return (uint32_t)dmux-&gt;num_frames_;</span></span>
+<span id="L794"><span class="lineNum">     794</span>                 :             :   }</span>
+<span id="L795"><span class="lineNum">     795</span>                 :<span class="tlaUNC">           0 :   return 0;</span></span>
+<span id="L796"><span class="lineNum">     796</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L797"><span class="lineNum">     797</span>                 :             : </span>
+<span id="L798"><span class="lineNum">     798</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L799"><span class="lineNum">     799</span>                 :             : // Frame iteration</span>
+<span id="L800"><span class="lineNum">     800</span>                 :             : </span>
+<span id="L801"><span class="lineNum">     801</span>                 :<span class="tlaUNC">           0 : static const Frame* GetFrame(const WebPDemuxer* const dmux, int frame_num) {</span></span>
+<span id="L802"><span class="lineNum">     802</span>                 :             :   const Frame* f;</span>
+<span id="L803"><span class="lineNum">     803</span>                 :<span class="tlaUNC">           0 :   for (f = dmux-&gt;frames_; f != NULL; f = f-&gt;next_) {</span></span>
+<span id="L804"><span class="lineNum">     804</span>                 :<span class="tlaUNC">           0 :     if (frame_num == f-&gt;frame_num_) break;</span></span>
+<span id="L805"><span class="lineNum">     805</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L806"><span class="lineNum">     806</span>                 :<span class="tlaUNC">           0 :   return f;</span></span>
+<span id="L807"><span class="lineNum">     807</span>                 :             : }</span>
+<span id="L808"><span class="lineNum">     808</span>                 :             : </span>
+<span id="L809"><span class="lineNum">     809</span>                 :<span class="tlaUNC">           0 : static const uint8_t* GetFramePayload(const uint8_t* const mem_buf,</span></span>
+<span id="L810"><span class="lineNum">     810</span>                 :             :                                       const Frame* const frame,</span>
+<span id="L811"><span class="lineNum">     811</span>                 :             :                                       size_t* const data_size) {</span>
+<span id="L812"><span class="lineNum">     812</span>                 :<span class="tlaUNC">           0 :   *data_size = 0;</span></span>
+<span id="L813"><span class="lineNum">     813</span>                 :<span class="tlaUNC">           0 :   if (frame != NULL) {</span></span>
+<span id="L814"><span class="lineNum">     814</span>                 :<span class="tlaUNC">           0 :     const ChunkData* const image = frame-&gt;img_components_;</span></span>
+<span id="L815"><span class="lineNum">     815</span>                 :<span class="tlaUNC">           0 :     const ChunkData* const alpha = frame-&gt;img_components_ + 1;</span></span>
+<span id="L816"><span class="lineNum">     816</span>                 :<span class="tlaUNC">           0 :     size_t start_offset = image-&gt;offset_;</span></span>
+<span id="L817"><span class="lineNum">     817</span>                 :<span class="tlaUNC">           0 :     *data_size = image-&gt;size_;</span></span>
+<span id="L818"><span class="lineNum">     818</span>                 :             : </span>
+<span id="L819"><span class="lineNum">     819</span>                 :             :     // if alpha exists it precedes image, update the size allowing for</span>
+<span id="L820"><span class="lineNum">     820</span>                 :             :     // intervening chunks.</span>
+<span id="L821"><span class="lineNum">     821</span>                 :<span class="tlaUNC">           0 :     if (alpha-&gt;size_ &gt; 0) {</span></span>
+<span id="L822"><span class="lineNum">     822</span>                 :<span class="tlaUNC">           0 :       const size_t inter_size = (image-&gt;offset_ &gt; 0)</span></span>
+<span id="L823"><span class="lineNum">     823</span>                 :<span class="tlaUNC">           0 :                               ? image-&gt;offset_ - (alpha-&gt;offset_ + alpha-&gt;size_)</span></span>
+<span id="L824"><span class="lineNum">     824</span>                 :             :                               : 0;</span>
+<span id="L825"><span class="lineNum">     825</span>                 :<span class="tlaUNC">           0 :       start_offset = alpha-&gt;offset_;</span></span>
+<span id="L826"><span class="lineNum">     826</span>                 :<span class="tlaUNC">           0 :       *data_size  += alpha-&gt;size_ + inter_size;</span></span>
+<span id="L827"><span class="lineNum">     827</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L828"><span class="lineNum">     828</span>                 :<span class="tlaUNC">           0 :     return mem_buf + start_offset;</span></span>
+<span id="L829"><span class="lineNum">     829</span>                 :             :   }</span>
+<span id="L830"><span class="lineNum">     830</span>                 :<span class="tlaUNC">           0 :   return NULL;</span></span>
+<span id="L831"><span class="lineNum">     831</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L832"><span class="lineNum">     832</span>                 :             : </span>
+<span id="L833"><span class="lineNum">     833</span>                 :             : // Create a whole 'frame' from VP8 (+ alpha) or lossless.</span>
+<span id="L834"><span class="lineNum">     834</span>                 :<span class="tlaUNC">           0 : static int SynthesizeFrame(const WebPDemuxer* const dmux,</span></span>
+<span id="L835"><span class="lineNum">     835</span>                 :             :                            const Frame* const frame,</span>
+<span id="L836"><span class="lineNum">     836</span>                 :             :                            WebPIterator* const iter) {</span>
+<span id="L837"><span class="lineNum">     837</span>                 :<span class="tlaUNC">           0 :   const uint8_t* const mem_buf = dmux-&gt;mem_.buf_;</span></span>
+<span id="L838"><span class="lineNum">     838</span>                 :<span class="tlaUNC">           0 :   size_t payload_size = 0;</span></span>
+<span id="L839"><span class="lineNum">     839</span>                 :<span class="tlaUNC">           0 :   const uint8_t* const payload = GetFramePayload(mem_buf, frame, &amp;payload_size);</span></span>
+<span id="L840"><span class="lineNum">     840</span>                 :<span class="tlaUNC">           0 :   if (payload == NULL) return 0;</span></span>
+<span id="L841"><span class="lineNum">     841</span>                 :             :   assert(frame != NULL);</span>
+<span id="L842"><span class="lineNum">     842</span>                 :             : </span>
+<span id="L843"><span class="lineNum">     843</span>                 :<span class="tlaUNC">           0 :   iter-&gt;frame_num      = frame-&gt;frame_num_;</span></span>
+<span id="L844"><span class="lineNum">     844</span>                 :<span class="tlaUNC">           0 :   iter-&gt;num_frames     = dmux-&gt;num_frames_;</span></span>
+<span id="L845"><span class="lineNum">     845</span>                 :<span class="tlaUNC">           0 :   iter-&gt;x_offset       = frame-&gt;x_offset_;</span></span>
+<span id="L846"><span class="lineNum">     846</span>                 :<span class="tlaUNC">           0 :   iter-&gt;y_offset       = frame-&gt;y_offset_;</span></span>
+<span id="L847"><span class="lineNum">     847</span>                 :<span class="tlaUNC">           0 :   iter-&gt;width          = frame-&gt;width_;</span></span>
+<span id="L848"><span class="lineNum">     848</span>                 :<span class="tlaUNC">           0 :   iter-&gt;height         = frame-&gt;height_;</span></span>
+<span id="L849"><span class="lineNum">     849</span>                 :<span class="tlaUNC">           0 :   iter-&gt;has_alpha      = frame-&gt;has_alpha_;</span></span>
+<span id="L850"><span class="lineNum">     850</span>                 :<span class="tlaUNC">           0 :   iter-&gt;duration       = frame-&gt;duration_;</span></span>
+<span id="L851"><span class="lineNum">     851</span>                 :<span class="tlaUNC">           0 :   iter-&gt;dispose_method = frame-&gt;dispose_method_;</span></span>
+<span id="L852"><span class="lineNum">     852</span>                 :<span class="tlaUNC">           0 :   iter-&gt;blend_method   = frame-&gt;blend_method_;</span></span>
+<span id="L853"><span class="lineNum">     853</span>                 :<span class="tlaUNC">           0 :   iter-&gt;complete       = frame-&gt;complete_;</span></span>
+<span id="L854"><span class="lineNum">     854</span>                 :<span class="tlaUNC">           0 :   iter-&gt;fragment.bytes = payload;</span></span>
+<span id="L855"><span class="lineNum">     855</span>                 :<span class="tlaUNC">           0 :   iter-&gt;fragment.size  = payload_size;</span></span>
+<span id="L856"><span class="lineNum">     856</span>                 :<span class="tlaUNC">           0 :   return 1;</span></span>
+<span id="L857"><span class="lineNum">     857</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L858"><span class="lineNum">     858</span>                 :             : </span>
+<span id="L859"><span class="lineNum">     859</span>                 :<span class="tlaUNC">           0 : static int SetFrame(int frame_num, WebPIterator* const iter) {</span></span>
+<span id="L860"><span class="lineNum">     860</span>                 :             :   const Frame* frame;</span>
+<span id="L861"><span class="lineNum">     861</span>                 :<span class="tlaUNC">           0 :   const WebPDemuxer* const dmux = (WebPDemuxer*)iter-&gt;private_;</span></span>
+<span id="L862"><span class="lineNum">     862</span>                 :<span class="tlaUNC">           0 :   if (dmux == NULL || frame_num &lt; 0) return 0;</span></span>
+<span id="L863"><span class="lineNum">     863</span>                 :<span class="tlaUNC">           0 :   if (frame_num &gt; dmux-&gt;num_frames_) return 0;</span></span>
+<span id="L864"><span class="lineNum">     864</span>                 :<span class="tlaUNC">           0 :   if (frame_num == 0) frame_num = dmux-&gt;num_frames_;</span></span>
+<span id="L865"><span class="lineNum">     865</span>                 :             : </span>
+<span id="L866"><span class="lineNum">     866</span>                 :<span class="tlaUNC">           0 :   frame = GetFrame(dmux, frame_num);</span></span>
+<span id="L867"><span class="lineNum">     867</span>                 :<span class="tlaUNC">           0 :   if (frame == NULL) return 0;</span></span>
+<span id="L868"><span class="lineNum">     868</span>                 :             : </span>
+<span id="L869"><span class="lineNum">     869</span>                 :<span class="tlaUNC">           0 :   return SynthesizeFrame(dmux, frame, iter);</span></span>
+<span id="L870"><span class="lineNum">     870</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L871"><span class="lineNum">     871</span>                 :             : </span>
+<span id="L872"><span class="lineNum">     872</span>                 :<span class="tlaUNC">           0 : int WebPDemuxGetFrame(const WebPDemuxer* dmux, int frame, WebPIterator* iter) {</span></span>
+<span id="L873"><span class="lineNum">     873</span>                 :<span class="tlaUNC">           0 :   if (iter == NULL) return 0;</span></span>
+<span id="L874"><span class="lineNum">     874</span>                 :             : </span>
+<span id="L875"><span class="lineNum">     875</span>                 :<span class="tlaUNC">           0 :   memset(iter, 0, sizeof(*iter));</span></span>
+<span id="L876"><span class="lineNum">     876</span>                 :<span class="tlaUNC">           0 :   iter-&gt;private_ = (void*)dmux;</span></span>
+<span id="L877"><span class="lineNum">     877</span>                 :<span class="tlaUNC">           0 :   return SetFrame(frame, iter);</span></span>
+<span id="L878"><span class="lineNum">     878</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L879"><span class="lineNum">     879</span>                 :             : </span>
+<span id="L880"><span class="lineNum">     880</span>                 :<span class="tlaUNC">           0 : int WebPDemuxNextFrame(WebPIterator* iter) {</span></span>
+<span id="L881"><span class="lineNum">     881</span>                 :<span class="tlaUNC">           0 :   if (iter == NULL) return 0;</span></span>
+<span id="L882"><span class="lineNum">     882</span>                 :<span class="tlaUNC">           0 :   return SetFrame(iter-&gt;frame_num + 1, iter);</span></span>
+<span id="L883"><span class="lineNum">     883</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L884"><span class="lineNum">     884</span>                 :             : </span>
+<span id="L885"><span class="lineNum">     885</span>                 :<span class="tlaUNC">           0 : int WebPDemuxPrevFrame(WebPIterator* iter) {</span></span>
+<span id="L886"><span class="lineNum">     886</span>                 :<span class="tlaUNC">           0 :   if (iter == NULL) return 0;</span></span>
+<span id="L887"><span class="lineNum">     887</span>                 :<span class="tlaUNC">           0 :   if (iter-&gt;frame_num &lt;= 1) return 0;</span></span>
+<span id="L888"><span class="lineNum">     888</span>                 :<span class="tlaUNC">           0 :   return SetFrame(iter-&gt;frame_num - 1, iter);</span></span>
+<span id="L889"><span class="lineNum">     889</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L890"><span class="lineNum">     890</span>                 :             : </span>
+<span id="L891"><span class="lineNum">     891</span>                 :<span class="tlaUNC">           0 : void WebPDemuxReleaseIterator(WebPIterator* iter) {</span></span>
+<span id="L892"><span class="lineNum">     892</span>                 :<span class="tlaUNC">           0 :   (void)iter;</span></span>
+<span id="L893"><span class="lineNum">     893</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L894"><span class="lineNum">     894</span>                 :             : </span>
+<span id="L895"><span class="lineNum">     895</span>                 :             : // -----------------------------------------------------------------------------</span>
+<span id="L896"><span class="lineNum">     896</span>                 :             : // Chunk iteration</span>
+<span id="L897"><span class="lineNum">     897</span>                 :             : </span>
+<span id="L898"><span class="lineNum">     898</span>                 :<span class="tlaUNC">           0 : static int ChunkCount(const WebPDemuxer* const dmux, const char fourcc[4]) {</span></span>
+<span id="L899"><span class="lineNum">     899</span>                 :<span class="tlaUNC">           0 :   const uint8_t* const mem_buf = dmux-&gt;mem_.buf_;</span></span>
+<span id="L900"><span class="lineNum">     900</span>                 :             :   const Chunk* c;</span>
+<span id="L901"><span class="lineNum">     901</span>                 :<span class="tlaUNC">           0 :   int count = 0;</span></span>
+<span id="L902"><span class="lineNum">     902</span>                 :<span class="tlaUNC">           0 :   for (c = dmux-&gt;chunks_; c != NULL; c = c-&gt;next_) {</span></span>
+<span id="L903"><span class="lineNum">     903</span>                 :<span class="tlaUNC">           0 :     const uint8_t* const header = mem_buf + c-&gt;data_.offset_;</span></span>
+<span id="L904"><span class="lineNum">     904</span>                 :<span class="tlaUNC">           0 :     if (!memcmp(header, fourcc, TAG_SIZE)) ++count;</span></span>
+<span id="L905"><span class="lineNum">     905</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L906"><span class="lineNum">     906</span>                 :<span class="tlaUNC">           0 :   return count;</span></span>
+<span id="L907"><span class="lineNum">     907</span>                 :             : }</span>
+<span id="L908"><span class="lineNum">     908</span>                 :             : </span>
+<span id="L909"><span class="lineNum">     909</span>                 :<span class="tlaUNC">           0 : static const Chunk* GetChunk(const WebPDemuxer* const dmux,</span></span>
+<span id="L910"><span class="lineNum">     910</span>                 :             :                              const char fourcc[4], int chunk_num) {</span>
+<span id="L911"><span class="lineNum">     911</span>                 :<span class="tlaUNC">           0 :   const uint8_t* const mem_buf = dmux-&gt;mem_.buf_;</span></span>
+<span id="L912"><span class="lineNum">     912</span>                 :             :   const Chunk* c;</span>
+<span id="L913"><span class="lineNum">     913</span>                 :<span class="tlaUNC">           0 :   int count = 0;</span></span>
+<span id="L914"><span class="lineNum">     914</span>                 :<span class="tlaUNC">           0 :   for (c = dmux-&gt;chunks_; c != NULL; c = c-&gt;next_) {</span></span>
+<span id="L915"><span class="lineNum">     915</span>                 :<span class="tlaUNC">           0 :     const uint8_t* const header = mem_buf + c-&gt;data_.offset_;</span></span>
+<span id="L916"><span class="lineNum">     916</span>                 :<span class="tlaUNC">           0 :     if (!memcmp(header, fourcc, TAG_SIZE)) ++count;</span></span>
+<span id="L917"><span class="lineNum">     917</span>                 :<span class="tlaUNC">           0 :     if (count == chunk_num) break;</span></span>
+<span id="L918"><span class="lineNum">     918</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L919"><span class="lineNum">     919</span>                 :<span class="tlaUNC">           0 :   return c;</span></span>
+<span id="L920"><span class="lineNum">     920</span>                 :             : }</span>
+<span id="L921"><span class="lineNum">     921</span>                 :             : </span>
+<span id="L922"><span class="lineNum">     922</span>                 :<span class="tlaUNC">           0 : static int SetChunk(const char fourcc[4], int chunk_num,</span></span>
+<span id="L923"><span class="lineNum">     923</span>                 :             :                     WebPChunkIterator* const iter) {</span>
+<span id="L924"><span class="lineNum">     924</span>                 :<span class="tlaUNC">           0 :   const WebPDemuxer* const dmux = (WebPDemuxer*)iter-&gt;private_;</span></span>
+<span id="L925"><span class="lineNum">     925</span>                 :             :   int count;</span>
+<span id="L926"><span class="lineNum">     926</span>                 :             : </span>
+<span id="L927"><span class="lineNum">     927</span>                 :<span class="tlaUNC">           0 :   if (dmux == NULL || fourcc == NULL || chunk_num &lt; 0) return 0;</span></span>
+<span id="L928"><span class="lineNum">     928</span>                 :<span class="tlaUNC">           0 :   count = ChunkCount(dmux, fourcc);</span></span>
+<span id="L929"><span class="lineNum">     929</span>                 :<span class="tlaUNC">           0 :   if (count == 0) return 0;</span></span>
+<span id="L930"><span class="lineNum">     930</span>                 :<span class="tlaUNC">           0 :   if (chunk_num == 0) chunk_num = count;</span></span>
+<span id="L931"><span class="lineNum">     931</span>                 :             : </span>
+<span id="L932"><span class="lineNum">     932</span>                 :<span class="tlaUNC">           0 :   if (chunk_num &lt;= count) {</span></span>
+<span id="L933"><span class="lineNum">     933</span>                 :<span class="tlaUNC">           0 :     const uint8_t* const mem_buf = dmux-&gt;mem_.buf_;</span></span>
+<span id="L934"><span class="lineNum">     934</span>                 :<span class="tlaUNC">           0 :     const Chunk* const chunk = GetChunk(dmux, fourcc, chunk_num);</span></span>
+<span id="L935"><span class="lineNum">     935</span>                 :<span class="tlaUNC">           0 :     iter-&gt;chunk.bytes = mem_buf + chunk-&gt;data_.offset_ + CHUNK_HEADER_SIZE;</span></span>
+<span id="L936"><span class="lineNum">     936</span>                 :<span class="tlaUNC">           0 :     iter-&gt;chunk.size  = chunk-&gt;data_.size_ - CHUNK_HEADER_SIZE;</span></span>
+<span id="L937"><span class="lineNum">     937</span>                 :<span class="tlaUNC">           0 :     iter-&gt;num_chunks  = count;</span></span>
+<span id="L938"><span class="lineNum">     938</span>                 :<span class="tlaUNC">           0 :     iter-&gt;chunk_num   = chunk_num;</span></span>
+<span id="L939"><span class="lineNum">     939</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L940"><span class="lineNum">     940</span>                 :             :   }</span>
+<span id="L941"><span class="lineNum">     941</span>                 :<span class="tlaUNC">           0 :   return 0;</span></span>
+<span id="L942"><span class="lineNum">     942</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L943"><span class="lineNum">     943</span>                 :             : </span>
+<span id="L944"><span class="lineNum">     944</span>                 :<span class="tlaUNC">           0 : int WebPDemuxGetChunk(const WebPDemuxer* dmux,</span></span>
+<span id="L945"><span class="lineNum">     945</span>                 :             :                       const char fourcc[4], int chunk_num,</span>
+<span id="L946"><span class="lineNum">     946</span>                 :             :                       WebPChunkIterator* iter) {</span>
+<span id="L947"><span class="lineNum">     947</span>                 :<span class="tlaUNC">           0 :   if (iter == NULL) return 0;</span></span>
+<span id="L948"><span class="lineNum">     948</span>                 :             : </span>
+<span id="L949"><span class="lineNum">     949</span>                 :<span class="tlaUNC">           0 :   memset(iter, 0, sizeof(*iter));</span></span>
+<span id="L950"><span class="lineNum">     950</span>                 :<span class="tlaUNC">           0 :   iter-&gt;private_ = (void*)dmux;</span></span>
+<span id="L951"><span class="lineNum">     951</span>                 :<span class="tlaUNC">           0 :   return SetChunk(fourcc, chunk_num, iter);</span></span>
+<span id="L952"><span class="lineNum">     952</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L953"><span class="lineNum">     953</span>                 :             : </span>
+<span id="L954"><span class="lineNum">     954</span>                 :<span class="tlaUNC">           0 : int WebPDemuxNextChunk(WebPChunkIterator* iter) {</span></span>
+<span id="L955"><span class="lineNum">     955</span>                 :<span class="tlaUNC">           0 :   if (iter != NULL) {</span></span>
+<span id="L956"><span class="lineNum">     956</span>                 :<span class="tlaUNC">           0 :     const char* const fourcc =</span></span>
+<span id="L957"><span class="lineNum">     957</span>                 :<span class="tlaUNC">           0 :         (const char*)iter-&gt;chunk.bytes - CHUNK_HEADER_SIZE;</span></span>
+<span id="L958"><span class="lineNum">     958</span>                 :<span class="tlaUNC">           0 :     return SetChunk(fourcc, iter-&gt;chunk_num + 1, iter);</span></span>
+<span id="L959"><span class="lineNum">     959</span>                 :             :   }</span>
+<span id="L960"><span class="lineNum">     960</span>                 :<span class="tlaUNC">           0 :   return 0;</span></span>
+<span id="L961"><span class="lineNum">     961</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L962"><span class="lineNum">     962</span>                 :             : </span>
+<span id="L963"><span class="lineNum">     963</span>                 :<span class="tlaUNC">           0 : int WebPDemuxPrevChunk(WebPChunkIterator* iter) {</span></span>
+<span id="L964"><span class="lineNum">     964</span>                 :<span class="tlaUNC">           0 :   if (iter != NULL &amp;&amp; iter-&gt;chunk_num &gt; 1) {</span></span>
+<span id="L965"><span class="lineNum">     965</span>                 :<span class="tlaUNC">           0 :     const char* const fourcc =</span></span>
+<span id="L966"><span class="lineNum">     966</span>                 :<span class="tlaUNC">           0 :         (const char*)iter-&gt;chunk.bytes - CHUNK_HEADER_SIZE;</span></span>
+<span id="L967"><span class="lineNum">     967</span>                 :<span class="tlaUNC">           0 :     return SetChunk(fourcc, iter-&gt;chunk_num - 1, iter);</span></span>
+<span id="L968"><span class="lineNum">     968</span>                 :             :   }</span>
+<span id="L969"><span class="lineNum">     969</span>                 :<span class="tlaUNC">           0 :   return 0;</span></span>
+<span id="L970"><span class="lineNum">     970</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L971"><span class="lineNum">     971</span>                 :             : </span>
+<span id="L972"><span class="lineNum">     972</span>                 :<span class="tlaUNC">           0 : void WebPDemuxReleaseChunkIterator(WebPChunkIterator* iter) {</span></span>
+<span id="L973"><span class="lineNum">     973</span>                 :<span class="tlaUNC">           0 :   (void)iter;</span></span>
+<span id="L974"><span class="lineNum">     974</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L975"><span class="lineNum">     975</span>                 :             : </span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

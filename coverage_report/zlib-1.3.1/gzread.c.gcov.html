@@ -1,0 +1,694 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - zlib-1.3.1/gzread.c</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">zlib-1.3.1</a> - gzread.c<span style="font-size: 80%;"> (source / <a href="gzread.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">343</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 17:29:02</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /* gzread.c -- zlib functions for reading gzip files</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * Copyright (C) 2004-2017 Mark Adler</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  * For conditions of distribution and use, see copyright notice in zlib.h</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  */</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : </span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : #include &quot;gzguts.h&quot;</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : </span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : /* Use read() to load a buffer -- return -1 on error, otherwise 0.  Read from</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :    state-&gt;fd, and update state-&gt;eof, state-&gt;err, and state-&gt;msg as appropriate.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :    This function needs to loop on read(), since read() is not guaranteed to</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             :    read the number of bytes requested, depending on the type of descriptor. */</span>
+<span id="L12"><span class="lineNum">      12</span>                 :<span class="tlaUNC tlaBgUNC">           0 : local int gz_load(gz_statep state, unsigned char *buf, unsigned len,</span></span>
+<span id="L13"><span class="lineNum">      13</span>                 :             :                   unsigned *have) {</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             :     int ret;</span>
+<span id="L15"><span class="lineNum">      15</span>                 :<span class="tlaUNC">           0 :     unsigned get, max = ((unsigned)-1 &gt;&gt; 2) + 1;</span></span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :<span class="tlaUNC">           0 :     *have = 0;</span></span>
+<span id="L18"><span class="lineNum">      18</span>                 :<span class="tlaUNC">           0 :     do {</span></span>
+<span id="L19"><span class="lineNum">      19</span>                 :<span class="tlaUNC">           0 :         get = len - *have;</span></span>
+<span id="L20"><span class="lineNum">      20</span>                 :<span class="tlaUNC">           0 :         if (get &gt; max)</span></span>
+<span id="L21"><span class="lineNum">      21</span>                 :<span class="tlaUNC">           0 :             get = max;</span></span>
+<span id="L22"><span class="lineNum">      22</span>                 :<span class="tlaUNC">           0 :         ret = read(state-&gt;fd, buf + *have, get);</span></span>
+<span id="L23"><span class="lineNum">      23</span>                 :<span class="tlaUNC">           0 :         if (ret &lt;= 0)</span></span>
+<span id="L24"><span class="lineNum">      24</span>                 :<span class="tlaUNC">           0 :             break;</span></span>
+<span id="L25"><span class="lineNum">      25</span>                 :<span class="tlaUNC">           0 :         *have += (unsigned)ret;</span></span>
+<span id="L26"><span class="lineNum">      26</span>                 :<span class="tlaUNC">           0 :     } while (*have &lt; len);</span></span>
+<span id="L27"><span class="lineNum">      27</span>                 :<span class="tlaUNC">           0 :     if (ret &lt; 0) {</span></span>
+<span id="L28"><span class="lineNum">      28</span>                 :<span class="tlaUNC">           0 :         gz_error(state, Z_ERRNO, zstrerror());</span></span>
+<span id="L29"><span class="lineNum">      29</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :     }</span>
+<span id="L31"><span class="lineNum">      31</span>                 :<span class="tlaUNC">           0 :     if (ret == 0)</span></span>
+<span id="L32"><span class="lineNum">      32</span>                 :<span class="tlaUNC">           0 :         state-&gt;eof = 1;</span></span>
+<span id="L33"><span class="lineNum">      33</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L34"><span class="lineNum">      34</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : </span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : /* Load up input buffer and set eof flag if last data loaded -- return -1 on</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :    error, 0 otherwise.  Note that the eof flag is set when the end of the input</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             :    file is reached, even though there may be unused data in the buffer.  Once</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             :    that data has been used, no more attempts will be made to read the file.</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             :    If strm-&gt;avail_in != 0, then the current data is moved to the beginning of</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             :    the input buffer, and then the remainder of the buffer is loaded with the</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             :    available data from the input file. */</span>
+<span id="L43"><span class="lineNum">      43</span>                 :<span class="tlaUNC">           0 : local int gz_avail(gz_statep state) {</span></span>
+<span id="L44"><span class="lineNum">      44</span>                 :             :     unsigned got;</span>
+<span id="L45"><span class="lineNum">      45</span>                 :<span class="tlaUNC">           0 :     z_streamp strm = &amp;(state-&gt;strm);</span></span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : </span>
+<span id="L47"><span class="lineNum">      47</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;err != Z_OK &amp;&amp; state-&gt;err != Z_BUF_ERROR)</span></span>
+<span id="L48"><span class="lineNum">      48</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L49"><span class="lineNum">      49</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;eof == 0) {</span></span>
+<span id="L50"><span class="lineNum">      50</span>                 :<span class="tlaUNC">           0 :         if (strm-&gt;avail_in) {       /* copy what's there to the start */</span></span>
+<span id="L51"><span class="lineNum">      51</span>                 :<span class="tlaUNC">           0 :             unsigned char *p = state-&gt;in;</span></span>
+<span id="L52"><span class="lineNum">      52</span>                 :<span class="tlaUNC">           0 :             unsigned const char *q = strm-&gt;next_in;</span></span>
+<span id="L53"><span class="lineNum">      53</span>                 :<span class="tlaUNC">           0 :             unsigned n = strm-&gt;avail_in;</span></span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC">           0 :             do {</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :<span class="tlaUNC">           0 :                 *p++ = *q++;</span></span>
+<span id="L56"><span class="lineNum">      56</span>                 :<span class="tlaUNC">           0 :             } while (--n);</span></span>
+<span id="L57"><span class="lineNum">      57</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L58"><span class="lineNum">      58</span>                 :<span class="tlaUNC">           0 :         if (gz_load(state, state-&gt;in + strm-&gt;avail_in,</span></span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 :                     state-&gt;size - strm-&gt;avail_in, &amp;got) == -1)</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :<span class="tlaUNC">           0 :             return -1;</span></span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 :         strm-&gt;avail_in += got;</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :<span class="tlaUNC">           0 :         strm-&gt;next_in = state-&gt;in;</span></span>
+<span id="L63"><span class="lineNum">      63</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L64"><span class="lineNum">      64</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L65"><span class="lineNum">      65</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L66"><span class="lineNum">      66</span>                 :             : </span>
+<span id="L67"><span class="lineNum">      67</span>                 :             : /* Look for gzip header, set up for inflate or copy.  state-&gt;x.have must be 0.</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :    If this is the first time in, allocate required memory.  state-&gt;how will be</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :    left unchanged if there is no more input data available, will be set to COPY</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :    if there is no gzip header and direct copying will be performed, or it will</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :    be set to GZIP for decompression.  If direct copying, then leftover input</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :    data from the input buffer will be copied to the output buffer.  In that</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :    case, all further file reads will be directly to either the output buffer or</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :    a user buffer.  If decompressing, the inflate state will be initialized.</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :    gz_look() will return 0 on success or -1 on failure. */</span>
+<span id="L76"><span class="lineNum">      76</span>                 :<span class="tlaUNC">           0 : local int gz_look(gz_statep state) {</span></span>
+<span id="L77"><span class="lineNum">      77</span>                 :<span class="tlaUNC">           0 :     z_streamp strm = &amp;(state-&gt;strm);</span></span>
+<span id="L78"><span class="lineNum">      78</span>                 :             : </span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :     /* allocate read buffers and inflate memory */</span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;size == 0) {</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :         /* allocate buffers */</span>
+<span id="L82"><span class="lineNum">      82</span>                 :<span class="tlaUNC">           0 :         state-&gt;in = (unsigned char *)malloc(state-&gt;want);</span></span>
+<span id="L83"><span class="lineNum">      83</span>                 :<span class="tlaUNC">           0 :         state-&gt;out = (unsigned char *)malloc(state-&gt;want &lt;&lt; 1);</span></span>
+<span id="L84"><span class="lineNum">      84</span>                 :<span class="tlaUNC">           0 :         if (state-&gt;in == NULL || state-&gt;out == NULL) {</span></span>
+<span id="L85"><span class="lineNum">      85</span>                 :<span class="tlaUNC">           0 :             free(state-&gt;out);</span></span>
+<span id="L86"><span class="lineNum">      86</span>                 :<span class="tlaUNC">           0 :             free(state-&gt;in);</span></span>
+<span id="L87"><span class="lineNum">      87</span>                 :<span class="tlaUNC">           0 :             gz_error(state, Z_MEM_ERROR, &quot;out of memory&quot;);</span></span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :             return -1;</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :         }</span>
+<span id="L90"><span class="lineNum">      90</span>                 :<span class="tlaUNC">           0 :         state-&gt;size = state-&gt;want;</span></span>
+<span id="L91"><span class="lineNum">      91</span>                 :             : </span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :         /* allocate inflate memory */</span>
+<span id="L93"><span class="lineNum">      93</span>                 :<span class="tlaUNC">           0 :         state-&gt;strm.zalloc = Z_NULL;</span></span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :         state-&gt;strm.zfree = Z_NULL;</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :         state-&gt;strm.opaque = Z_NULL;</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 :         state-&gt;strm.avail_in = 0;</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :<span class="tlaUNC">           0 :         state-&gt;strm.next_in = Z_NULL;</span></span>
+<span id="L98"><span class="lineNum">      98</span>                 :<span class="tlaUNC">           0 :         if (inflateInit2(&amp;(state-&gt;strm), 15 + 16) != Z_OK) {    /* gunzip */</span></span>
+<span id="L99"><span class="lineNum">      99</span>                 :<span class="tlaUNC">           0 :             free(state-&gt;out);</span></span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC">           0 :             free(state-&gt;in);</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 :             state-&gt;size = 0;</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 :             gz_error(state, Z_MEM_ERROR, &quot;out of memory&quot;);</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :             return -1;</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :         }</span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :             : </span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :     /* get at least the magic bytes in the input buffer */</span>
+<span id="L108"><span class="lineNum">     108</span>                 :<span class="tlaUNC">           0 :     if (strm-&gt;avail_in &lt; 2) {</span></span>
+<span id="L109"><span class="lineNum">     109</span>                 :<span class="tlaUNC">           0 :         if (gz_avail(state) == -1)</span></span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 :             return -1;</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :<span class="tlaUNC">           0 :         if (strm-&gt;avail_in == 0)</span></span>
+<span id="L112"><span class="lineNum">     112</span>                 :<span class="tlaUNC">           0 :             return 0;</span></span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : </span>
+<span id="L115"><span class="lineNum">     115</span>                 :             :     /* look for gzip magic bytes -- if there, do gzip decoding (note: there is</span>
+<span id="L116"><span class="lineNum">     116</span>                 :             :        a logical dilemma here when considering the case of a partially written</span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :        gzip file, to wit, if a single 31 byte is written, then we cannot tell</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :        whether this is a single-byte file, or just a partially written gzip</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :        file -- for here we assume that if a gzip file is being written, then</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :        the header will be written in a single operation, so that reading a</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :        single byte is sufficient indication that it is not a gzip file) */</span>
+<span id="L122"><span class="lineNum">     122</span>                 :<span class="tlaUNC">           0 :     if (strm-&gt;avail_in &gt; 1 &amp;&amp;</span></span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaUNC">           0 :             strm-&gt;next_in[0] == 31 &amp;&amp; strm-&gt;next_in[1] == 139) {</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :<span class="tlaUNC">           0 :         inflateReset(strm);</span></span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaUNC">           0 :         state-&gt;how = GZIP;</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :<span class="tlaUNC">           0 :         state-&gt;direct = 0;</span></span>
+<span id="L127"><span class="lineNum">     127</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :     }</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : </span>
+<span id="L130"><span class="lineNum">     130</span>                 :             :     /* no gzip header -- if we were decoding gzip before, then this is trailing</span>
+<span id="L131"><span class="lineNum">     131</span>                 :             :        garbage.  Ignore the trailing garbage and finish. */</span>
+<span id="L132"><span class="lineNum">     132</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;direct == 0) {</span></span>
+<span id="L133"><span class="lineNum">     133</span>                 :<span class="tlaUNC">           0 :         strm-&gt;avail_in = 0;</span></span>
+<span id="L134"><span class="lineNum">     134</span>                 :<span class="tlaUNC">           0 :         state-&gt;eof = 1;</span></span>
+<span id="L135"><span class="lineNum">     135</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.have = 0;</span></span>
+<span id="L136"><span class="lineNum">     136</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L137"><span class="lineNum">     137</span>                 :             :     }</span>
+<span id="L138"><span class="lineNum">     138</span>                 :             : </span>
+<span id="L139"><span class="lineNum">     139</span>                 :             :     /* doing raw i/o, copy any leftover input to output -- this assumes that</span>
+<span id="L140"><span class="lineNum">     140</span>                 :             :        the output buffer is larger than the input buffer, which also assures</span>
+<span id="L141"><span class="lineNum">     141</span>                 :             :        space for gzungetc() */</span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :     state-&gt;x.next = state-&gt;out;</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :<span class="tlaUNC">           0 :     memcpy(state-&gt;x.next, strm-&gt;next_in, strm-&gt;avail_in);</span></span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :     state-&gt;x.have = strm-&gt;avail_in;</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :<span class="tlaUNC">           0 :     strm-&gt;avail_in = 0;</span></span>
+<span id="L146"><span class="lineNum">     146</span>                 :<span class="tlaUNC">           0 :     state-&gt;how = COPY;</span></span>
+<span id="L147"><span class="lineNum">     147</span>                 :<span class="tlaUNC">           0 :     state-&gt;direct = 1;</span></span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :             : </span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : /* Decompress from input to the provided next_out and avail_out in the state.</span>
+<span id="L152"><span class="lineNum">     152</span>                 :             :    On return, state-&gt;x.have and state-&gt;x.next point to the just decompressed</span>
+<span id="L153"><span class="lineNum">     153</span>                 :             :    data.  If the gzip stream completes, state-&gt;how is reset to LOOK to look for</span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :    the next gzip stream or raw data, once state-&gt;x.have is depleted.  Returns 0</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :    on success, -1 on failure. */</span>
+<span id="L156"><span class="lineNum">     156</span>                 :<span class="tlaUNC">           0 : local int gz_decomp(gz_statep state) {</span></span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :     int ret = Z_OK;</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :             :     unsigned had;</span>
+<span id="L159"><span class="lineNum">     159</span>                 :<span class="tlaUNC">           0 :     z_streamp strm = &amp;(state-&gt;strm);</span></span>
+<span id="L160"><span class="lineNum">     160</span>                 :             : </span>
+<span id="L161"><span class="lineNum">     161</span>                 :             :     /* fill output buffer up to end of deflate stream */</span>
+<span id="L162"><span class="lineNum">     162</span>                 :<span class="tlaUNC">           0 :     had = strm-&gt;avail_out;</span></span>
+<span id="L163"><span class="lineNum">     163</span>                 :<span class="tlaUNC">           0 :     do {</span></span>
+<span id="L164"><span class="lineNum">     164</span>                 :             :         /* get more input for inflate() */</span>
+<span id="L165"><span class="lineNum">     165</span>                 :<span class="tlaUNC">           0 :         if (strm-&gt;avail_in == 0 &amp;&amp; gz_avail(state) == -1)</span></span>
+<span id="L166"><span class="lineNum">     166</span>                 :<span class="tlaUNC">           0 :             return -1;</span></span>
+<span id="L167"><span class="lineNum">     167</span>                 :<span class="tlaUNC">           0 :         if (strm-&gt;avail_in == 0) {</span></span>
+<span id="L168"><span class="lineNum">     168</span>                 :<span class="tlaUNC">           0 :             gz_error(state, Z_BUF_ERROR, &quot;unexpected end of file&quot;);</span></span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 :             break;</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :         }</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             : </span>
+<span id="L172"><span class="lineNum">     172</span>                 :             :         /* decompress and handle errors */</span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :         ret = inflate(strm, Z_NO_FLUSH);</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 :         if (ret == Z_STREAM_ERROR || ret == Z_NEED_DICT) {</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :<span class="tlaUNC">           0 :             gz_error(state, Z_STREAM_ERROR,</span></span>
+<span id="L176"><span class="lineNum">     176</span>                 :             :                      &quot;internal error: inflate stream corrupt&quot;);</span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 :             return -1;</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :         }</span>
+<span id="L179"><span class="lineNum">     179</span>                 :<span class="tlaUNC">           0 :         if (ret == Z_MEM_ERROR) {</span></span>
+<span id="L180"><span class="lineNum">     180</span>                 :<span class="tlaUNC">           0 :             gz_error(state, Z_MEM_ERROR, &quot;out of memory&quot;);</span></span>
+<span id="L181"><span class="lineNum">     181</span>                 :<span class="tlaUNC">           0 :             return -1;</span></span>
+<span id="L182"><span class="lineNum">     182</span>                 :             :         }</span>
+<span id="L183"><span class="lineNum">     183</span>                 :<span class="tlaUNC">           0 :         if (ret == Z_DATA_ERROR) {              /* deflate stream invalid */</span></span>
+<span id="L184"><span class="lineNum">     184</span>                 :<span class="tlaUNC">           0 :             gz_error(state, Z_DATA_ERROR,</span></span>
+<span id="L185"><span class="lineNum">     185</span>                 :<span class="tlaUNC">           0 :                      strm-&gt;msg == NULL ? &quot;compressed data error&quot; : strm-&gt;msg);</span></span>
+<span id="L186"><span class="lineNum">     186</span>                 :<span class="tlaUNC">           0 :             return -1;</span></span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :         }</span>
+<span id="L188"><span class="lineNum">     188</span>                 :<span class="tlaUNC">           0 :     } while (strm-&gt;avail_out &amp;&amp; ret != Z_STREAM_END);</span></span>
+<span id="L189"><span class="lineNum">     189</span>                 :             : </span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :     /* update available output */</span>
+<span id="L191"><span class="lineNum">     191</span>                 :<span class="tlaUNC">           0 :     state-&gt;x.have = had - strm-&gt;avail_out;</span></span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 :     state-&gt;x.next = strm-&gt;next_out - state-&gt;x.have;</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : </span>
+<span id="L194"><span class="lineNum">     194</span>                 :             :     /* if the gzip stream completed successfully, look for another */</span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :     if (ret == Z_STREAM_END)</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :<span class="tlaUNC">           0 :         state-&gt;how = LOOK;</span></span>
+<span id="L197"><span class="lineNum">     197</span>                 :             : </span>
+<span id="L198"><span class="lineNum">     198</span>                 :             :     /* good decompression */</span>
+<span id="L199"><span class="lineNum">     199</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L200"><span class="lineNum">     200</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L201"><span class="lineNum">     201</span>                 :             : </span>
+<span id="L202"><span class="lineNum">     202</span>                 :             : /* Fetch data and put it in the output buffer.  Assumes state-&gt;x.have is 0.</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :    Data is either copied from the input file or decompressed from the input</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :    file depending on state-&gt;how.  If state-&gt;how is LOOK, then a gzip header is</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :    looked for to determine whether to copy or decompress.  Returns -1 on error,</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :    otherwise 0.  gz_fetch() will leave state-&gt;how as COPY or GZIP unless the</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             :    end of the input file has been reached and all data has been processed.  */</span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 : local int gz_fetch(gz_statep state) {</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :     z_streamp strm = &amp;(state-&gt;strm);</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :             : </span>
+<span id="L211"><span class="lineNum">     211</span>                 :<span class="tlaUNC">           0 :     do {</span></span>
+<span id="L212"><span class="lineNum">     212</span>                 :<span class="tlaUNC">           0 :         switch(state-&gt;how) {</span></span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :         case LOOK:      /* -&gt; LOOK, COPY (only if never GZIP), or GZIP */</span>
+<span id="L214"><span class="lineNum">     214</span>                 :<span class="tlaUNC">           0 :             if (gz_look(state) == -1)</span></span>
+<span id="L215"><span class="lineNum">     215</span>                 :<span class="tlaUNC">           0 :                 return -1;</span></span>
+<span id="L216"><span class="lineNum">     216</span>                 :<span class="tlaUNC">           0 :             if (state-&gt;how == LOOK)</span></span>
+<span id="L217"><span class="lineNum">     217</span>                 :<span class="tlaUNC">           0 :                 return 0;</span></span>
+<span id="L218"><span class="lineNum">     218</span>                 :<span class="tlaUNC">           0 :             break;</span></span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :         case COPY:      /* -&gt; COPY */</span>
+<span id="L220"><span class="lineNum">     220</span>                 :<span class="tlaUNC">           0 :             if (gz_load(state, state-&gt;out, state-&gt;size &lt;&lt; 1, &amp;(state-&gt;x.have))</span></span>
+<span id="L221"><span class="lineNum">     221</span>                 :<span class="tlaUNC">           0 :                     == -1)</span></span>
+<span id="L222"><span class="lineNum">     222</span>                 :<span class="tlaUNC">           0 :                 return -1;</span></span>
+<span id="L223"><span class="lineNum">     223</span>                 :<span class="tlaUNC">           0 :             state-&gt;x.next = state-&gt;out;</span></span>
+<span id="L224"><span class="lineNum">     224</span>                 :<span class="tlaUNC">           0 :             return 0;</span></span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :         case GZIP:      /* -&gt; GZIP or LOOK (if end of gzip stream) */</span>
+<span id="L226"><span class="lineNum">     226</span>                 :<span class="tlaUNC">           0 :             strm-&gt;avail_out = state-&gt;size &lt;&lt; 1;</span></span>
+<span id="L227"><span class="lineNum">     227</span>                 :<span class="tlaUNC">           0 :             strm-&gt;next_out = state-&gt;out;</span></span>
+<span id="L228"><span class="lineNum">     228</span>                 :<span class="tlaUNC">           0 :             if (gz_decomp(state) == -1)</span></span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :                 return -1;</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :<span class="tlaUNC">           0 :     } while (state-&gt;x.have == 0 &amp;&amp; (!state-&gt;eof || strm-&gt;avail_in));</span></span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :             : </span>
+<span id="L235"><span class="lineNum">     235</span>                 :             : /* Skip len uncompressed bytes of output.  Return -1 on error, 0 on success. */</span>
+<span id="L236"><span class="lineNum">     236</span>                 :<span class="tlaUNC">           0 : local int gz_skip(gz_statep state, z_off64_t len) {</span></span>
+<span id="L237"><span class="lineNum">     237</span>                 :             :     unsigned n;</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             : </span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :     /* skip over len bytes or reach end-of-file, whichever comes first */</span>
+<span id="L240"><span class="lineNum">     240</span>                 :<span class="tlaUNC">           0 :     while (len)</span></span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :         /* skip over whatever is in output buffer */</span>
+<span id="L242"><span class="lineNum">     242</span>                 :<span class="tlaUNC">           0 :         if (state-&gt;x.have) {</span></span>
+<span id="L243"><span class="lineNum">     243</span>                 :<span class="tlaUNC">           0 :             n = GT_OFF(state-&gt;x.have) || (z_off64_t)state-&gt;x.have &gt; len ?</span></span>
+<span id="L244"><span class="lineNum">     244</span>                 :<span class="tlaUNC">           0 :                 (unsigned)len : state-&gt;x.have;</span></span>
+<span id="L245"><span class="lineNum">     245</span>                 :<span class="tlaUNC">           0 :             state-&gt;x.have -= n;</span></span>
+<span id="L246"><span class="lineNum">     246</span>                 :<span class="tlaUNC">           0 :             state-&gt;x.next += n;</span></span>
+<span id="L247"><span class="lineNum">     247</span>                 :<span class="tlaUNC">           0 :             state-&gt;x.pos += n;</span></span>
+<span id="L248"><span class="lineNum">     248</span>                 :<span class="tlaUNC">           0 :             len -= n;</span></span>
+<span id="L249"><span class="lineNum">     249</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L250"><span class="lineNum">     250</span>                 :             : </span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :         /* output buffer empty -- return if we're at the end of the input */</span>
+<span id="L252"><span class="lineNum">     252</span>                 :<span class="tlaUNC">           0 :         else if (state-&gt;eof &amp;&amp; state-&gt;strm.avail_in == 0)</span></span>
+<span id="L253"><span class="lineNum">     253</span>                 :<span class="tlaUNC">           0 :             break;</span></span>
+<span id="L254"><span class="lineNum">     254</span>                 :             : </span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :         /* need more data to skip -- load up output buffer */</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :         else {</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             :             /* get more output, looking for header if required */</span>
+<span id="L258"><span class="lineNum">     258</span>                 :<span class="tlaUNC">           0 :             if (gz_fetch(state) == -1)</span></span>
+<span id="L259"><span class="lineNum">     259</span>                 :<span class="tlaUNC">           0 :                 return -1;</span></span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :         }</span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 :     return 0;</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L263"><span class="lineNum">     263</span>                 :             : </span>
+<span id="L264"><span class="lineNum">     264</span>                 :             : /* Read len bytes into buf from file, or less than len up to the end of the</span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :    input.  Return the number of bytes read.  If zero is returned, either the</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             :    end of file was reached, or there was an error.  state-&gt;err must be</span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :    consulted in that case to determine which. */</span>
+<span id="L268"><span class="lineNum">     268</span>                 :<span class="tlaUNC">           0 : local z_size_t gz_read(gz_statep state, voidp buf, z_size_t len) {</span></span>
+<span id="L269"><span class="lineNum">     269</span>                 :             :     z_size_t got;</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             :     unsigned n;</span>
+<span id="L271"><span class="lineNum">     271</span>                 :             : </span>
+<span id="L272"><span class="lineNum">     272</span>                 :             :     /* if len is zero, avoid unnecessary operations */</span>
+<span id="L273"><span class="lineNum">     273</span>                 :<span class="tlaUNC">           0 :     if (len == 0)</span></span>
+<span id="L274"><span class="lineNum">     274</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L275"><span class="lineNum">     275</span>                 :             : </span>
+<span id="L276"><span class="lineNum">     276</span>                 :             :     /* process a skip request */</span>
+<span id="L277"><span class="lineNum">     277</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;seek) {</span></span>
+<span id="L278"><span class="lineNum">     278</span>                 :<span class="tlaUNC">           0 :         state-&gt;seek = 0;</span></span>
+<span id="L279"><span class="lineNum">     279</span>                 :<span class="tlaUNC">           0 :         if (gz_skip(state, state-&gt;skip) == -1)</span></span>
+<span id="L280"><span class="lineNum">     280</span>                 :<span class="tlaUNC">           0 :             return 0;</span></span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :             : </span>
+<span id="L283"><span class="lineNum">     283</span>                 :             :     /* get len bytes to buf, or less than len if at the end */</span>
+<span id="L284"><span class="lineNum">     284</span>                 :<span class="tlaUNC">           0 :     got = 0;</span></span>
+<span id="L285"><span class="lineNum">     285</span>                 :<span class="tlaUNC">           0 :     do {</span></span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :         /* set n to the maximum amount of len that fits in an unsigned int */</span>
+<span id="L287"><span class="lineNum">     287</span>                 :<span class="tlaUNC">           0 :         n = (unsigned)-1;</span></span>
+<span id="L288"><span class="lineNum">     288</span>                 :<span class="tlaUNC">           0 :         if (n &gt; len)</span></span>
+<span id="L289"><span class="lineNum">     289</span>                 :<span class="tlaUNC">           0 :             n = (unsigned)len;</span></span>
+<span id="L290"><span class="lineNum">     290</span>                 :             : </span>
+<span id="L291"><span class="lineNum">     291</span>                 :             :         /* first just try copying data from the output buffer */</span>
+<span id="L292"><span class="lineNum">     292</span>                 :<span class="tlaUNC">           0 :         if (state-&gt;x.have) {</span></span>
+<span id="L293"><span class="lineNum">     293</span>                 :<span class="tlaUNC">           0 :             if (state-&gt;x.have &lt; n)</span></span>
+<span id="L294"><span class="lineNum">     294</span>                 :<span class="tlaUNC">           0 :                 n = state-&gt;x.have;</span></span>
+<span id="L295"><span class="lineNum">     295</span>                 :<span class="tlaUNC">           0 :             memcpy(buf, state-&gt;x.next, n);</span></span>
+<span id="L296"><span class="lineNum">     296</span>                 :<span class="tlaUNC">           0 :             state-&gt;x.next += n;</span></span>
+<span id="L297"><span class="lineNum">     297</span>                 :<span class="tlaUNC">           0 :             state-&gt;x.have -= n;</span></span>
+<span id="L298"><span class="lineNum">     298</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L299"><span class="lineNum">     299</span>                 :             : </span>
+<span id="L300"><span class="lineNum">     300</span>                 :             :         /* output buffer empty -- return if we're at the end of the input */</span>
+<span id="L301"><span class="lineNum">     301</span>                 :<span class="tlaUNC">           0 :         else if (state-&gt;eof &amp;&amp; state-&gt;strm.avail_in == 0) {</span></span>
+<span id="L302"><span class="lineNum">     302</span>                 :<span class="tlaUNC">           0 :             state-&gt;past = 1;        /* tried to read past end */</span></span>
+<span id="L303"><span class="lineNum">     303</span>                 :<span class="tlaUNC">           0 :             break;</span></span>
+<span id="L304"><span class="lineNum">     304</span>                 :             :         }</span>
+<span id="L305"><span class="lineNum">     305</span>                 :             : </span>
+<span id="L306"><span class="lineNum">     306</span>                 :             :         /* need output data -- for small len or new stream load up our output</span>
+<span id="L307"><span class="lineNum">     307</span>                 :             :            buffer */</span>
+<span id="L308"><span class="lineNum">     308</span>                 :<span class="tlaUNC">           0 :         else if (state-&gt;how == LOOK || n &lt; (state-&gt;size &lt;&lt; 1)) {</span></span>
+<span id="L309"><span class="lineNum">     309</span>                 :             :             /* get more output, looking for header if required */</span>
+<span id="L310"><span class="lineNum">     310</span>                 :<span class="tlaUNC">           0 :             if (gz_fetch(state) == -1)</span></span>
+<span id="L311"><span class="lineNum">     311</span>                 :<span class="tlaUNC">           0 :                 return 0;</span></span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 :             continue;       /* no progress yet -- go back to copy above */</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :             :             /* the copy above assures that we will leave with space in the</span>
+<span id="L314"><span class="lineNum">     314</span>                 :             :                output buffer, allowing at least one gzungetc() to succeed */</span>
+<span id="L315"><span class="lineNum">     315</span>                 :             :         }</span>
+<span id="L316"><span class="lineNum">     316</span>                 :             : </span>
+<span id="L317"><span class="lineNum">     317</span>                 :             :         /* large len -- read directly into user buffer */</span>
+<span id="L318"><span class="lineNum">     318</span>                 :<span class="tlaUNC">           0 :         else if (state-&gt;how == COPY) {      /* read directly */</span></span>
+<span id="L319"><span class="lineNum">     319</span>                 :<span class="tlaUNC">           0 :             if (gz_load(state, (unsigned char *)buf, n, &amp;n) == -1)</span></span>
+<span id="L320"><span class="lineNum">     320</span>                 :<span class="tlaUNC">           0 :                 return 0;</span></span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 :         }</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :             : </span>
+<span id="L323"><span class="lineNum">     323</span>                 :             :         /* large len -- decompress directly into user buffer */</span>
+<span id="L324"><span class="lineNum">     324</span>                 :             :         else {  /* state-&gt;how == GZIP */</span>
+<span id="L325"><span class="lineNum">     325</span>                 :<span class="tlaUNC">           0 :             state-&gt;strm.avail_out = n;</span></span>
+<span id="L326"><span class="lineNum">     326</span>                 :<span class="tlaUNC">           0 :             state-&gt;strm.next_out = (unsigned char *)buf;</span></span>
+<span id="L327"><span class="lineNum">     327</span>                 :<span class="tlaUNC">           0 :             if (gz_decomp(state) == -1)</span></span>
+<span id="L328"><span class="lineNum">     328</span>                 :<span class="tlaUNC">           0 :                 return 0;</span></span>
+<span id="L329"><span class="lineNum">     329</span>                 :<span class="tlaUNC">           0 :             n = state-&gt;x.have;</span></span>
+<span id="L330"><span class="lineNum">     330</span>                 :<span class="tlaUNC">           0 :             state-&gt;x.have = 0;</span></span>
+<span id="L331"><span class="lineNum">     331</span>                 :             :         }</span>
+<span id="L332"><span class="lineNum">     332</span>                 :             : </span>
+<span id="L333"><span class="lineNum">     333</span>                 :             :         /* update progress */</span>
+<span id="L334"><span class="lineNum">     334</span>                 :<span class="tlaUNC">           0 :         len -= n;</span></span>
+<span id="L335"><span class="lineNum">     335</span>                 :<span class="tlaUNC">           0 :         buf = (char *)buf + n;</span></span>
+<span id="L336"><span class="lineNum">     336</span>                 :<span class="tlaUNC">           0 :         got += n;</span></span>
+<span id="L337"><span class="lineNum">     337</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.pos += n;</span></span>
+<span id="L338"><span class="lineNum">     338</span>                 :<span class="tlaUNC">           0 :     } while (len);</span></span>
+<span id="L339"><span class="lineNum">     339</span>                 :             : </span>
+<span id="L340"><span class="lineNum">     340</span>                 :             :     /* return number of bytes read into user buffer */</span>
+<span id="L341"><span class="lineNum">     341</span>                 :<span class="tlaUNC">           0 :     return got;</span></span>
+<span id="L342"><span class="lineNum">     342</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L343"><span class="lineNum">     343</span>                 :             : </span>
+<span id="L344"><span class="lineNum">     344</span>                 :             : /* -- see zlib.h -- */</span>
+<span id="L345"><span class="lineNum">     345</span>                 :<span class="tlaUNC">           0 : int ZEXPORT gzread(gzFile file, voidp buf, unsigned len) {</span></span>
+<span id="L346"><span class="lineNum">     346</span>                 :             :     gz_statep state;</span>
+<span id="L347"><span class="lineNum">     347</span>                 :             : </span>
+<span id="L348"><span class="lineNum">     348</span>                 :             :     /* get internal structure */</span>
+<span id="L349"><span class="lineNum">     349</span>                 :<span class="tlaUNC">           0 :     if (file == NULL)</span></span>
+<span id="L350"><span class="lineNum">     350</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L351"><span class="lineNum">     351</span>                 :<span class="tlaUNC">           0 :     state = (gz_statep)file;</span></span>
+<span id="L352"><span class="lineNum">     352</span>                 :             : </span>
+<span id="L353"><span class="lineNum">     353</span>                 :             :     /* check that we're reading and that there's no (serious) error */</span>
+<span id="L354"><span class="lineNum">     354</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;mode != GZ_READ ||</span></span>
+<span id="L355"><span class="lineNum">     355</span>                 :<span class="tlaUNC">           0 :             (state-&gt;err != Z_OK &amp;&amp; state-&gt;err != Z_BUF_ERROR))</span></span>
+<span id="L356"><span class="lineNum">     356</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L357"><span class="lineNum">     357</span>                 :             : </span>
+<span id="L358"><span class="lineNum">     358</span>                 :             :     /* since an int is returned, make sure len fits in one, otherwise return</span>
+<span id="L359"><span class="lineNum">     359</span>                 :             :        with an error (this avoids a flaw in the interface) */</span>
+<span id="L360"><span class="lineNum">     360</span>                 :<span class="tlaUNC">           0 :     if ((int)len &lt; 0) {</span></span>
+<span id="L361"><span class="lineNum">     361</span>                 :<span class="tlaUNC">           0 :         gz_error(state, Z_STREAM_ERROR, &quot;request does not fit in an int&quot;);</span></span>
+<span id="L362"><span class="lineNum">     362</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L363"><span class="lineNum">     363</span>                 :             :     }</span>
+<span id="L364"><span class="lineNum">     364</span>                 :             : </span>
+<span id="L365"><span class="lineNum">     365</span>                 :             :     /* read len or fewer bytes to buf */</span>
+<span id="L366"><span class="lineNum">     366</span>                 :<span class="tlaUNC">           0 :     len = (unsigned)gz_read(state, buf, len);</span></span>
+<span id="L367"><span class="lineNum">     367</span>                 :             : </span>
+<span id="L368"><span class="lineNum">     368</span>                 :             :     /* check for an error */</span>
+<span id="L369"><span class="lineNum">     369</span>                 :<span class="tlaUNC">           0 :     if (len == 0 &amp;&amp; state-&gt;err != Z_OK &amp;&amp; state-&gt;err != Z_BUF_ERROR)</span></span>
+<span id="L370"><span class="lineNum">     370</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L371"><span class="lineNum">     371</span>                 :             : </span>
+<span id="L372"><span class="lineNum">     372</span>                 :             :     /* return the number of bytes read (this is assured to fit in an int) */</span>
+<span id="L373"><span class="lineNum">     373</span>                 :<span class="tlaUNC">           0 :     return (int)len;</span></span>
+<span id="L374"><span class="lineNum">     374</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L375"><span class="lineNum">     375</span>                 :             : </span>
+<span id="L376"><span class="lineNum">     376</span>                 :             : /* -- see zlib.h -- */</span>
+<span id="L377"><span class="lineNum">     377</span>                 :<span class="tlaUNC">           0 : z_size_t ZEXPORT gzfread(voidp buf, z_size_t size, z_size_t nitems, gzFile file) {</span></span>
+<span id="L378"><span class="lineNum">     378</span>                 :             :     z_size_t len;</span>
+<span id="L379"><span class="lineNum">     379</span>                 :             :     gz_statep state;</span>
+<span id="L380"><span class="lineNum">     380</span>                 :             : </span>
+<span id="L381"><span class="lineNum">     381</span>                 :             :     /* get internal structure */</span>
+<span id="L382"><span class="lineNum">     382</span>                 :<span class="tlaUNC">           0 :     if (file == NULL)</span></span>
+<span id="L383"><span class="lineNum">     383</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L384"><span class="lineNum">     384</span>                 :<span class="tlaUNC">           0 :     state = (gz_statep)file;</span></span>
+<span id="L385"><span class="lineNum">     385</span>                 :             : </span>
+<span id="L386"><span class="lineNum">     386</span>                 :             :     /* check that we're reading and that there's no (serious) error */</span>
+<span id="L387"><span class="lineNum">     387</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;mode != GZ_READ ||</span></span>
+<span id="L388"><span class="lineNum">     388</span>                 :<span class="tlaUNC">           0 :             (state-&gt;err != Z_OK &amp;&amp; state-&gt;err != Z_BUF_ERROR))</span></span>
+<span id="L389"><span class="lineNum">     389</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L390"><span class="lineNum">     390</span>                 :             : </span>
+<span id="L391"><span class="lineNum">     391</span>                 :             :     /* compute bytes to read -- error on overflow */</span>
+<span id="L392"><span class="lineNum">     392</span>                 :<span class="tlaUNC">           0 :     len = nitems * size;</span></span>
+<span id="L393"><span class="lineNum">     393</span>                 :<span class="tlaUNC">           0 :     if (size &amp;&amp; len / size != nitems) {</span></span>
+<span id="L394"><span class="lineNum">     394</span>                 :<span class="tlaUNC">           0 :         gz_error(state, Z_STREAM_ERROR, &quot;request does not fit in a size_t&quot;);</span></span>
+<span id="L395"><span class="lineNum">     395</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L396"><span class="lineNum">     396</span>                 :             :     }</span>
+<span id="L397"><span class="lineNum">     397</span>                 :             : </span>
+<span id="L398"><span class="lineNum">     398</span>                 :             :     /* read len or fewer bytes to buf, return the number of full items read */</span>
+<span id="L399"><span class="lineNum">     399</span>                 :<span class="tlaUNC">           0 :     return len ? gz_read(state, buf, len) / size : 0;</span></span>
+<span id="L400"><span class="lineNum">     400</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L401"><span class="lineNum">     401</span>                 :             : </span>
+<span id="L402"><span class="lineNum">     402</span>                 :             : /* -- see zlib.h -- */</span>
+<span id="L403"><span class="lineNum">     403</span>                 :             : #ifdef Z_PREFIX_SET</span>
+<span id="L404"><span class="lineNum">     404</span>                 :             : #  undef z_gzgetc</span>
+<span id="L405"><span class="lineNum">     405</span>                 :             : #else</span>
+<span id="L406"><span class="lineNum">     406</span>                 :             : #  undef gzgetc</span>
+<span id="L407"><span class="lineNum">     407</span>                 :             : #endif</span>
+<span id="L408"><span class="lineNum">     408</span>                 :<span class="tlaUNC">           0 : int ZEXPORT gzgetc(gzFile file) {</span></span>
+<span id="L409"><span class="lineNum">     409</span>                 :             :     unsigned char buf[1];</span>
+<span id="L410"><span class="lineNum">     410</span>                 :             :     gz_statep state;</span>
+<span id="L411"><span class="lineNum">     411</span>                 :             : </span>
+<span id="L412"><span class="lineNum">     412</span>                 :             :     /* get internal structure */</span>
+<span id="L413"><span class="lineNum">     413</span>                 :<span class="tlaUNC">           0 :     if (file == NULL)</span></span>
+<span id="L414"><span class="lineNum">     414</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L415"><span class="lineNum">     415</span>                 :<span class="tlaUNC">           0 :     state = (gz_statep)file;</span></span>
+<span id="L416"><span class="lineNum">     416</span>                 :             : </span>
+<span id="L417"><span class="lineNum">     417</span>                 :             :     /* check that we're reading and that there's no (serious) error */</span>
+<span id="L418"><span class="lineNum">     418</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;mode != GZ_READ ||</span></span>
+<span id="L419"><span class="lineNum">     419</span>                 :<span class="tlaUNC">           0 :         (state-&gt;err != Z_OK &amp;&amp; state-&gt;err != Z_BUF_ERROR))</span></span>
+<span id="L420"><span class="lineNum">     420</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L421"><span class="lineNum">     421</span>                 :             : </span>
+<span id="L422"><span class="lineNum">     422</span>                 :             :     /* try output buffer (no need to check for skip request) */</span>
+<span id="L423"><span class="lineNum">     423</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;x.have) {</span></span>
+<span id="L424"><span class="lineNum">     424</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.have--;</span></span>
+<span id="L425"><span class="lineNum">     425</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.pos++;</span></span>
+<span id="L426"><span class="lineNum">     426</span>                 :<span class="tlaUNC">           0 :         return *(state-&gt;x.next)++;</span></span>
+<span id="L427"><span class="lineNum">     427</span>                 :             :     }</span>
+<span id="L428"><span class="lineNum">     428</span>                 :             : </span>
+<span id="L429"><span class="lineNum">     429</span>                 :             :     /* nothing there -- try gz_read() */</span>
+<span id="L430"><span class="lineNum">     430</span>                 :<span class="tlaUNC">           0 :     return gz_read(state, buf, 1) &lt; 1 ? -1 : buf[0];</span></span>
+<span id="L431"><span class="lineNum">     431</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L432"><span class="lineNum">     432</span>                 :             : </span>
+<span id="L433"><span class="lineNum">     433</span>                 :<span class="tlaUNC">           0 : int ZEXPORT gzgetc_(gzFile file) {</span></span>
+<span id="L434"><span class="lineNum">     434</span>                 :<span class="tlaUNC">           0 :     return gzgetc(file);</span></span>
+<span id="L435"><span class="lineNum">     435</span>                 :             : }</span>
+<span id="L436"><span class="lineNum">     436</span>                 :             : </span>
+<span id="L437"><span class="lineNum">     437</span>                 :             : /* -- see zlib.h -- */</span>
+<span id="L438"><span class="lineNum">     438</span>                 :<span class="tlaUNC">           0 : int ZEXPORT gzungetc(int c, gzFile file) {</span></span>
+<span id="L439"><span class="lineNum">     439</span>                 :             :     gz_statep state;</span>
+<span id="L440"><span class="lineNum">     440</span>                 :             : </span>
+<span id="L441"><span class="lineNum">     441</span>                 :             :     /* get internal structure */</span>
+<span id="L442"><span class="lineNum">     442</span>                 :<span class="tlaUNC">           0 :     if (file == NULL)</span></span>
+<span id="L443"><span class="lineNum">     443</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L444"><span class="lineNum">     444</span>                 :<span class="tlaUNC">           0 :     state = (gz_statep)file;</span></span>
+<span id="L445"><span class="lineNum">     445</span>                 :             : </span>
+<span id="L446"><span class="lineNum">     446</span>                 :             :     /* in case this was just opened, set up the input buffer */</span>
+<span id="L447"><span class="lineNum">     447</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;mode == GZ_READ &amp;&amp; state-&gt;how == LOOK &amp;&amp; state-&gt;x.have == 0)</span></span>
+<span id="L448"><span class="lineNum">     448</span>                 :<span class="tlaUNC">           0 :         (void)gz_look(state);</span></span>
+<span id="L449"><span class="lineNum">     449</span>                 :             : </span>
+<span id="L450"><span class="lineNum">     450</span>                 :             :     /* check that we're reading and that there's no (serious) error */</span>
+<span id="L451"><span class="lineNum">     451</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;mode != GZ_READ ||</span></span>
+<span id="L452"><span class="lineNum">     452</span>                 :<span class="tlaUNC">           0 :         (state-&gt;err != Z_OK &amp;&amp; state-&gt;err != Z_BUF_ERROR))</span></span>
+<span id="L453"><span class="lineNum">     453</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L454"><span class="lineNum">     454</span>                 :             : </span>
+<span id="L455"><span class="lineNum">     455</span>                 :             :     /* process a skip request */</span>
+<span id="L456"><span class="lineNum">     456</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;seek) {</span></span>
+<span id="L457"><span class="lineNum">     457</span>                 :<span class="tlaUNC">           0 :         state-&gt;seek = 0;</span></span>
+<span id="L458"><span class="lineNum">     458</span>                 :<span class="tlaUNC">           0 :         if (gz_skip(state, state-&gt;skip) == -1)</span></span>
+<span id="L459"><span class="lineNum">     459</span>                 :<span class="tlaUNC">           0 :             return -1;</span></span>
+<span id="L460"><span class="lineNum">     460</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L461"><span class="lineNum">     461</span>                 :             : </span>
+<span id="L462"><span class="lineNum">     462</span>                 :             :     /* can't push EOF */</span>
+<span id="L463"><span class="lineNum">     463</span>                 :<span class="tlaUNC">           0 :     if (c &lt; 0)</span></span>
+<span id="L464"><span class="lineNum">     464</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L465"><span class="lineNum">     465</span>                 :             : </span>
+<span id="L466"><span class="lineNum">     466</span>                 :             :     /* if output buffer empty, put byte at end (allows more pushing) */</span>
+<span id="L467"><span class="lineNum">     467</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;x.have == 0) {</span></span>
+<span id="L468"><span class="lineNum">     468</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.have = 1;</span></span>
+<span id="L469"><span class="lineNum">     469</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.next = state-&gt;out + (state-&gt;size &lt;&lt; 1) - 1;</span></span>
+<span id="L470"><span class="lineNum">     470</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.next[0] = (unsigned char)c;</span></span>
+<span id="L471"><span class="lineNum">     471</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.pos--;</span></span>
+<span id="L472"><span class="lineNum">     472</span>                 :<span class="tlaUNC">           0 :         state-&gt;past = 0;</span></span>
+<span id="L473"><span class="lineNum">     473</span>                 :<span class="tlaUNC">           0 :         return c;</span></span>
+<span id="L474"><span class="lineNum">     474</span>                 :             :     }</span>
+<span id="L475"><span class="lineNum">     475</span>                 :             : </span>
+<span id="L476"><span class="lineNum">     476</span>                 :             :     /* if no room, give up (must have already done a gzungetc()) */</span>
+<span id="L477"><span class="lineNum">     477</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;x.have == (state-&gt;size &lt;&lt; 1)) {</span></span>
+<span id="L478"><span class="lineNum">     478</span>                 :<span class="tlaUNC">           0 :         gz_error(state, Z_DATA_ERROR, &quot;out of room to push characters&quot;);</span></span>
+<span id="L479"><span class="lineNum">     479</span>                 :<span class="tlaUNC">           0 :         return -1;</span></span>
+<span id="L480"><span class="lineNum">     480</span>                 :             :     }</span>
+<span id="L481"><span class="lineNum">     481</span>                 :             : </span>
+<span id="L482"><span class="lineNum">     482</span>                 :             :     /* slide output data if needed and insert byte before existing data */</span>
+<span id="L483"><span class="lineNum">     483</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;x.next == state-&gt;out) {</span></span>
+<span id="L484"><span class="lineNum">     484</span>                 :<span class="tlaUNC">           0 :         unsigned char *src = state-&gt;out + state-&gt;x.have;</span></span>
+<span id="L485"><span class="lineNum">     485</span>                 :<span class="tlaUNC">           0 :         unsigned char *dest = state-&gt;out + (state-&gt;size &lt;&lt; 1);</span></span>
+<span id="L486"><span class="lineNum">     486</span>                 :<span class="tlaUNC">           0 :         while (src &gt; state-&gt;out)</span></span>
+<span id="L487"><span class="lineNum">     487</span>                 :<span class="tlaUNC">           0 :             *--dest = *--src;</span></span>
+<span id="L488"><span class="lineNum">     488</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.next = dest;</span></span>
+<span id="L489"><span class="lineNum">     489</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L490"><span class="lineNum">     490</span>                 :<span class="tlaUNC">           0 :     state-&gt;x.have++;</span></span>
+<span id="L491"><span class="lineNum">     491</span>                 :<span class="tlaUNC">           0 :     state-&gt;x.next--;</span></span>
+<span id="L492"><span class="lineNum">     492</span>                 :<span class="tlaUNC">           0 :     state-&gt;x.next[0] = (unsigned char)c;</span></span>
+<span id="L493"><span class="lineNum">     493</span>                 :<span class="tlaUNC">           0 :     state-&gt;x.pos--;</span></span>
+<span id="L494"><span class="lineNum">     494</span>                 :<span class="tlaUNC">           0 :     state-&gt;past = 0;</span></span>
+<span id="L495"><span class="lineNum">     495</span>                 :<span class="tlaUNC">           0 :     return c;</span></span>
+<span id="L496"><span class="lineNum">     496</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L497"><span class="lineNum">     497</span>                 :             : </span>
+<span id="L498"><span class="lineNum">     498</span>                 :             : /* -- see zlib.h -- */</span>
+<span id="L499"><span class="lineNum">     499</span>                 :<span class="tlaUNC">           0 : char * ZEXPORT gzgets(gzFile file, char *buf, int len) {</span></span>
+<span id="L500"><span class="lineNum">     500</span>                 :             :     unsigned left, n;</span>
+<span id="L501"><span class="lineNum">     501</span>                 :             :     char *str;</span>
+<span id="L502"><span class="lineNum">     502</span>                 :             :     unsigned char *eol;</span>
+<span id="L503"><span class="lineNum">     503</span>                 :             :     gz_statep state;</span>
+<span id="L504"><span class="lineNum">     504</span>                 :             : </span>
+<span id="L505"><span class="lineNum">     505</span>                 :             :     /* check parameters and get internal structure */</span>
+<span id="L506"><span class="lineNum">     506</span>                 :<span class="tlaUNC">           0 :     if (file == NULL || buf == NULL || len &lt; 1)</span></span>
+<span id="L507"><span class="lineNum">     507</span>                 :<span class="tlaUNC">           0 :         return NULL;</span></span>
+<span id="L508"><span class="lineNum">     508</span>                 :<span class="tlaUNC">           0 :     state = (gz_statep)file;</span></span>
+<span id="L509"><span class="lineNum">     509</span>                 :             : </span>
+<span id="L510"><span class="lineNum">     510</span>                 :             :     /* check that we're reading and that there's no (serious) error */</span>
+<span id="L511"><span class="lineNum">     511</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;mode != GZ_READ ||</span></span>
+<span id="L512"><span class="lineNum">     512</span>                 :<span class="tlaUNC">           0 :         (state-&gt;err != Z_OK &amp;&amp; state-&gt;err != Z_BUF_ERROR))</span></span>
+<span id="L513"><span class="lineNum">     513</span>                 :<span class="tlaUNC">           0 :         return NULL;</span></span>
+<span id="L514"><span class="lineNum">     514</span>                 :             : </span>
+<span id="L515"><span class="lineNum">     515</span>                 :             :     /* process a skip request */</span>
+<span id="L516"><span class="lineNum">     516</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;seek) {</span></span>
+<span id="L517"><span class="lineNum">     517</span>                 :<span class="tlaUNC">           0 :         state-&gt;seek = 0;</span></span>
+<span id="L518"><span class="lineNum">     518</span>                 :<span class="tlaUNC">           0 :         if (gz_skip(state, state-&gt;skip) == -1)</span></span>
+<span id="L519"><span class="lineNum">     519</span>                 :<span class="tlaUNC">           0 :             return NULL;</span></span>
+<span id="L520"><span class="lineNum">     520</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L521"><span class="lineNum">     521</span>                 :             : </span>
+<span id="L522"><span class="lineNum">     522</span>                 :             :     /* copy output bytes up to new line or len - 1, whichever comes first --</span>
+<span id="L523"><span class="lineNum">     523</span>                 :             :        append a terminating zero to the string (we don't check for a zero in</span>
+<span id="L524"><span class="lineNum">     524</span>                 :             :        the contents, let the user worry about that) */</span>
+<span id="L525"><span class="lineNum">     525</span>                 :<span class="tlaUNC">           0 :     str = buf;</span></span>
+<span id="L526"><span class="lineNum">     526</span>                 :<span class="tlaUNC">           0 :     left = (unsigned)len - 1;</span></span>
+<span id="L527"><span class="lineNum">     527</span>                 :<span class="tlaUNC">           0 :     if (left) do {</span></span>
+<span id="L528"><span class="lineNum">     528</span>                 :             :         /* assure that something is in the output buffer */</span>
+<span id="L529"><span class="lineNum">     529</span>                 :<span class="tlaUNC">           0 :         if (state-&gt;x.have == 0 &amp;&amp; gz_fetch(state) == -1)</span></span>
+<span id="L530"><span class="lineNum">     530</span>                 :<span class="tlaUNC">           0 :             return NULL;                /* error */</span></span>
+<span id="L531"><span class="lineNum">     531</span>                 :<span class="tlaUNC">           0 :         if (state-&gt;x.have == 0) {       /* end of file */</span></span>
+<span id="L532"><span class="lineNum">     532</span>                 :<span class="tlaUNC">           0 :             state-&gt;past = 1;            /* read past end */</span></span>
+<span id="L533"><span class="lineNum">     533</span>                 :<span class="tlaUNC">           0 :             break;                      /* return what we have */</span></span>
+<span id="L534"><span class="lineNum">     534</span>                 :             :         }</span>
+<span id="L535"><span class="lineNum">     535</span>                 :             : </span>
+<span id="L536"><span class="lineNum">     536</span>                 :             :         /* look for end-of-line in current output buffer */</span>
+<span id="L537"><span class="lineNum">     537</span>                 :<span class="tlaUNC">           0 :         n = state-&gt;x.have &gt; left ? left : state-&gt;x.have;</span></span>
+<span id="L538"><span class="lineNum">     538</span>                 :<span class="tlaUNC">           0 :         eol = (unsigned char *)memchr(state-&gt;x.next, '\n', n);</span></span>
+<span id="L539"><span class="lineNum">     539</span>                 :<span class="tlaUNC">           0 :         if (eol != NULL)</span></span>
+<span id="L540"><span class="lineNum">     540</span>                 :<span class="tlaUNC">           0 :             n = (unsigned)(eol - state-&gt;x.next) + 1;</span></span>
+<span id="L541"><span class="lineNum">     541</span>                 :             : </span>
+<span id="L542"><span class="lineNum">     542</span>                 :             :         /* copy through end-of-line, or remainder if not found */</span>
+<span id="L543"><span class="lineNum">     543</span>                 :<span class="tlaUNC">           0 :         memcpy(buf, state-&gt;x.next, n);</span></span>
+<span id="L544"><span class="lineNum">     544</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.have -= n;</span></span>
+<span id="L545"><span class="lineNum">     545</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.next += n;</span></span>
+<span id="L546"><span class="lineNum">     546</span>                 :<span class="tlaUNC">           0 :         state-&gt;x.pos += n;</span></span>
+<span id="L547"><span class="lineNum">     547</span>                 :<span class="tlaUNC">           0 :         left -= n;</span></span>
+<span id="L548"><span class="lineNum">     548</span>                 :<span class="tlaUNC">           0 :         buf += n;</span></span>
+<span id="L549"><span class="lineNum">     549</span>                 :<span class="tlaUNC">           0 :     } while (left &amp;&amp; eol == NULL);</span></span>
+<span id="L550"><span class="lineNum">     550</span>                 :             : </span>
+<span id="L551"><span class="lineNum">     551</span>                 :             :     /* return terminated string, or if nothing, end of file */</span>
+<span id="L552"><span class="lineNum">     552</span>                 :<span class="tlaUNC">           0 :     if (buf == str)</span></span>
+<span id="L553"><span class="lineNum">     553</span>                 :<span class="tlaUNC">           0 :         return NULL;</span></span>
+<span id="L554"><span class="lineNum">     554</span>                 :<span class="tlaUNC">           0 :     buf[0] = 0;</span></span>
+<span id="L555"><span class="lineNum">     555</span>                 :<span class="tlaUNC">           0 :     return str;</span></span>
+<span id="L556"><span class="lineNum">     556</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L557"><span class="lineNum">     557</span>                 :             : </span>
+<span id="L558"><span class="lineNum">     558</span>                 :             : /* -- see zlib.h -- */</span>
+<span id="L559"><span class="lineNum">     559</span>                 :<span class="tlaUNC">           0 : int ZEXPORT gzdirect(gzFile file) {</span></span>
+<span id="L560"><span class="lineNum">     560</span>                 :             :     gz_statep state;</span>
+<span id="L561"><span class="lineNum">     561</span>                 :             : </span>
+<span id="L562"><span class="lineNum">     562</span>                 :             :     /* get internal structure */</span>
+<span id="L563"><span class="lineNum">     563</span>                 :<span class="tlaUNC">           0 :     if (file == NULL)</span></span>
+<span id="L564"><span class="lineNum">     564</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L565"><span class="lineNum">     565</span>                 :<span class="tlaUNC">           0 :     state = (gz_statep)file;</span></span>
+<span id="L566"><span class="lineNum">     566</span>                 :             : </span>
+<span id="L567"><span class="lineNum">     567</span>                 :             :     /* if the state is not known, but we can find out, then do so (this is</span>
+<span id="L568"><span class="lineNum">     568</span>                 :             :        mainly for right after a gzopen() or gzdopen()) */</span>
+<span id="L569"><span class="lineNum">     569</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;mode == GZ_READ &amp;&amp; state-&gt;how == LOOK &amp;&amp; state-&gt;x.have == 0)</span></span>
+<span id="L570"><span class="lineNum">     570</span>                 :<span class="tlaUNC">           0 :         (void)gz_look(state);</span></span>
+<span id="L571"><span class="lineNum">     571</span>                 :             : </span>
+<span id="L572"><span class="lineNum">     572</span>                 :             :     /* return 1 if transparent, 0 if processing a gzip stream */</span>
+<span id="L573"><span class="lineNum">     573</span>                 :<span class="tlaUNC">           0 :     return state-&gt;direct;</span></span>
+<span id="L574"><span class="lineNum">     574</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L575"><span class="lineNum">     575</span>                 :             : </span>
+<span id="L576"><span class="lineNum">     576</span>                 :             : /* -- see zlib.h -- */</span>
+<span id="L577"><span class="lineNum">     577</span>                 :<span class="tlaUNC">           0 : int ZEXPORT gzclose_r(gzFile file) {</span></span>
+<span id="L578"><span class="lineNum">     578</span>                 :             :     int ret, err;</span>
+<span id="L579"><span class="lineNum">     579</span>                 :             :     gz_statep state;</span>
+<span id="L580"><span class="lineNum">     580</span>                 :             : </span>
+<span id="L581"><span class="lineNum">     581</span>                 :             :     /* get internal structure */</span>
+<span id="L582"><span class="lineNum">     582</span>                 :<span class="tlaUNC">           0 :     if (file == NULL)</span></span>
+<span id="L583"><span class="lineNum">     583</span>                 :<span class="tlaUNC">           0 :         return Z_STREAM_ERROR;</span></span>
+<span id="L584"><span class="lineNum">     584</span>                 :<span class="tlaUNC">           0 :     state = (gz_statep)file;</span></span>
+<span id="L585"><span class="lineNum">     585</span>                 :             : </span>
+<span id="L586"><span class="lineNum">     586</span>                 :             :     /* check that we're reading */</span>
+<span id="L587"><span class="lineNum">     587</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;mode != GZ_READ)</span></span>
+<span id="L588"><span class="lineNum">     588</span>                 :<span class="tlaUNC">           0 :         return Z_STREAM_ERROR;</span></span>
+<span id="L589"><span class="lineNum">     589</span>                 :             : </span>
+<span id="L590"><span class="lineNum">     590</span>                 :             :     /* free memory and close file */</span>
+<span id="L591"><span class="lineNum">     591</span>                 :<span class="tlaUNC">           0 :     if (state-&gt;size) {</span></span>
+<span id="L592"><span class="lineNum">     592</span>                 :<span class="tlaUNC">           0 :         inflateEnd(&amp;(state-&gt;strm));</span></span>
+<span id="L593"><span class="lineNum">     593</span>                 :<span class="tlaUNC">           0 :         free(state-&gt;out);</span></span>
+<span id="L594"><span class="lineNum">     594</span>                 :<span class="tlaUNC">           0 :         free(state-&gt;in);</span></span>
+<span id="L595"><span class="lineNum">     595</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L596"><span class="lineNum">     596</span>                 :<span class="tlaUNC">           0 :     err = state-&gt;err == Z_BUF_ERROR ? Z_BUF_ERROR : Z_OK;</span></span>
+<span id="L597"><span class="lineNum">     597</span>                 :<span class="tlaUNC">           0 :     gz_error(state, Z_OK, NULL);</span></span>
+<span id="L598"><span class="lineNum">     598</span>                 :<span class="tlaUNC">           0 :     free(state-&gt;path);</span></span>
+<span id="L599"><span class="lineNum">     599</span>                 :<span class="tlaUNC">           0 :     ret = close(state-&gt;fd);</span></span>
+<span id="L600"><span class="lineNum">     600</span>                 :<span class="tlaUNC">           0 :     free(state);</span></span>
+<span id="L601"><span class="lineNum">     601</span>                 :<span class="tlaUNC">           0 :     return ret ? Z_ERRNO : err;</span></span>
+<span id="L602"><span class="lineNum">     602</span>                 :<span class="tlaUNC">           0 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libjpeg-turbo-3.1.2/src/jclossls.c</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">libjpeg-turbo-3.1.2/src</a> - jclossls.c<span style="font-size: 80%;"> (source / <a href="jclossls.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">82</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-03 18:12:40</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             :  * jclossls.c</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             :  *</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             :  * This file was part of the Independent JPEG Group's software:</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             :  * Copyright (C) 1998, Thomas G. Lane.</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             :  * Lossless JPEG Modifications:</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :  * Copyright (C) 1999, Ken Murchison.</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :  * libjpeg-turbo Modifications:</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :  * Copyright (C) 2022, 2024, D. R. Commander.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :  * For conditions of distribution and use, see the accompanying README.ijg</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             :  * file.</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             :  *</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             :  * This file contains prediction, sample differencing, and point transform</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             :  * routines for the lossless JPEG compressor.</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             :  */</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : </span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : #define JPEG_INTERNALS</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : #include &quot;jinclude.h&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : #include &quot;jpeglib.h&quot;</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : #include &quot;jlossls.h&quot;</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : </span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : #ifdef C_LOSSLESS_SUPPORTED</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : </span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : </span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : /************************** Sample differencing **************************/</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : </span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : /*</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             :  * In order to avoid a performance penalty for checking which predictor is</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             :  * being used and which row is being processed for each call of the</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             :  * undifferencer, and to promote optimization, we have separate differencing</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             :  * functions for each predictor selection value.</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             :  *</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             :  * We are able to avoid duplicating source code by implementing the predictors</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             :  * and differencers as macros.  Each of the differencing functions is simply a</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             :  * wrapper around a DIFFERENCE macro with the appropriate PREDICTOR macro</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             :  * passed as an argument.</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             :  */</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : </span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : /* Forward declarations */</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : LOCAL(void) reset_predictor(j_compress_ptr cinfo, int ci);</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : </span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : </span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : /* Predictor for the first column of the first row: 2^(P-Pt-1) */</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : #define INITIAL_PREDICTORx  (1 &lt;&lt; (cinfo-&gt;data_precision - cinfo-&gt;Al - 1))</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : </span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : /* Predictor for the first column of the remaining rows: Rb */</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : #define INITIAL_PREDICTOR2  prev_row[0]</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : </span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : </span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : /*</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             :  * 1-Dimensional differencer routine.</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             :  *</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :  * This macro implements the 1-D horizontal predictor (1).  INITIAL_PREDICTOR</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :  * is used as the special case predictor for the first column, which must be</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :  * either INITIAL_PREDICTOR2 or INITIAL_PREDICTORx.  The remaining samples</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :  * use PREDICTOR1.</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :  */</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             : </span>
+<span id="L59"><span class="lineNum">      59</span>                 :             : #define DIFFERENCE_1D(INITIAL_PREDICTOR) \</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :   lossless_comp_ptr losslessc = (lossless_comp_ptr)cinfo-&gt;fdct; \</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             :   boolean restart = FALSE; \</span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   int samp, Ra; \</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             :   \</span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   samp = *input_buf++; \</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   *diff_buf++ = samp - INITIAL_PREDICTOR; \</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             :   \</span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :   while (--width) { \</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :     Ra = samp; \</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :     samp = *input_buf++; \</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :     *diff_buf++ = samp - PREDICTOR1; \</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   } \</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             :   \</span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :   /* Account for restart interval (no-op if not using restarts) */ \</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   if (cinfo-&gt;restart_interval) { \</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :     if (--(losslessc-&gt;restart_rows_to_go[ci]) == 0) { \</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :       reset_predictor(cinfo, ci); \</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :       restart = TRUE; \</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :     } \</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             :   }</span>
+<span id="L80"><span class="lineNum">      80</span>                 :             : </span>
+<span id="L81"><span class="lineNum">      81</span>                 :             : </span>
+<span id="L82"><span class="lineNum">      82</span>                 :             : /*</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :  * 2-Dimensional differencer routine.</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :  *</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :  * This macro implements the 2-D horizontal predictors (#2-7).  PREDICTOR2 is</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :  * used as the special case predictor for the first column.  The remaining</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             :  * samples use PREDICTOR, which is a function of Ra, Rb, and Rc.</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             :  *</span>
+<span id="L89"><span class="lineNum">      89</span>                 :             :  * Because prev_row and output_buf may point to the same storage area (in an</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :  * interleaved image with Vi=1, for example), we must take care to buffer Rb/Rc</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :  * before writing the current reconstructed sample value into output_buf.</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :  */</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             : </span>
+<span id="L94"><span class="lineNum">      94</span>                 :             : #define DIFFERENCE_2D(PREDICTOR) \</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             :   lossless_comp_ptr losslessc = (lossless_comp_ptr)cinfo-&gt;fdct; \</span>
+<span id="L96"><span class="lineNum">      96</span>                 :             :   int samp, Ra, Rb, Rc; \</span>
+<span id="L97"><span class="lineNum">      97</span>                 :             :   \</span>
+<span id="L98"><span class="lineNum">      98</span>                 :             :   Rb = *prev_row++; \</span>
+<span id="L99"><span class="lineNum">      99</span>                 :             :   samp = *input_buf++; \</span>
+<span id="L100"><span class="lineNum">     100</span>                 :             :   *diff_buf++ = samp - PREDICTOR2; \</span>
+<span id="L101"><span class="lineNum">     101</span>                 :             :   \</span>
+<span id="L102"><span class="lineNum">     102</span>                 :             :   while (--width) { \</span>
+<span id="L103"><span class="lineNum">     103</span>                 :             :     Rc = Rb; \</span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :     Rb = *prev_row++; \</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             :     Ra = samp; \</span>
+<span id="L106"><span class="lineNum">     106</span>                 :             :     samp = *input_buf++; \</span>
+<span id="L107"><span class="lineNum">     107</span>                 :             :     *diff_buf++ = samp - PREDICTOR; \</span>
+<span id="L108"><span class="lineNum">     108</span>                 :             :   } \</span>
+<span id="L109"><span class="lineNum">     109</span>                 :             :   \</span>
+<span id="L110"><span class="lineNum">     110</span>                 :             :   /* Account for restart interval (no-op if not using restarts) */ \</span>
+<span id="L111"><span class="lineNum">     111</span>                 :             :   if (cinfo-&gt;restart_interval) { \</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :     if (--losslessc-&gt;restart_rows_to_go[ci] == 0) \</span>
+<span id="L113"><span class="lineNum">     113</span>                 :             :       reset_predictor(cinfo, ci); \</span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :   }</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : </span>
+<span id="L116"><span class="lineNum">     116</span>                 :             : </span>
+<span id="L117"><span class="lineNum">     117</span>                 :             : /*</span>
+<span id="L118"><span class="lineNum">     118</span>                 :             :  * Differencers for the second and subsequent rows in a scan or restart</span>
+<span id="L119"><span class="lineNum">     119</span>                 :             :  * interval.  The first sample in the row is differenced using the vertical</span>
+<span id="L120"><span class="lineNum">     120</span>                 :             :  * predictor (2).  The rest of the samples are differenced using the predictor</span>
+<span id="L121"><span class="lineNum">     121</span>                 :             :  * specified in the scan header.</span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :  */</span>
+<span id="L123"><span class="lineNum">     123</span>                 :             : </span>
+<span id="L124"><span class="lineNum">     124</span>                 :             : METHODDEF(void)</span>
+<span id="L125"><span class="lineNum">     125</span>                 :<span class="tlaUNC tlaBgUNC">           0 : jpeg_difference1(j_compress_ptr cinfo, int ci,</span></span>
+<span id="L126"><span class="lineNum">     126</span>                 :             :                  _JSAMPROW input_buf, _JSAMPROW prev_row,</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :                  JDIFFROW diff_buf, JDIMENSION width)</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             : {</span>
+<span id="L129"><span class="lineNum">     129</span>                 :<span class="tlaUNC">           0 :   DIFFERENCE_1D(INITIAL_PREDICTOR2);</span></span>
+<span id="L130"><span class="lineNum">     130</span>                 :<span class="tlaUNC">           0 :   (void)(restart);</span></span>
+<span id="L131"><span class="lineNum">     131</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L132"><span class="lineNum">     132</span>                 :             : </span>
+<span id="L133"><span class="lineNum">     133</span>                 :             : METHODDEF(void)</span>
+<span id="L134"><span class="lineNum">     134</span>                 :<span class="tlaUNC">           0 : jpeg_difference2(j_compress_ptr cinfo, int ci,</span></span>
+<span id="L135"><span class="lineNum">     135</span>                 :             :                  _JSAMPROW input_buf, _JSAMPROW prev_row,</span>
+<span id="L136"><span class="lineNum">     136</span>                 :             :                  JDIFFROW diff_buf, JDIMENSION width)</span>
+<span id="L137"><span class="lineNum">     137</span>                 :             : {</span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 :   DIFFERENCE_2D(PREDICTOR2);</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :   (void)(Ra);</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :<span class="tlaUNC">           0 :   (void)(Rc);</span></span>
+<span id="L141"><span class="lineNum">     141</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L142"><span class="lineNum">     142</span>                 :             : </span>
+<span id="L143"><span class="lineNum">     143</span>                 :             : METHODDEF(void)</span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 : jpeg_difference3(j_compress_ptr cinfo, int ci,</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :                  _JSAMPROW input_buf, _JSAMPROW prev_row,</span>
+<span id="L146"><span class="lineNum">     146</span>                 :             :                  JDIFFROW diff_buf, JDIMENSION width)</span>
+<span id="L147"><span class="lineNum">     147</span>                 :             : {</span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :   DIFFERENCE_2D(PREDICTOR3);</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :<span class="tlaUNC">           0 :   (void)(Ra);</span></span>
+<span id="L150"><span class="lineNum">     150</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L151"><span class="lineNum">     151</span>                 :             : </span>
+<span id="L152"><span class="lineNum">     152</span>                 :             : METHODDEF(void)</span>
+<span id="L153"><span class="lineNum">     153</span>                 :<span class="tlaUNC">           0 : jpeg_difference4(j_compress_ptr cinfo, int ci,</span></span>
+<span id="L154"><span class="lineNum">     154</span>                 :             :                  _JSAMPROW input_buf, _JSAMPROW prev_row,</span>
+<span id="L155"><span class="lineNum">     155</span>                 :             :                  JDIFFROW diff_buf, JDIMENSION width)</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             : {</span>
+<span id="L157"><span class="lineNum">     157</span>                 :<span class="tlaUNC">           0 :   DIFFERENCE_2D(PREDICTOR4);</span></span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :             : </span>
+<span id="L160"><span class="lineNum">     160</span>                 :             : METHODDEF(void)</span>
+<span id="L161"><span class="lineNum">     161</span>                 :<span class="tlaUNC">           0 : jpeg_difference5(j_compress_ptr cinfo, int ci,</span></span>
+<span id="L162"><span class="lineNum">     162</span>                 :             :                  _JSAMPROW input_buf, _JSAMPROW prev_row,</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             :                  JDIFFROW diff_buf, JDIMENSION width)</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             : {</span>
+<span id="L165"><span class="lineNum">     165</span>                 :<span class="tlaUNC">           0 :   DIFFERENCE_2D(PREDICTOR5);</span></span>
+<span id="L166"><span class="lineNum">     166</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L167"><span class="lineNum">     167</span>                 :             : </span>
+<span id="L168"><span class="lineNum">     168</span>                 :             : METHODDEF(void)</span>
+<span id="L169"><span class="lineNum">     169</span>                 :<span class="tlaUNC">           0 : jpeg_difference6(j_compress_ptr cinfo, int ci,</span></span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :                  _JSAMPROW input_buf, _JSAMPROW prev_row,</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             :                  JDIFFROW diff_buf, JDIMENSION width)</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             : {</span>
+<span id="L173"><span class="lineNum">     173</span>                 :<span class="tlaUNC">           0 :   DIFFERENCE_2D(PREDICTOR6);</span></span>
+<span id="L174"><span class="lineNum">     174</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L175"><span class="lineNum">     175</span>                 :             : </span>
+<span id="L176"><span class="lineNum">     176</span>                 :             : METHODDEF(void)</span>
+<span id="L177"><span class="lineNum">     177</span>                 :<span class="tlaUNC">           0 : jpeg_difference7(j_compress_ptr cinfo, int ci,</span></span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :                  _JSAMPROW input_buf, _JSAMPROW prev_row,</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             :                  JDIFFROW diff_buf, JDIMENSION width)</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             : {</span>
+<span id="L181"><span class="lineNum">     181</span>                 :<span class="tlaUNC">           0 :   DIFFERENCE_2D(PREDICTOR7);</span></span>
+<span id="L182"><span class="lineNum">     182</span>                 :<span class="tlaUNC">           0 :   (void)(Rc);</span></span>
+<span id="L183"><span class="lineNum">     183</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : </span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : </span>
+<span id="L186"><span class="lineNum">     186</span>                 :             : /*</span>
+<span id="L187"><span class="lineNum">     187</span>                 :             :  * Differencer for the first row in a scan or restart interval.  The first</span>
+<span id="L188"><span class="lineNum">     188</span>                 :             :  * sample in the row is differenced using the special predictor constant</span>
+<span id="L189"><span class="lineNum">     189</span>                 :             :  * x = 2 ^ (P-Pt-1).  The rest of the samples are differenced using the</span>
+<span id="L190"><span class="lineNum">     190</span>                 :             :  * 1-D horizontal predictor (1).</span>
+<span id="L191"><span class="lineNum">     191</span>                 :             :  */</span>
+<span id="L192"><span class="lineNum">     192</span>                 :             : </span>
+<span id="L193"><span class="lineNum">     193</span>                 :             : METHODDEF(void)</span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 : jpeg_difference_first_row(j_compress_ptr cinfo, int ci,</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :             :                           _JSAMPROW input_buf, _JSAMPROW prev_row,</span>
+<span id="L196"><span class="lineNum">     196</span>                 :             :                           JDIFFROW diff_buf, JDIMENSION width)</span>
+<span id="L197"><span class="lineNum">     197</span>                 :             : {</span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 :   DIFFERENCE_1D(INITIAL_PREDICTORx);</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :             : </span>
+<span id="L200"><span class="lineNum">     200</span>                 :             :   /*</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             :    * Now that we have differenced the first row, we want to use the</span>
+<span id="L202"><span class="lineNum">     202</span>                 :             :    * differencer that corresponds to the predictor specified in the</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :    * scan header.</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :    *</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :    * Note that we don't do this if we have just reset the predictor</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             :    * for a new restart interval.</span>
+<span id="L207"><span class="lineNum">     207</span>                 :             :    */</span>
+<span id="L208"><span class="lineNum">     208</span>                 :<span class="tlaUNC">           0 :   if (!restart) {</span></span>
+<span id="L209"><span class="lineNum">     209</span>                 :<span class="tlaUNC">           0 :     switch (cinfo-&gt;Ss) {</span></span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :     case 1:</span>
+<span id="L211"><span class="lineNum">     211</span>                 :<span class="tlaUNC">           0 :       losslessc-&gt;predict_difference[ci] = jpeg_difference1;</span></span>
+<span id="L212"><span class="lineNum">     212</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :     case 2:</span>
+<span id="L214"><span class="lineNum">     214</span>                 :<span class="tlaUNC">           0 :       losslessc-&gt;predict_difference[ci] = jpeg_difference2;</span></span>
+<span id="L215"><span class="lineNum">     215</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L216"><span class="lineNum">     216</span>                 :             :     case 3:</span>
+<span id="L217"><span class="lineNum">     217</span>                 :<span class="tlaUNC">           0 :       losslessc-&gt;predict_difference[ci] = jpeg_difference3;</span></span>
+<span id="L218"><span class="lineNum">     218</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :     case 4:</span>
+<span id="L220"><span class="lineNum">     220</span>                 :<span class="tlaUNC">           0 :       losslessc-&gt;predict_difference[ci] = jpeg_difference4;</span></span>
+<span id="L221"><span class="lineNum">     221</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L222"><span class="lineNum">     222</span>                 :             :     case 5:</span>
+<span id="L223"><span class="lineNum">     223</span>                 :<span class="tlaUNC">           0 :       losslessc-&gt;predict_difference[ci] = jpeg_difference5;</span></span>
+<span id="L224"><span class="lineNum">     224</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L225"><span class="lineNum">     225</span>                 :             :     case 6:</span>
+<span id="L226"><span class="lineNum">     226</span>                 :<span class="tlaUNC">           0 :       losslessc-&gt;predict_difference[ci] = jpeg_difference6;</span></span>
+<span id="L227"><span class="lineNum">     227</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :     case 7:</span>
+<span id="L229"><span class="lineNum">     229</span>                 :<span class="tlaUNC">           0 :       losslessc-&gt;predict_difference[ci] = jpeg_difference7;</span></span>
+<span id="L230"><span class="lineNum">     230</span>                 :<span class="tlaUNC">           0 :       break;</span></span>
+<span id="L231"><span class="lineNum">     231</span>                 :             :     }</span>
+<span id="L232"><span class="lineNum">     232</span>                 :<span class="tlaUNC">           0 :   }</span></span>
+<span id="L233"><span class="lineNum">     233</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L234"><span class="lineNum">     234</span>                 :             : </span>
+<span id="L235"><span class="lineNum">     235</span>                 :             : /*</span>
+<span id="L236"><span class="lineNum">     236</span>                 :             :  * Reset predictor at the start of a pass or restart interval.</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             :  */</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             : </span>
+<span id="L239"><span class="lineNum">     239</span>                 :             : LOCAL(void)</span>
+<span id="L240"><span class="lineNum">     240</span>                 :<span class="tlaUNC">           0 : reset_predictor(j_compress_ptr cinfo, int ci)</span></span>
+<span id="L241"><span class="lineNum">     241</span>                 :             : {</span>
+<span id="L242"><span class="lineNum">     242</span>                 :<span class="tlaUNC">           0 :   lossless_comp_ptr losslessc = (lossless_comp_ptr)cinfo-&gt;fdct;</span></span>
+<span id="L243"><span class="lineNum">     243</span>                 :             : </span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :   /* Initialize restart counter */</span>
+<span id="L245"><span class="lineNum">     245</span>                 :<span class="tlaUNC">           0 :   losslessc-&gt;restart_rows_to_go[ci] =</span></span>
+<span id="L246"><span class="lineNum">     246</span>                 :<span class="tlaUNC">           0 :     cinfo-&gt;restart_interval / cinfo-&gt;MCUs_per_row;</span></span>
+<span id="L247"><span class="lineNum">     247</span>                 :             : </span>
+<span id="L248"><span class="lineNum">     248</span>                 :             :   /* Set difference function to first row function */</span>
+<span id="L249"><span class="lineNum">     249</span>                 :<span class="tlaUNC">           0 :   losslessc-&gt;predict_difference[ci] = jpeg_difference_first_row;</span></span>
+<span id="L250"><span class="lineNum">     250</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L251"><span class="lineNum">     251</span>                 :             : </span>
+<span id="L252"><span class="lineNum">     252</span>                 :             : </span>
+<span id="L253"><span class="lineNum">     253</span>                 :             : /********************** Sample downscaling by 2^Pt ***********************/</span>
+<span id="L254"><span class="lineNum">     254</span>                 :             : </span>
+<span id="L255"><span class="lineNum">     255</span>                 :             : METHODDEF(void)</span>
+<span id="L256"><span class="lineNum">     256</span>                 :<span class="tlaUNC">           0 : simple_downscale(j_compress_ptr cinfo,</span></span>
+<span id="L257"><span class="lineNum">     257</span>                 :             :                  _JSAMPROW input_buf, _JSAMPROW output_buf, JDIMENSION width)</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             : {</span>
+<span id="L259"><span class="lineNum">     259</span>                 :<span class="tlaUNC">           0 :   do {</span></span>
+<span id="L260"><span class="lineNum">     260</span>                 :<span class="tlaUNC">           0 :     *output_buf++ = (_JSAMPLE)RIGHT_SHIFT(*input_buf++, cinfo-&gt;Al);</span></span>
+<span id="L261"><span class="lineNum">     261</span>                 :<span class="tlaUNC">           0 :   } while (--width);</span></span>
+<span id="L262"><span class="lineNum">     262</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L263"><span class="lineNum">     263</span>                 :             : </span>
+<span id="L264"><span class="lineNum">     264</span>                 :             : </span>
+<span id="L265"><span class="lineNum">     265</span>                 :             : METHODDEF(void)</span>
+<span id="L266"><span class="lineNum">     266</span>                 :<span class="tlaUNC">           0 : noscale(j_compress_ptr cinfo,</span></span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :         _JSAMPROW input_buf, _JSAMPROW output_buf, JDIMENSION width)</span>
+<span id="L268"><span class="lineNum">     268</span>                 :             : {</span>
+<span id="L269"><span class="lineNum">     269</span>                 :<span class="tlaUNC">           0 :   memcpy(output_buf, input_buf, width * sizeof(_JSAMPLE));</span></span>
+<span id="L270"><span class="lineNum">     270</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L271"><span class="lineNum">     271</span>                 :             : </span>
+<span id="L272"><span class="lineNum">     272</span>                 :             : </span>
+<span id="L273"><span class="lineNum">     273</span>                 :             : /*</span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :  * Initialize for a processing pass.</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             :  */</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             : </span>
+<span id="L277"><span class="lineNum">     277</span>                 :             : METHODDEF(void)</span>
+<span id="L278"><span class="lineNum">     278</span>                 :<span class="tlaUNC">           0 : start_pass_lossless(j_compress_ptr cinfo)</span></span>
+<span id="L279"><span class="lineNum">     279</span>                 :             : {</span>
+<span id="L280"><span class="lineNum">     280</span>                 :<span class="tlaUNC">           0 :   lossless_comp_ptr losslessc = (lossless_comp_ptr)cinfo-&gt;fdct;</span></span>
+<span id="L281"><span class="lineNum">     281</span>                 :<span class="tlaUNC">           0 :   int ci;</span></span>
+<span id="L282"><span class="lineNum">     282</span>                 :             : </span>
+<span id="L283"><span class="lineNum">     283</span>                 :             :   /* Set scaler function based on Pt */</span>
+<span id="L284"><span class="lineNum">     284</span>                 :<span class="tlaUNC">           0 :   if (cinfo-&gt;Al)</span></span>
+<span id="L285"><span class="lineNum">     285</span>                 :<span class="tlaUNC">           0 :     losslessc-&gt;scaler_scale = simple_downscale;</span></span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :   else</span>
+<span id="L287"><span class="lineNum">     287</span>                 :<span class="tlaUNC">           0 :     losslessc-&gt;scaler_scale = noscale;</span></span>
+<span id="L288"><span class="lineNum">     288</span>                 :             : </span>
+<span id="L289"><span class="lineNum">     289</span>                 :             :   /* Check that the restart interval is an integer multiple of the number</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             :    * of MCUs in an MCU row.</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             :    */</span>
+<span id="L292"><span class="lineNum">     292</span>                 :<span class="tlaUNC">           0 :   if (cinfo-&gt;restart_interval % cinfo-&gt;MCUs_per_row != 0)</span></span>
+<span id="L293"><span class="lineNum">     293</span>                 :<span class="tlaUNC">           0 :     ERREXIT2(cinfo, JERR_BAD_RESTART,</span></span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :              cinfo-&gt;restart_interval, cinfo-&gt;MCUs_per_row);</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             : </span>
+<span id="L296"><span class="lineNum">     296</span>                 :             :   /* Set predictors for start of pass */</span>
+<span id="L297"><span class="lineNum">     297</span>                 :<span class="tlaUNC">           0 :   for (ci = 0; ci &lt; cinfo-&gt;num_components; ci++)</span></span>
+<span id="L298"><span class="lineNum">     298</span>                 :<span class="tlaUNC">           0 :     reset_predictor(cinfo, ci);</span></span>
+<span id="L299"><span class="lineNum">     299</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L300"><span class="lineNum">     300</span>                 :             : </span>
+<span id="L301"><span class="lineNum">     301</span>                 :             : </span>
+<span id="L302"><span class="lineNum">     302</span>                 :             : /*</span>
+<span id="L303"><span class="lineNum">     303</span>                 :             :  * Initialize the lossless compressor.</span>
+<span id="L304"><span class="lineNum">     304</span>                 :             :  */</span>
+<span id="L305"><span class="lineNum">     305</span>                 :             : </span>
+<span id="L306"><span class="lineNum">     306</span>                 :             : GLOBAL(void)</span>
+<span id="L307"><span class="lineNum">     307</span>                 :<span class="tlaUNC">           0 : _jinit_lossless_compressor(j_compress_ptr cinfo)</span></span>
+<span id="L308"><span class="lineNum">     308</span>                 :             : {</span>
+<span id="L309"><span class="lineNum">     309</span>                 :<span class="tlaUNC">           0 :   lossless_comp_ptr losslessc;</span></span>
+<span id="L310"><span class="lineNum">     310</span>                 :             : </span>
+<span id="L311"><span class="lineNum">     311</span>                 :             : #if BITS_IN_JSAMPLE == 8</span>
+<span id="L312"><span class="lineNum">     312</span>                 :<span class="tlaUNC">           0 :   if (cinfo-&gt;data_precision &gt; BITS_IN_JSAMPLE || cinfo-&gt;data_precision &lt; 2)</span></span>
+<span id="L313"><span class="lineNum">     313</span>                 :             : #else</span>
+<span id="L314"><span class="lineNum">     314</span>                 :<span class="tlaUNC">           0 :   if (cinfo-&gt;data_precision &gt; BITS_IN_JSAMPLE ||</span></span>
+<span id="L315"><span class="lineNum">     315</span>                 :<span class="tlaUNC">           0 :       cinfo-&gt;data_precision &lt; BITS_IN_JSAMPLE - 3)</span></span>
+<span id="L316"><span class="lineNum">     316</span>                 :             : #endif</span>
+<span id="L317"><span class="lineNum">     317</span>                 :<span class="tlaUNC">           0 :     ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo-&gt;data_precision);</span></span>
+<span id="L318"><span class="lineNum">     318</span>                 :             : </span>
+<span id="L319"><span class="lineNum">     319</span>                 :             :   /* Create subobject in permanent pool */</span>
+<span id="L320"><span class="lineNum">     320</span>                 :<span class="tlaUNC">           0 :   losslessc = (lossless_comp_ptr)</span></span>
+<span id="L321"><span class="lineNum">     321</span>                 :<span class="tlaUNC">           0 :     (*cinfo-&gt;mem-&gt;alloc_small) ((j_common_ptr)cinfo, JPOOL_PERMANENT,</span></span>
+<span id="L322"><span class="lineNum">     322</span>                 :             :                                 sizeof(jpeg_lossless_compressor));</span>
+<span id="L323"><span class="lineNum">     323</span>                 :<span class="tlaUNC">           0 :   cinfo-&gt;fdct = (struct jpeg_forward_dct *)losslessc;</span></span>
+<span id="L324"><span class="lineNum">     324</span>                 :<span class="tlaUNC">           0 :   losslessc-&gt;pub.start_pass = start_pass_lossless;</span></span>
+<span id="L325"><span class="lineNum">     325</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L326"><span class="lineNum">     326</span>                 :             : </span>
+<span id="L327"><span class="lineNum">     327</span>                 :             : #endif /* C_LOSSLESS_SUPPORTED */</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>
