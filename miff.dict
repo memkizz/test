@@ -1,0 +1,320 @@
+
+
+# ===== Magic / identification string (14 bytes, REQUIRED) =====
+magic="id=ImageMagick"
+
+# ===== Full magic with version (common header start) =====
+magic_v1="id=ImageMagick version=1.0\n"
+
+# ===== Header terminator (the ':' character ends the header) =====
+terminator=":"
+
+# ===== Comment delimiters =====
+comment_open="{"
+comment_close="}"
+
+# ===== Escape character (inside comments and values) =====
+escape="\\"
+
+# ===== Assignment operator =====
+equals="="
+
+# ====================================================================
+# KEYWORD NAMES (all 42 keywords recognized by the parser)
+# ====================================================================
+
+# --- 'a' keywords ---
+kw_alpha_trait="alpha-trait"
+kw_alpha_trait_eq="alpha-trait="
+
+# --- 'b' keywords ---
+kw_background_color="background-color"
+kw_background_color_eq="background-color="
+kw_blue_primary="blue-primary"
+kw_blue_primary_eq="blue-primary="
+kw_border_color="border-color"
+kw_border_color_eq="border-color="
+
+# --- 'c' keywords ---
+kw_channel_mask="channel-mask"
+kw_channel_mask_eq="channel-mask="
+kw_class="class"
+kw_class_eq="class="
+kw_colors="colors"
+kw_colors_eq="colors="
+kw_colorspace="colorspace"
+kw_colorspace_eq="colorspace="
+kw_columns="columns"
+kw_columns_eq="columns="
+kw_compression="compression"
+kw_compression_eq="compression="
+
+# --- 'd' keywords ---
+kw_delay="delay"
+kw_delay_eq="delay="
+kw_depth="depth"
+kw_depth_eq="depth="
+kw_dispose="dispose"
+kw_dispose_eq="dispose="
+
+# --- 'e' keywords ---
+kw_endian="endian"
+kw_endian_eq="endian="
+
+# --- 'g' keywords ---
+kw_gamma="gamma"
+kw_gamma_eq="gamma="
+kw_gravity="gravity"
+kw_gravity_eq="gravity="
+kw_green_primary="green-primary"
+kw_green_primary_eq="green-primary="
+
+# --- 'i' keywords ---
+kw_id="id"
+kw_id_eq="id="
+kw_iterations="iterations"
+kw_iterations_eq="iterations="
+
+# --- 'm' keywords ---
+kw_matte="matte"
+kw_matte_eq="matte="
+kw_mattecolor="mattecolor"
+kw_mattecolor_eq="mattecolor="
+kw_montage="montage"
+kw_montage_eq="montage="
+
+# --- 'n' keywords ---
+kw_number_channels="number-channels"
+kw_number_channels_eq="number-channels="
+kw_number_meta_channels="number-meta-channels"
+kw_number_meta_channels_eq="number-meta-channels="
+
+# --- 'o' keywords ---
+kw_orientation="orientation"
+kw_orientation_eq="orientation="
+
+# --- 'p' keywords ---
+kw_page="page"
+kw_page_eq="page="
+kw_pixel_intensity="pixel-intensity"
+kw_pixel_intensity_eq="pixel-intensity="
+kw_profile="profile"
+kw_profile_eq="profile="
+
+# --- 'q' keywords ---
+kw_quality="quality"
+kw_quality_eq="quality="
+kw_quantum_format="quantum-format"
+kw_quantum_format_eq="quantum-format="
+kw_quantum_colon_format="quantum:format"
+kw_quantum_colon_format_eq="quantum:format="
+
+# --- 'r' keywords ---
+kw_red_primary="red-primary"
+kw_red_primary_eq="red-primary="
+kw_rendering_intent="rendering-intent"
+kw_rendering_intent_eq="rendering-intent="
+kw_resolution="resolution"
+kw_resolution_eq="resolution="
+kw_rows="rows"
+kw_rows_eq="rows="
+
+# --- 's' keywords ---
+kw_scene="scene"
+kw_scene_eq="scene="
+
+# --- 't' keywords ---
+kw_ticks_per_second="ticks-per-second"
+kw_ticks_per_second_eq="ticks-per-second="
+kw_tile_offset="tile-offset"
+kw_tile_offset_eq="tile-offset="
+kw_type="type"
+kw_type_eq="type="
+
+# --- 'u' keywords ---
+kw_units="units"
+kw_units_eq="units="
+
+# --- 'v' keywords ---
+kw_version="version"
+kw_version_eq="version="
+
+# --- 'w' keywords ---
+kw_white_point="white-point"
+kw_white_point_eq="white-point="
+
+# ====================================================================
+# KEYWORD VALUE ENUMS (ParseCommandOption string values)
+# ====================================================================
+
+# --- alpha-trait (MagickPixelTraitOptions) ---
+val_undefined="Undefined"
+val_blend="Blend"
+val_copy="Copy"
+val_update="Update"
+
+# --- class (MagickClassOptions) ---
+val_directclass="DirectClass"
+val_pseudoclass="PseudoClass"
+
+# --- colorspace (MagickColorspaceOptions) - most important values ---
+val_srgb="sRGB"
+val_rgb="RGB"
+val_gray="Gray"
+val_cmyk="CMYK"
+val_cmy="CMY"
+val_lab="Lab"
+val_cielab="CIELab"
+val_hsb="HSB"
+val_hsl="HSL"
+val_hsv="HSV"
+val_hwb="HWB"
+val_lineargray="LinearGray"
+val_log="Log"
+val_ohta="OHTA"
+val_scrgb="scRGB"
+val_transparent="Transparent"
+val_xyz="XYZ"
+val_ycbcr="YCbCr"
+val_yiq="YIQ"
+val_yuv="YUV"
+val_adobe98="Adobe98"
+val_displayp3="DisplayP3"
+val_prophoto="ProPhoto"
+val_oklab="Oklab"
+val_oklch="Oklch"
+val_lch="LCH"
+val_lchab="LCHab"
+val_lchuv="LCHuv"
+val_luv="Luv"
+val_hcl="HCL"
+val_hclp="HCLp"
+val_hsi="HSI"
+val_jzazbz="Jzazbz"
+val_lms="LMS"
+val_cat02lms="CAT02LMS"
+val_xyy="xyY"
+val_rec601ycbcr="Rec601YCbCr"
+val_rec709ycbcr="Rec709YCbCr"
+val_ycc="YCC"
+val_ydbdr="YDbDr"
+val_ypbpr="YPbPr"
+
+# --- compression (MagickCompressOptions) ---
+val_none="None"
+val_bzip="BZip"
+val_fax="Fax"
+val_group4="Group4"
+val_jbig1="JBIG1"
+val_jbig2="JBIG2"
+val_jpeg="JPEG"
+val_jpeg2000="JPEG2000"
+val_losslessjpeg="LosslessJPEG"
+val_lossless="Lossless"
+val_lzma="LZMA"
+val_lzw="LZW"
+val_rle="RLE"
+val_runlength="RunlengthEncoded"
+val_zip="Zip"
+val_zips="ZipS"
+val_zstd="Zstd"
+val_webp="WebP"
+val_piz="Piz"
+val_pxr24="Pxr24"
+val_b44="B44"
+val_b44a="B44A"
+val_dwaa="DWAA"
+val_dwab="DWAB"
+val_dxt1="DXT1"
+val_dxt3="DXT3"
+val_dxt5="DXT5"
+val_bc7="BC7"
+val_lerc="LERC"
+
+# --- dispose (MagickDisposeOptions) ---
+val_background="Background"
+val_previous="Previous"
+# val_none and val_undefined already defined above
+
+# --- endian (MagickEndianOptions) ---
+val_lsb="LSB"
+val_msb="MSB"
+
+# --- gravity (MagickGravityOptions) ---
+val_center="Center"
+val_east="East"
+val_forget="Forget"
+val_northeast="NorthEast"
+val_north="North"
+val_northwest="NorthWest"
+val_southeast="SouthEast"
+val_south="South"
+val_southwest="SouthWest"
+val_west="West"
+
+# --- orientation (MagickOrientationOptions) ---
+val_topleft="TopLeft"
+val_topright="TopRight"
+val_bottomright="BottomRight"
+val_bottomleft="BottomLeft"
+val_lefttop="LeftTop"
+val_righttop="RightTop"
+val_rightbottom="RightBottom"
+val_leftbottom="LeftBottom"
+
+# --- pixel-intensity (MagickPixelIntensityOptions) ---
+val_average="Average"
+val_brightness="Brightness"
+val_lightness="Lightness"
+val_mean="Mean"
+val_ms="MS"
+val_rec601luma="Rec601Luma"
+val_rec601luminance="Rec601Luminance"
+val_rec709luma="Rec709Luma"
+val_rec709luminance="Rec709Luminance"
+val_rms="RMS"
+
+# --- quantum-format (MagickQuantumFormatOptions) ---
+val_floatingpoint="FloatingPoint"
+val_signed="Signed"
+val_unsigned="Unsigned"
+
+# --- rendering-intent (MagickIntentOptions) ---
+val_absolute="Absolute"
+val_perceptual="Perceptual"
+val_relative="Relative"
+val_saturation="Saturation"
+
+# --- type (MagickTypeOptions) ---
+val_bilevel="Bilevel"
+val_colorsep="ColorSeparation"
+val_colorsepalpha="ColorSeparationAlpha"
+val_colorsepmatte="ColorSeparationMatte"
+val_grayscale="Grayscale"
+val_grayscalealpha="GrayscaleAlpha"
+val_grayscalematte="GrayscaleMatte"
+val_optimize="Optimize"
+val_palette="Palette"
+val_palettebilevel="PaletteBilevelAlpha"
+val_palettealpha="PaletteAlpha"
+val_palettematte="PaletteMatte"
+val_truecolor="TrueColor"
+val_truecoloralpha="TrueColorAlpha"
+val_truecolormatte="TrueColorMatte"
+
+# --- units (MagickResolutionOptions) ---
+val_pixelsperinch="PixelsPerInch"
+val_pixelspercentimeter="PixelsPerCentimeter"
+
+# --- matte (MagickBooleanOptions) ---
+val_true="True"
+val_false="False"
+
+# ====================================================================
+# PROFILE NAMES (for profile= keyword)
+# ====================================================================
+profile_icc="icc"
+profile_iptc="iptc"
+profile_exif="exif"
+profile_xmp="xmp"
+profile_8bim="8bim"
