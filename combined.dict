@@ -1,0 +1,152 @@
+# === heic.dict ===
+# AFL dictionary for HEIC/HEIF/AVIF — trimmed to ~20 essential entries
+# Based on heic.c coverage: 5.5% (49/887 lines). All read/write code at 0 hits.
+# Barrier: IsHEIC needs 12+ bytes with "ftyp" at [4:8] and recognized brand at [8:12],
+# then heif_context_read_from_file needs valid ISOBMFF meta/hdlr/pitm/iloc/iprp structure.
+
+# ====================================================================
+# FTYP MAGIC + BRANDS (pass IsHEIC & heif_check_filetype)
+# ====================================================================
+ftyp="ftyp"
+brand_heic="heic"
+brand_avif="avif"
+
+
+# === Profile magic strings (0 hits — impossible to find by mutation) ===
+# ICC_PROFILE magic (guards ICC profile extraction, called 1570x but never matched)
+icc_magic="ICC_PROFILE\x00"
+# Photoshop 3.0 (guards IPTC extraction, called 400x but never matched)
+iptc_magic="Photoshop 3.0\x00"
+# XMP namespace (guards XMP extraction, 0 hits)
+xmp_magic="http://ns.adobe.com/xap/1.0/\x00"
+# EXIF header
+exif_magic="Exif\x00\x00"
+
+# === miff.dict ===
+# AFL dictionary for MIFF (Magick Image File Format) — trimmed to essentials
+# Magic: "id=ImageMagick" (14 bytes), header is key=value pairs, terminated by ":"
+
+# === Magic (required gate) ===
+magic="id=ImageMagick"
+magic_v1="id=ImageMagick version=1.0\x0a"
+
+
+
+
+# === openexr.dict ===
+# AFL dictionary for OpenEXR format (trimmed based on exr.c coverage)
+#
+# Coverage: 11.5% (60/524 lines), 4/10 functions hit
+# THE WALL: exr_start_read() at line 622 fails ALL 407 attempts.
+# OpenEXR library does all header parsing internally — need complete
+# attribute fragments to break through library validation.
+#
+# Removed: all ≤3-byte entries (compression enums, line order enums,
+# envmap values, single-char channel names, null terminators),
+# all standalone attribute names (redundant with pre-assembled fragments),
+# all standalone type strings, all optional attribute names,
+# all size constants, all integer constants, pixel type entries,
+# redundant box values, redundant version variants.
+
+# ===== Magic number (4 bytes — IsEXR memcmp at line 135) =====
+magic="\x76\x2f\x31\x01"
+
+
+
+# === pdb.dict ===
+# AFL dictionary for Palm Database ImageViewer (PDB) format — trimmed to ~15 entries
+# Coverage: 12.2% (61/500). ReadPDBImage entered 3x. All 3 pass "vIMG"+"View" check.
+# 2/3 pass next_record==0. 0/2 pass record tag \x6f\x80\x00 at line 366 — THE WALL.
+# Everything past line 367 is at 0 hits. DecodeImage, IsPDB, WritePDBImage all 0 hits.
+
+# === Magic strings (already passing — lines 354-355) ===
+magic_type="vIMG"
+magic_id="View"
+magic_combined="vIMGView"
+
+# === Record tag bytes (THE WALL at line 366/367 — 0/2 pass) ===
+# 3-byte exception to size rule: this exact pattern is the primary blocker
+record_tag_0="\x6f\x80\x00"
+record_tag_1="\x6f\x80\x01"
+
+# === PDBImage header fields (26 bytes: version+type+padding+width+height) ===
+# Uncompressed 2bpp 4x4: version=0, type=0
+img_hdr_uncomp_2bpp="\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04\x00\x04"
+
+
+# File signatures (8 bytes each)
+png_sig="\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
+mng_sig="\x8a\x4d\x4e\x47\x0d\x0a\x1a\x0a"
+jng_sig="\x8b\x4a\x4e\x47\x0d\x0a\x1a\x0a"
+
+# === psd.dict ===
+# PSD/PSB format dictionary for AFL++
+# Targets: 8BIM markers, blend modes, layer keys, ZIP compression, resource IDs
+
+# PSD file signature (4 bytes) - gates ReadPSDImage
+psd_sig="8BPS"
+
+
+# 8BIM marker - critical bottleneck: only 6/172 layer blocks match this
+bim_marker="8BIM"
+
+
+# === svg.dict ===
+# AFL dictionary for SVG format fuzzing
+# Targets: svg.c element name matching (all at 0 hits),
+#   attribute keyword handlers, and libxml2 SAX parsing
+
+# Root element (CRITICAL - enables SVG compliance mode, sets fill/stroke defaults)
+svg_open="<svg "
+svg_close="</svg>"
+
+
+# Attributes (all keyword handlers at 0 hits)
+attr_viewbox=" viewBox=\"0 0 100 100\""
+attr_d=" d=\"M 0 0 L 1 1 Z\""
+attr_fill=" fill=\"black\""
+attr_transform=" transform=\"rotate(45)\""
+
+# === tiff.dict ===
+# TIFF AFL++ Dictionary
+# Targeting 0% coverage compression codecs, color spaces, and uncovered features
+# Based on tiff.c (32.8% lines) and libtiff (28.7% lines) coverage reports
+
+# TIFF headers with IFD offset at byte 8
+tiff_le_hdr="\x49\x49\x2a\x00\x08\x00\x00\x00"
+tiff_be_hdr="\x4d\x4d\x00\x2a\x00\x00\x00\x08"
+bigtiff_le="\x49\x49\x2b\x00\x08\x00\x00\x00"
+
+
+# === xbm.dict ===
+# AFL dictionary for XBM (X11 Bitmap) format (trimmed based on xbm.c coverage)
+#
+# Coverage: 14.9% (45/302 lines), 3/6 functions hit
+# THE WALL: ReadXBMImage entered 37x. sscanf matched "#define X N" 307 times
+# but 0/307 had names ending in "_width" (line 244 break: 0 hits).
+# All 37 fail at width<=0 check (line 250-251). Lines 252+ all 0.
+#
+# Removed: all ≤3-byte entries (comma, braces, newline, hex_prefix, num_1-8,
+# single-char names), all individual hex values (XBMInteger at 0%),
+# redundant width/height size variants, redundant declaration prefixes,
+# alternate names, hotspot defs, numeric strings.
+
+
+
+# ===== Data array declarations (3rd parsing phase, line 264-269) =====
+static_uchar_bits="static unsigned char i_bits[] = {\x0a"
+static_char_bits="static char i_bits[] = {\x0a"
+static_short_bits="static short i_bits[] = {\x0a"
+
+
+# === xpm.dict ===
+# AFL dictionary for XPM (X PixMap) format — trimmed to essentials
+# Magic: "/* XPM */" (9 bytes), C source code structure with quoted strings
+
+# === Magic (required gate) ===
+magic="/* XPM */"
+
+# === C structure tokens (needed to reach past magic into parsing) ===
+static_decl="static char *i[] = {\x0a"
+
+
