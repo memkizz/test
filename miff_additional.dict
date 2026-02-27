@@ -1,0 +1,47 @@
+# === dds.dict (0% coverage) ===
+# Magic: "DDS " + dwSize=124
+dds_magic="DDS "
+dds_hdr="DDS \x7c\x00\x00\x00"
+
+# === xcf.dict (0% coverage) ===
+# Magic: "gimp xcf " + version
+xcf_magic="gimp xcf "
+xcf_v0="gimp xcf file\x00"
+xcf_v1="gimp xcf v001\x00"
+
+
+hdr_magic="#?RADIANCE\x0a"
+hdr_magic2="#?RGBE\x0a"
+hdr_format="FORMAT=32-bit_rle_rgbe\x0a"
+
+
+qoi_magic="qoif"
+qoi_hdr="qoif\x00\x00\x00\x01\x00\x00\x00\x01\x03\x00"
+
+farbfeld_magic="farbfeld"
+farbfeld_hdr="farbfeld\x00\x00\x00\x01\x00\x00\x00\x01"
+
+
+# === sixel.dict (0% coverage) ===
+# DCS (Device Control String) introducer + raster attributes
+sixel_dcs_raster="\x1bP\x22"
+# Sixel ST (String Terminator) with context
+sixel_end="\x1b\x5c\x00"
+
+# === vicar.dict (0% coverage) ===
+# Magic: "LBLSIZE="
+vicar_magic="LBLSIZE="
+vicar_hdr="LBLSIZE=80 FORMAT='BYTE' TYPE='IMAGE' N1=1 N2=1 N3=1"
+
+# === sfw.dict (0% coverage) ===
+# Seattle Film Works magic
+sfw_magic="\x4f\x41\x46\x50"
+
+# === pwp.dict (0% coverage) ===
+# Seattle Film Works PWP magic
+pwp_magic="SFW95"
+
+# === pes.dict (0% coverage) ===
+# Brother embroidery magic
+pes_magic="#PES"
+pes_magic2="#PES0001"

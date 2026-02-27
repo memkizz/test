@@ -1,0 +1,430 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - libX11-1.8.12/src/xkb/XKBCvt.c</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">libX11-1.8.12/src/xkb</a> - XKBCvt.c<span style="font-size: 80%;"> (source / <a href="XKBCvt.c.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">82</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-27 15:54:12</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+            | Branches:
+            <span class="coverLegendCov">+</span> taken
+            <span class="coverLegendNoCov">-</span> not taken
+            <span class="coverLegendNoCov">#</span> not executed
+</td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : /*</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : </span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : Copyright 1988, 1989, 1998  The Open Group</span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : </span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : Permission to use, copy, modify, distribute, and sell this software and its</span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : documentation for any purpose is hereby granted without fee, provided that</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             : the above copyright notice appear in all copies and that both that</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             : copyright notice and this permission notice appear in supporting</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             : documentation.</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             : </span>
+<span id="L11"><span class="lineNum">      11</span>                 :             : The above copyright notice and this permission notice shall be included</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             : in all copies or substantial portions of the Software.</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             : </span>
+<span id="L14"><span class="lineNum">      14</span>                 :             : THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             : OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             : MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             : IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             : OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             : ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             : OTHER DEALINGS IN THE SOFTWARE.</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             : </span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : Except as contained in this notice, the name of The Open Group shall</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : not be used in advertising or otherwise to promote the sale, use or</span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : other dealings in this Software without prior written authorization</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : from The Open Group.</span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : </span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : */</span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : </span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : #ifdef HAVE_CONFIG_H</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : #include &lt;config.h&gt;</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             : #endif</span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : #include &lt;stdio.h&gt;</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : #include &lt;sys/types.h&gt;</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : #include &lt;sys/stat.h&gt;</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : </span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : #include &lt;X11/X.h&gt;</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : #include &lt;X11/Xlib.h&gt;</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : #include &quot;Xlibint.h&quot;</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : #include &quot;Xlcint.h&quot;</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : #include &quot;XlcPubI.h&quot;</span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : #include &quot;Ximint.h&quot;</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : #include &lt;X11/Xutil.h&gt;</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : #include &lt;X11/Xmd.h&gt;</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : #define XK_LATIN1</span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : #define XK_PUBLISHING</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : #include &lt;X11/keysym.h&gt;</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : #include &lt;X11/extensions/XKBproto.h&gt;</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : #include &quot;XKBlibint.h&quot;</span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : #include &lt;X11/Xlocale.h&gt;</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : #include &lt;ctype.h&gt;</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : #include &lt;X11/Xos.h&gt;</span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : </span>
+<span id="L53"><span class="lineNum">      53</span>                 :             : static int</span>
+<span id="L54"><span class="lineNum">      54</span>                 :<span class="tlaUNC tlaBgUNC">           0 : _XkbHandleSpecialSym(KeySym keysym, char *buffer, int nbytes, int *extra_rtrn)</span></span>
+<span id="L55"><span class="lineNum">      55</span>                 :             : {</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             :     /* try to convert to Latin-1, handling ctrl */</span>
+<span id="L57"><span class="lineNum">      57</span>                 :<span class="tlaUNC">           0 :     if (!(((keysym &gt;= XK_BackSpace) &amp;&amp; (keysym &lt;= XK_Clear)) ||</span></span>
+<span id="L58"><span class="lineNum">      58</span>                 :<span class="tlaUNC">           0 :           (keysym == XK_Return) || (keysym == XK_Escape) ||</span></span>
+<span id="L59"><span class="lineNum">      59</span>                 :<span class="tlaUNC">           0 :           (keysym == XK_KP_Space) || (keysym == XK_KP_Tab) ||</span></span>
+<span id="L60"><span class="lineNum">      60</span>                 :<span class="tlaUNC">           0 :           (keysym == XK_KP_Enter) ||</span></span>
+<span id="L61"><span class="lineNum">      61</span>                 :<span class="tlaUNC">           0 :           ((keysym &gt;= XK_KP_Multiply) &amp;&amp; (keysym &lt;= XK_KP_9)) ||</span></span>
+<span id="L62"><span class="lineNum">      62</span>                 :<span class="tlaUNC">           0 :           (keysym == XK_KP_Equal) || (keysym == XK_Delete)))</span></span>
+<span id="L63"><span class="lineNum">      63</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L64"><span class="lineNum">      64</span>                 :             : </span>
+<span id="L65"><span class="lineNum">      65</span>                 :<span class="tlaUNC">           0 :     if (nbytes &lt; 1) {</span></span>
+<span id="L66"><span class="lineNum">      66</span>                 :<span class="tlaUNC">           0 :         if (extra_rtrn)</span></span>
+<span id="L67"><span class="lineNum">      67</span>                 :<span class="tlaUNC">           0 :             *extra_rtrn = 1;</span></span>
+<span id="L68"><span class="lineNum">      68</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :     }</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :     /* if X keysym, convert to ascii by grabbing low 7 bits */</span>
+<span id="L71"><span class="lineNum">      71</span>                 :<span class="tlaUNC">           0 :     if (keysym == XK_KP_Space)</span></span>
+<span id="L72"><span class="lineNum">      72</span>                 :<span class="tlaUNC">           0 :         buffer[0] = XK_space &amp; 0x7F;            /* patch encoding botch */</span></span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :     else</span>
+<span id="L74"><span class="lineNum">      74</span>                 :<span class="tlaUNC">           0 :         buffer[0] = (char) (keysym &amp; 0x7F);</span></span>
+<span id="L75"><span class="lineNum">      75</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L76"><span class="lineNum">      76</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L77"><span class="lineNum">      77</span>                 :             : </span>
+<span id="L78"><span class="lineNum">      78</span>                 :             : /*ARGSUSED*/</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : static int</span>
+<span id="L80"><span class="lineNum">      80</span>                 :<span class="tlaUNC">           0 : _XkbKSToKnownSet(XPointer priv,</span></span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :                  KeySym keysym,</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :                  char *buffer,</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :                  int nbytes,</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             :                  int *extra_rtrn)</span>
+<span id="L85"><span class="lineNum">      85</span>                 :             : {</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :     char tbuf[8], *buf;</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : </span>
+<span id="L88"><span class="lineNum">      88</span>                 :<span class="tlaUNC">           0 :     if (extra_rtrn)</span></span>
+<span id="L89"><span class="lineNum">      89</span>                 :<span class="tlaUNC">           0 :         *extra_rtrn = 0;</span></span>
+<span id="L90"><span class="lineNum">      90</span>                 :             : </span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :     /* convert &quot;dead&quot; diacriticals for dumb applications */</span>
+<span id="L92"><span class="lineNum">      92</span>                 :<span class="tlaUNC">           0 :     if ((keysym &amp; 0xffffff00) == 0xfe00) {</span></span>
+<span id="L93"><span class="lineNum">      93</span>                 :<span class="tlaUNC">           0 :         switch (keysym) {</span></span>
+<span id="L94"><span class="lineNum">      94</span>                 :<span class="tlaUNC">           0 :         case XK_dead_grave:            keysym = XK_grave; break;</span></span>
+<span id="L95"><span class="lineNum">      95</span>                 :<span class="tlaUNC">           0 :         case XK_dead_acute:            keysym = XK_acute; break;</span></span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC">           0 :         case XK_dead_circumflex:       keysym = XK_asciicircum; break;</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :<span class="tlaUNC">           0 :         case XK_dead_tilde:            keysym = XK_asciitilde; break;</span></span>
+<span id="L98"><span class="lineNum">      98</span>                 :<span class="tlaUNC">           0 :         case XK_dead_macron:           keysym = XK_macron; break;</span></span>
+<span id="L99"><span class="lineNum">      99</span>                 :<span class="tlaUNC">           0 :         case XK_dead_breve:            keysym = XK_breve; break;</span></span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC">           0 :         case XK_dead_abovedot:         keysym = XK_abovedot; break;</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :<span class="tlaUNC">           0 :         case XK_dead_diaeresis:        keysym = XK_diaeresis; break;</span></span>
+<span id="L102"><span class="lineNum">     102</span>                 :<span class="tlaUNC">           0 :         case XK_dead_abovering:        keysym = XK_degree; break;</span></span>
+<span id="L103"><span class="lineNum">     103</span>                 :<span class="tlaUNC">           0 :         case XK_dead_doubleacute:      keysym = XK_doubleacute; break;</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :<span class="tlaUNC">           0 :         case XK_dead_caron:            keysym = XK_caron; break;</span></span>
+<span id="L105"><span class="lineNum">     105</span>                 :<span class="tlaUNC">           0 :         case XK_dead_cedilla:          keysym = XK_cedilla; break;</span></span>
+<span id="L106"><span class="lineNum">     106</span>                 :<span class="tlaUNC">           0 :         case XK_dead_ogonek:           keysym = XK_ogonek; break;</span></span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :         case XK_dead_iota:             keysym = XK_Greek_iota; break;</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :             : #ifdef XK_KATAKANA</span>
+<span id="L109"><span class="lineNum">     109</span>                 :<span class="tlaUNC">           0 :         case XK_dead_voiced_sound:     keysym = XK_voicedsound; break;</span></span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 :         case XK_dead_semivoiced_sound: keysym = XK_semivoicedsound; break;</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : #endif</span>
+<span id="L112"><span class="lineNum">     112</span>                 :             :         }</span>
+<span id="L113"><span class="lineNum">     113</span>                 :<span class="tlaUNC">           0 :     }</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :             : </span>
+<span id="L115"><span class="lineNum">     115</span>                 :<span class="tlaUNC">           0 :     if (nbytes &lt; 1)</span></span>
+<span id="L116"><span class="lineNum">     116</span>                 :<span class="tlaUNC">           0 :         buf = tbuf;</span></span>
+<span id="L117"><span class="lineNum">     117</span>                 :             :     else</span>
+<span id="L118"><span class="lineNum">     118</span>                 :<span class="tlaUNC">           0 :         buf = buffer;</span></span>
+<span id="L119"><span class="lineNum">     119</span>                 :             : </span>
+<span id="L120"><span class="lineNum">     120</span>                 :<span class="tlaUNC">           0 :     if ((keysym &amp; 0xffffff00) == 0xff00) {</span></span>
+<span id="L121"><span class="lineNum">     121</span>                 :<span class="tlaUNC">           0 :         return _XkbHandleSpecialSym(keysym, buf, nbytes, extra_rtrn);</span></span>
+<span id="L122"><span class="lineNum">     122</span>                 :             :     }</span>
+<span id="L123"><span class="lineNum">     123</span>                 :<span class="tlaUNC">           0 :     return _XimGetCharCode(priv, keysym, (unsigned char *) buf, nbytes);</span></span>
+<span id="L124"><span class="lineNum">     124</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L125"><span class="lineNum">     125</span>                 :             : </span>
+<span id="L126"><span class="lineNum">     126</span>                 :             : typedef struct _XkbToKS {</span>
+<span id="L127"><span class="lineNum">     127</span>                 :             :     unsigned prefix;</span>
+<span id="L128"><span class="lineNum">     128</span>                 :             :     char *map;</span>
+<span id="L129"><span class="lineNum">     129</span>                 :             : } XkbToKS;</span>
+<span id="L130"><span class="lineNum">     130</span>                 :             : </span>
+<span id="L131"><span class="lineNum">     131</span>                 :             : /*ARGSUSED*/</span>
+<span id="L132"><span class="lineNum">     132</span>                 :             : static KeySym</span>
+<span id="L133"><span class="lineNum">     133</span>                 :<span class="tlaUNC">           0 : _XkbKnownSetToKS(XPointer priv, char *buffer, int nbytes, Status *status)</span></span>
+<span id="L134"><span class="lineNum">     134</span>                 :             : {</span>
+<span id="L135"><span class="lineNum">     135</span>                 :<span class="tlaUNC">           0 :     if (nbytes != 1)</span></span>
+<span id="L136"><span class="lineNum">     136</span>                 :<span class="tlaUNC">           0 :         return NoSymbol;</span></span>
+<span id="L137"><span class="lineNum">     137</span>                 :<span class="tlaUNC">           0 :     if (((buffer[0] &amp; 0x80) == 0) &amp;&amp; (buffer[0] &gt;= 32))</span></span>
+<span id="L138"><span class="lineNum">     138</span>                 :<span class="tlaUNC">           0 :         return buffer[0];</span></span>
+<span id="L139"><span class="lineNum">     139</span>                 :<span class="tlaUNC">           0 :     else if ((buffer[0] &amp; 0x7f) &gt;= 32) {</span></span>
+<span id="L140"><span class="lineNum">     140</span>                 :<span class="tlaUNC">           0 :         XkbToKS *map = (XkbToKS *) priv;</span></span>
+<span id="L141"><span class="lineNum">     141</span>                 :             : </span>
+<span id="L142"><span class="lineNum">     142</span>                 :<span class="tlaUNC">           0 :         if (map) {</span></span>
+<span id="L143"><span class="lineNum">     143</span>                 :<span class="tlaUNC">           0 :             if (map-&gt;map)</span></span>
+<span id="L144"><span class="lineNum">     144</span>                 :<span class="tlaUNC">           0 :                 return map-&gt;prefix | map-&gt;map[buffer[0] &amp; 0x7f];</span></span>
+<span id="L145"><span class="lineNum">     145</span>                 :             :             else</span>
+<span id="L146"><span class="lineNum">     146</span>                 :<span class="tlaUNC">           0 :                 return map-&gt;prefix | buffer[0];</span></span>
+<span id="L147"><span class="lineNum">     147</span>                 :             :         }</span>
+<span id="L148"><span class="lineNum">     148</span>                 :<span class="tlaUNC">           0 :         return buffer[0];</span></span>
+<span id="L149"><span class="lineNum">     149</span>                 :             :     }</span>
+<span id="L150"><span class="lineNum">     150</span>                 :<span class="tlaUNC">           0 :     return NoSymbol;</span></span>
+<span id="L151"><span class="lineNum">     151</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L152"><span class="lineNum">     152</span>                 :             : </span>
+<span id="L153"><span class="lineNum">     153</span>                 :             : static KeySym</span>
+<span id="L154"><span class="lineNum">     154</span>                 :<span class="tlaUNC">           0 : __XkbDefaultToUpper(KeySym sym)</span></span>
+<span id="L155"><span class="lineNum">     155</span>                 :             : {</span>
+<span id="L156"><span class="lineNum">     156</span>                 :             :     KeySym lower, upper;</span>
+<span id="L157"><span class="lineNum">     157</span>                 :             : </span>
+<span id="L158"><span class="lineNum">     158</span>                 :<span class="tlaUNC">           0 :     XConvertCase(sym, &amp;lower, &amp;upper);</span></span>
+<span id="L159"><span class="lineNum">     159</span>                 :<span class="tlaUNC">           0 :     return upper;</span></span>
+<span id="L160"><span class="lineNum">     160</span>                 :             : }</span>
+<span id="L161"><span class="lineNum">     161</span>                 :             : </span>
+<span id="L162"><span class="lineNum">     162</span>                 :             : #ifdef XKB_EXTEND_LOOKUP_STRING</span>
+<span id="L163"><span class="lineNum">     163</span>                 :             : static int</span>
+<span id="L164"><span class="lineNum">     164</span>                 :             : Strcmp(char *str1, char *str2)</span>
+<span id="L165"><span class="lineNum">     165</span>                 :             : {</span>
+<span id="L166"><span class="lineNum">     166</span>                 :             :     char str[256];</span>
+<span id="L167"><span class="lineNum">     167</span>                 :             :     char c, *s;</span>
+<span id="L168"><span class="lineNum">     168</span>                 :             : </span>
+<span id="L169"><span class="lineNum">     169</span>                 :             :     /*</span>
+<span id="L170"><span class="lineNum">     170</span>                 :             :      * unchecked strings from the environment can end up here, so check</span>
+<span id="L171"><span class="lineNum">     171</span>                 :             :      * the length before copying.</span>
+<span id="L172"><span class="lineNum">     172</span>                 :             :      */</span>
+<span id="L173"><span class="lineNum">     173</span>                 :             :     if (strlen(str1) &gt;= sizeof(str))    /* almost certain it's a mismatch */</span>
+<span id="L174"><span class="lineNum">     174</span>                 :             :         return 1;</span>
+<span id="L175"><span class="lineNum">     175</span>                 :             : </span>
+<span id="L176"><span class="lineNum">     176</span>                 :             :     for (s = str; (c = *str1++);) {</span>
+<span id="L177"><span class="lineNum">     177</span>                 :             :         if (isupper(c))</span>
+<span id="L178"><span class="lineNum">     178</span>                 :             :             c = tolower(c);</span>
+<span id="L179"><span class="lineNum">     179</span>                 :             :         *s++ = c;</span>
+<span id="L180"><span class="lineNum">     180</span>                 :             :     }</span>
+<span id="L181"><span class="lineNum">     181</span>                 :             :     *s = '\0';</span>
+<span id="L182"><span class="lineNum">     182</span>                 :             :     return (strcmp(str, str2));</span>
+<span id="L183"><span class="lineNum">     183</span>                 :             : }</span>
+<span id="L184"><span class="lineNum">     184</span>                 :             : #endif</span>
+<span id="L185"><span class="lineNum">     185</span>                 :             : </span>
+<span id="L186"><span class="lineNum">     186</span>                 :             : int</span>
+<span id="L187"><span class="lineNum">     187</span>                 :<span class="tlaUNC">           0 : _XkbGetConverters(const char *encoding_name, XkbConverters * cvt_rtrn)</span></span>
+<span id="L188"><span class="lineNum">     188</span>                 :             : {</span>
+<span id="L189"><span class="lineNum">     189</span>                 :<span class="tlaUNC">           0 :     if (!cvt_rtrn)</span></span>
+<span id="L190"><span class="lineNum">     190</span>                 :<span class="tlaUNC">           0 :         return 0;</span></span>
+<span id="L191"><span class="lineNum">     191</span>                 :             : </span>
+<span id="L192"><span class="lineNum">     192</span>                 :<span class="tlaUNC">           0 :     cvt_rtrn-&gt;KSToMB = _XkbKSToKnownSet;</span></span>
+<span id="L193"><span class="lineNum">     193</span>                 :<span class="tlaUNC">           0 :     cvt_rtrn-&gt;KSToMBPriv = _XimGetLocaleCode(encoding_name);</span></span>
+<span id="L194"><span class="lineNum">     194</span>                 :<span class="tlaUNC">           0 :     cvt_rtrn-&gt;MBToKS = _XkbKnownSetToKS;</span></span>
+<span id="L195"><span class="lineNum">     195</span>                 :<span class="tlaUNC">           0 :     cvt_rtrn-&gt;MBToKSPriv = NULL;</span></span>
+<span id="L196"><span class="lineNum">     196</span>                 :<span class="tlaUNC">           0 :     cvt_rtrn-&gt;KSToUpper = __XkbDefaultToUpper;</span></span>
+<span id="L197"><span class="lineNum">     197</span>                 :<span class="tlaUNC">           0 :     return 1;</span></span>
+<span id="L198"><span class="lineNum">     198</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L199"><span class="lineNum">     199</span>                 :             : </span>
+<span id="L200"><span class="lineNum">     200</span>                 :             : /***====================================================================***/</span>
+<span id="L201"><span class="lineNum">     201</span>                 :             : </span>
+<span id="L202"><span class="lineNum">     202</span>                 :             : /*</span>
+<span id="L203"><span class="lineNum">     203</span>                 :             :  * The function _XkbGetCharset seems to be missnamed as what it seems to</span>
+<span id="L204"><span class="lineNum">     204</span>                 :             :  * be used for is to determine the encoding-name for the locale. ???</span>
+<span id="L205"><span class="lineNum">     205</span>                 :             :  */</span>
+<span id="L206"><span class="lineNum">     206</span>                 :             : </span>
+<span id="L207"><span class="lineNum">     207</span>                 :             : #ifdef XKB_EXTEND_LOOKUP_STRING</span>
+<span id="L208"><span class="lineNum">     208</span>                 :             : </span>
+<span id="L209"><span class="lineNum">     209</span>                 :             : /*</span>
+<span id="L210"><span class="lineNum">     210</span>                 :             :  * XKB_EXTEND_LOOKUP_STRING is not used by the SI. It is used by various</span>
+<span id="L211"><span class="lineNum">     211</span>                 :             :  * X Consortium/X Project Team members, so we leave it in the source as</span>
+<span id="L212"><span class="lineNum">     212</span>                 :             :  * an simplify integration by these companies.</span>
+<span id="L213"><span class="lineNum">     213</span>                 :             :  */</span>
+<span id="L214"><span class="lineNum">     214</span>                 :             : </span>
+<span id="L215"><span class="lineNum">     215</span>                 :             : #define CHARSET_FILE    &quot;/usr/lib/X11/input/charsets&quot;</span>
+<span id="L216"><span class="lineNum">     216</span>                 :             : static char *_XkbKnownLanguages =</span>
+<span id="L217"><span class="lineNum">     217</span>                 :             :     &quot;c=ascii:da,de,en,es,fr,is,it,nl,no,pt,sv=iso8859-1:hu,pl,cs=iso8859-2:&quot;</span>
+<span id="L218"><span class="lineNum">     218</span>                 :             :     &quot;eo=iso8859-3:sp=iso8859-5:ar,ara=iso8859-6:el=iso8859-7:he=iso8859-8:&quot;</span>
+<span id="L219"><span class="lineNum">     219</span>                 :             :     &quot;tr=iso8859-9:lt,lv=iso8859-13:et,fi=iso8859-15:ru=koi8-r:uk=koi8-u:&quot;</span>
+<span id="L220"><span class="lineNum">     220</span>                 :             :     &quot;th,th_TH,th_TH.iso8859-11=iso8859-11:th_TH.TIS620=tis620:hy=armscii-8:&quot;</span>
+<span id="L221"><span class="lineNum">     221</span>                 :             :     &quot;vi=tcvn-5712:ka=georgian-academy:be,bg=microsoft-cp1251&quot;;</span>
+<span id="L222"><span class="lineNum">     222</span>                 :             : </span>
+<span id="L223"><span class="lineNum">     223</span>                 :             : char *</span>
+<span id="L224"><span class="lineNum">     224</span>                 :             : _XkbGetCharset(void)</span>
+<span id="L225"><span class="lineNum">     225</span>                 :             : {</span>
+<span id="L226"><span class="lineNum">     226</span>                 :             :     /*</span>
+<span id="L227"><span class="lineNum">     227</span>                 :             :      * PAGE USAGE TUNING: explicitly initialize to move these to data</span>
+<span id="L228"><span class="lineNum">     228</span>                 :             :      * instead of bss</span>
+<span id="L229"><span class="lineNum">     229</span>                 :             :      */</span>
+<span id="L230"><span class="lineNum">     230</span>                 :             :     static char buf[100] = { 0 };</span>
+<span id="L231"><span class="lineNum">     231</span>                 :             :     char lang[256];</span>
+<span id="L232"><span class="lineNum">     232</span>                 :             :     char *start, *tmp, *end, *next, *set;</span>
+<span id="L233"><span class="lineNum">     233</span>                 :             :     char *country, *charset;</span>
+<span id="L234"><span class="lineNum">     234</span>                 :             :     char *locale;</span>
+<span id="L235"><span class="lineNum">     235</span>                 :             : </span>
+<span id="L236"><span class="lineNum">     236</span>                 :             :     tmp = getenv(&quot;_XKB_CHARSET&quot;);</span>
+<span id="L237"><span class="lineNum">     237</span>                 :             :     if (tmp)</span>
+<span id="L238"><span class="lineNum">     238</span>                 :             :         return tmp;</span>
+<span id="L239"><span class="lineNum">     239</span>                 :             :     locale = setlocale(LC_CTYPE, NULL);</span>
+<span id="L240"><span class="lineNum">     240</span>                 :             : </span>
+<span id="L241"><span class="lineNum">     241</span>                 :             :     if (locale == NULL)</span>
+<span id="L242"><span class="lineNum">     242</span>                 :             :         return NULL;</span>
+<span id="L243"><span class="lineNum">     243</span>                 :             : </span>
+<span id="L244"><span class="lineNum">     244</span>                 :             :     if (strlen(locale) &gt;= sizeof(lang))</span>
+<span id="L245"><span class="lineNum">     245</span>                 :             :         return NULL;</span>
+<span id="L246"><span class="lineNum">     246</span>                 :             : </span>
+<span id="L247"><span class="lineNum">     247</span>                 :             :     for (tmp = lang; *tmp = *locale++; tmp++) {</span>
+<span id="L248"><span class="lineNum">     248</span>                 :             :         if (isupper(*tmp))</span>
+<span id="L249"><span class="lineNum">     249</span>                 :             :             *tmp = tolower(*tmp);</span>
+<span id="L250"><span class="lineNum">     250</span>                 :             :     }</span>
+<span id="L251"><span class="lineNum">     251</span>                 :             :     country = strchr(lang, '_');</span>
+<span id="L252"><span class="lineNum">     252</span>                 :             :     if (country) {</span>
+<span id="L253"><span class="lineNum">     253</span>                 :             :         *country++ = '\0';</span>
+<span id="L254"><span class="lineNum">     254</span>                 :             :         charset = strchr(country, '.');</span>
+<span id="L255"><span class="lineNum">     255</span>                 :             :         if (charset)</span>
+<span id="L256"><span class="lineNum">     256</span>                 :             :             *charset++ = '\0';</span>
+<span id="L257"><span class="lineNum">     257</span>                 :             :         if (charset) {</span>
+<span id="L258"><span class="lineNum">     258</span>                 :             :             strncpy(buf, charset, 99);</span>
+<span id="L259"><span class="lineNum">     259</span>                 :             :             buf[99] = '\0';</span>
+<span id="L260"><span class="lineNum">     260</span>                 :             :             return buf;</span>
+<span id="L261"><span class="lineNum">     261</span>                 :             :         }</span>
+<span id="L262"><span class="lineNum">     262</span>                 :             :     }</span>
+<span id="L263"><span class="lineNum">     263</span>                 :             :     else {</span>
+<span id="L264"><span class="lineNum">     264</span>                 :             :         charset = NULL;</span>
+<span id="L265"><span class="lineNum">     265</span>                 :             :     }</span>
+<span id="L266"><span class="lineNum">     266</span>                 :             : </span>
+<span id="L267"><span class="lineNum">     267</span>                 :             :     if ((tmp = getenv(&quot;_XKB_LOCALE_CHARSETS&quot;)) != NULL) {</span>
+<span id="L268"><span class="lineNum">     268</span>                 :             :         start = _XkbAlloc(strlen(tmp) + 1);</span>
+<span id="L269"><span class="lineNum">     269</span>                 :             :         strcpy(start, tmp);</span>
+<span id="L270"><span class="lineNum">     270</span>                 :             :         tmp = start;</span>
+<span id="L271"><span class="lineNum">     271</span>                 :             :     }</span>
+<span id="L272"><span class="lineNum">     272</span>                 :             :     else {</span>
+<span id="L273"><span class="lineNum">     273</span>                 :             :         struct stat sbuf;</span>
+<span id="L274"><span class="lineNum">     274</span>                 :             :         FILE *file;</span>
+<span id="L275"><span class="lineNum">     275</span>                 :             :         char *cf = CHARSET_FILE;</span>
+<span id="L276"><span class="lineNum">     276</span>                 :             : </span>
+<span id="L277"><span class="lineNum">     277</span>                 :             : #ifndef S_ISREG</span>
+<span id="L278"><span class="lineNum">     278</span>                 :             : # define S_ISREG(mode)   (((mode) &amp; S_IFMT) == S_IFREG)</span>
+<span id="L279"><span class="lineNum">     279</span>                 :             : #endif</span>
+<span id="L280"><span class="lineNum">     280</span>                 :             : </span>
+<span id="L281"><span class="lineNum">     281</span>                 :             :         if ((stat(cf, &amp;sbuf) == 0) &amp;&amp; S_ISREG(sbuf.st_mode) &amp;&amp;</span>
+<span id="L282"><span class="lineNum">     282</span>                 :             :             (file = fopen(cf, &quot;r&quot;))) {</span>
+<span id="L283"><span class="lineNum">     283</span>                 :             :             tmp = _XkbAlloc(sbuf.st_size + 1);</span>
+<span id="L284"><span class="lineNum">     284</span>                 :             :             if (tmp != NULL) {</span>
+<span id="L285"><span class="lineNum">     285</span>                 :             :                 sbuf.st_size = (long) fread(tmp, 1, sbuf.st_size, file);</span>
+<span id="L286"><span class="lineNum">     286</span>                 :             :                 tmp[sbuf.st_size] = '\0';</span>
+<span id="L287"><span class="lineNum">     287</span>                 :             :             }</span>
+<span id="L288"><span class="lineNum">     288</span>                 :             :             fclose(file);</span>
+<span id="L289"><span class="lineNum">     289</span>                 :             :         }</span>
+<span id="L290"><span class="lineNum">     290</span>                 :             :     }</span>
+<span id="L291"><span class="lineNum">     291</span>                 :             : </span>
+<span id="L292"><span class="lineNum">     292</span>                 :             :     if (tmp == NULL) {</span>
+<span id="L293"><span class="lineNum">     293</span>                 :             :         tmp = _XkbAlloc(strlen(_XkbKnownLanguages) + 1);</span>
+<span id="L294"><span class="lineNum">     294</span>                 :             :         if (!tmp)</span>
+<span id="L295"><span class="lineNum">     295</span>                 :             :             return NULL;</span>
+<span id="L296"><span class="lineNum">     296</span>                 :             :         strcpy(tmp, _XkbKnownLanguages);</span>
+<span id="L297"><span class="lineNum">     297</span>                 :             :     }</span>
+<span id="L298"><span class="lineNum">     298</span>                 :             :     start = tmp;</span>
+<span id="L299"><span class="lineNum">     299</span>                 :             :     do {</span>
+<span id="L300"><span class="lineNum">     300</span>                 :             :         if ((set = strchr(tmp, '=')) == NULL)</span>
+<span id="L301"><span class="lineNum">     301</span>                 :             :             break;</span>
+<span id="L302"><span class="lineNum">     302</span>                 :             :         *set++ = '\0';</span>
+<span id="L303"><span class="lineNum">     303</span>                 :             :         if ((next = strchr(set, ':')) != NULL)</span>
+<span id="L304"><span class="lineNum">     304</span>                 :             :             *next++ = '\0';</span>
+<span id="L305"><span class="lineNum">     305</span>                 :             :         while (tmp &amp;&amp; *tmp) {</span>
+<span id="L306"><span class="lineNum">     306</span>                 :             :             if ((end = strchr(tmp, ',')) != NULL)</span>
+<span id="L307"><span class="lineNum">     307</span>                 :             :                 *end++ = '\0';</span>
+<span id="L308"><span class="lineNum">     308</span>                 :             :             if (Strcmp(tmp, lang) == 0) {</span>
+<span id="L309"><span class="lineNum">     309</span>                 :             :                 strncpy(buf, set, 100);</span>
+<span id="L310"><span class="lineNum">     310</span>                 :             :                 buf[99] = '\0';</span>
+<span id="L311"><span class="lineNum">     311</span>                 :             :                 Xfree(start);</span>
+<span id="L312"><span class="lineNum">     312</span>                 :             :                 return buf;</span>
+<span id="L313"><span class="lineNum">     313</span>                 :             :             }</span>
+<span id="L314"><span class="lineNum">     314</span>                 :             :             tmp = end;</span>
+<span id="L315"><span class="lineNum">     315</span>                 :             :         }</span>
+<span id="L316"><span class="lineNum">     316</span>                 :             :         tmp = next;</span>
+<span id="L317"><span class="lineNum">     317</span>                 :             :     } while (tmp &amp;&amp; *tmp);</span>
+<span id="L318"><span class="lineNum">     318</span>                 :             :     Xfree(start);</span>
+<span id="L319"><span class="lineNum">     319</span>                 :             :     return NULL;</span>
+<span id="L320"><span class="lineNum">     320</span>                 :             : }</span>
+<span id="L321"><span class="lineNum">     321</span>                 :             : #else</span>
+<span id="L322"><span class="lineNum">     322</span>                 :             : char *</span>
+<span id="L323"><span class="lineNum">     323</span>                 :<span class="tlaUNC">           0 : _XkbGetCharset(void)</span></span>
+<span id="L324"><span class="lineNum">     324</span>                 :             : {</span>
+<span id="L325"><span class="lineNum">     325</span>                 :             :     char *tmp;</span>
+<span id="L326"><span class="lineNum">     326</span>                 :             :     XLCd lcd;</span>
+<span id="L327"><span class="lineNum">     327</span>                 :             : </span>
+<span id="L328"><span class="lineNum">     328</span>                 :<span class="tlaUNC">           0 :     tmp = getenv(&quot;_XKB_CHARSET&quot;);</span></span>
+<span id="L329"><span class="lineNum">     329</span>                 :<span class="tlaUNC">           0 :     if (tmp)</span></span>
+<span id="L330"><span class="lineNum">     330</span>                 :<span class="tlaUNC">           0 :         return tmp;</span></span>
+<span id="L331"><span class="lineNum">     331</span>                 :             : </span>
+<span id="L332"><span class="lineNum">     332</span>                 :<span class="tlaUNC">           0 :     lcd = _XlcCurrentLC();</span></span>
+<span id="L333"><span class="lineNum">     333</span>                 :<span class="tlaUNC">           0 :     if (lcd)</span></span>
+<span id="L334"><span class="lineNum">     334</span>                 :<span class="tlaUNC">           0 :         return XLC_PUBLIC(lcd, encoding_name);</span></span>
+<span id="L335"><span class="lineNum">     335</span>                 :             : </span>
+<span id="L336"><span class="lineNum">     336</span>                 :<span class="tlaUNC">           0 :     return NULL;</span></span>
+<span id="L337"><span class="lineNum">     337</span>                 :<span class="tlaUNC">           0 : }</span></span>
+<span id="L338"><span class="lineNum">     338</span>                 :             : #endif</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

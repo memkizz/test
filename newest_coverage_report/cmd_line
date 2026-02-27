@@ -1,0 +1,1 @@
+genhtml ./coverage_report/coverage.info --output-directory ./coverage_report --ignore-errors source,source --ignore-errors inconsistent,inconsistent --synthesize-missing --legend --function-coverage --branch-coverage
